@@ -1,0 +1,85 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 06.05.2019 00:33:57
+
+newmtl 01___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 1.0000 0.0000
+	Kd 0.0000 1.0000 0.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\emma.jpg
+	map_Kd C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\emma.jpg
+
+newmtl 02___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\astrid-eye.jpg
+	map_Kd C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\astrid-eye.jpg
+
+newmtl 19___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\pants_01_C.jpg
+	map_Kd C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\pants_01_C.jpg
+	map_Ks C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\pants_01_S.jpg
+
+newmtl 01___Default3
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 1.0000 0.0000
+	Kd 0.0000 1.0000 0.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\hair.jpg
+	map_Kd C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\hair.jpg
+	map_d C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\hair3.jpg
+
+newmtl 13___Default
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5882 0.5882 0.5882
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\bra_01_C.jpg
+	map_Kd C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\bra_01_C.jpg
+	map_Ks C:\Users\travelmate\Desktop\!! MG !!\characters - desktop\emma\bra_01_S.jpg
+
+newmtl wire_115115115
+	Ns 32
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+	Ka 0.4510 0.4510 0.4510
+	Kd 0.4510 0.4510 0.4510
+	Ks 0.3500 0.3500 0.3500

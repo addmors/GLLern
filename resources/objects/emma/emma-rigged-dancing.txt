@@ -1,0 +1,17 @@
+emma rigged dancing
+
+emma characted rigged with 880-frame (33sec) salsa dance
+
+simple uvw mapping for easy retexturing; game optimized mesh
+
+made in 3ds max 2017 and rigged/animated with adobe maximo
+
+Objects; 40  |  Helpers: 65  |  Vertices: 51,173  |  Faces: 83,366  |  Maps: 10
+
+
+
+keywords: character, nude, dance, rigged, animation, girl, sexy, bikini, redhead, dancing, salsa, hiphop, moves, battle, street, beach, topless, dancer, energetic 
+
+usage restrictions: none. licenced under creative commons 4.0 by-nc - free to use in any application, attribution isn't required but would be nice.
+
+Formats:  .3ds  .obj  .fbx  .dae  .max  .dwg

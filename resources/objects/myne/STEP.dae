@@ -1,0 +1,822 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.77.0 commit date:2016-03-18, commit time:12:34, hash:22a2853</authoring_tool>
+    </contributor>
+    <created>2020-06-11T04:30:33</created>
+    <modified>2020-06-11T04:30:33</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images/>
+  <library_effects>
+    <effect id="Material-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.8000001 0.246145 0.4312625 1</color>
+            </diffuse>
+            <specular>
+              <color sid="specular">0.504 0.1939948 0.03869664 1</color>
+            </specular>
+            <shininess>
+              <float sid="shininess">50</float>
+            </shininess>
+            <index_of_refraction>
+              <float sid="index_of_refraction">1</float>
+            </index_of_refraction>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Material-material" name="Material">
+      <instance_effect url="#Material-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Cube_007-mesh" name="Cube.007">
+      <mesh>
+        <source id="Cube_007-mesh-positions">
+          <float_array id="Cube_007-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_007-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_007-mesh-normals">
+          <float_array id="Cube_007-mesh-normals-array" count="36">0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_007-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_007-mesh-colors-Col" name="Col">
+          <float_array id="Cube_007-mesh-colors-Col-array" count="108">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_007-mesh-colors-Col-array" count="36" stride="3">
+              <param name="R" type="float"/>
+              <param name="G" type="float"/>
+              <param name="B" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_007-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_007-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="12">
+          <input semantic="VERTEX" source="#Cube_007-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_007-mesh-normals" offset="1"/>
+          <input semantic="COLOR" source="#Cube_007-mesh-colors-Col" offset="2" set="0"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 0 2 0 1 3 0 2 7 1 3 5 1 4 4 1 5 4 2 6 1 2 7 0 2 8 5 3 9 2 3 10 1 3 11 2 4 12 7 4 13 3 4 14 0 5 15 7 5 16 4 5 17 0 6 18 1 6 19 2 6 20 7 7 21 6 7 22 5 7 23 4 8 24 5 8 25 1 8 26 5 9 27 6 9 28 2 9 29 2 10 30 6 10 31 7 10 32 0 11 33 3 11 34 7 11 35</p>
+        </polylist>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_003-mesh" name="Cube.003">
+      <mesh>
+        <source id="Cube_003-mesh-positions">
+          <float_array id="Cube_003-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_003-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_003-mesh-normals">
+          <float_array id="Cube_003-mesh-normals-array" count="36">0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_003-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_003-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_003-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="12">
+          <input semantic="VERTEX" source="#Cube_003-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_003-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 2 0 3 0 7 1 5 1 4 1 4 2 1 2 0 2 5 3 2 3 1 3 2 4 7 4 3 4 0 5 7 5 4 5 0 6 1 6 2 6 7 7 6 7 5 7 4 8 5 8 1 8 5 9 6 9 2 9 2 10 6 10 7 10 0 11 3 11 7 11</p>
+        </polylist>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_006-mesh" name="Cube.006">
+      <mesh>
+        <source id="Cube_006-mesh-positions">
+          <float_array id="Cube_006-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_006-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_006-mesh-normals">
+          <float_array id="Cube_006-mesh-normals-array" count="36">0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_006-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_006-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_006-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="12">
+          <input semantic="VERTEX" source="#Cube_006-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_006-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 2 0 3 0 7 1 5 1 4 1 4 2 1 2 0 2 5 3 2 3 1 3 2 4 7 4 3 4 0 5 7 5 4 5 0 6 1 6 2 6 7 7 6 7 5 7 4 8 5 8 1 8 5 9 6 9 2 9 2 10 6 10 7 10 0 11 3 11 7 11</p>
+        </polylist>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_002-mesh" name="Cube.002">
+      <mesh>
+        <source id="Cube_002-mesh-positions">
+          <float_array id="Cube_002-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_002-mesh-normals">
+          <float_array id="Cube_002-mesh-normals-array" count="36">0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_002-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_002-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_002-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="12">
+          <input semantic="VERTEX" source="#Cube_002-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_002-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 2 0 3 0 7 1 5 1 4 1 4 2 1 2 0 2 5 3 2 3 1 3 2 4 7 4 3 4 0 5 7 5 4 5 0 6 1 6 2 6 7 7 6 7 5 7 4 8 5 8 1 8 5 9 6 9 2 9 2 10 6 10 7 10 0 11 3 11 7 11</p>
+        </polylist>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_011-mesh" name="Cube.011">
+      <mesh>
+        <source id="Cube_011-mesh-positions">
+          <float_array id="Cube_011-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_011-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_011-mesh-normals">
+          <float_array id="Cube_011-mesh-normals-array" count="36">0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_011-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_011-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_011-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="12">
+          <input semantic="VERTEX" source="#Cube_011-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_011-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 2 0 3 0 7 1 5 1 4 1 4 2 1 2 0 2 5 3 2 3 1 3 2 4 7 4 3 4 0 5 7 5 4 5 0 6 1 6 2 6 7 7 6 7 5 7 4 8 5 8 1 8 5 9 6 9 2 9 2 10 6 10 7 10 0 11 3 11 7 11</p>
+        </polylist>
+      </mesh>
+    </geometry>
+    <geometry id="Cube_001-mesh" name="Cube.001">
+      <mesh>
+        <source id="Cube_001-mesh-positions">
+          <float_array id="Cube_001-mesh-positions-array" count="24">1 1 -1 1 -1 -1 -1 -0.9999998 -1 -0.9999997 1 -1 1 0.9999995 1 0.9999994 -1.000001 1 -1 -0.9999997 1 -1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Cube_001-mesh-normals">
+          <float_array id="Cube_001-mesh-normals-array" count="36">0 0 -1 0 0 1 1 0 -2.38419e-7 0 -1 -4.76837e-7 -1 2.38419e-7 -1.49012e-7 2.68221e-7 1 2.38419e-7 0 0 -1 0 0 1 1 -5.96046e-7 3.27825e-7 -4.76837e-7 -1 0 -1 2.38419e-7 -1.19209e-7 2.08616e-7 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube_001-mesh-normals-array" count="12" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Cube_001-mesh-vertices">
+          <input semantic="POSITION" source="#Cube_001-mesh-positions"/>
+        </vertices>
+        <polylist material="Material-material" count="12">
+          <input semantic="VERTEX" source="#Cube_001-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube_001-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>0 0 2 0 3 0 7 1 5 1 4 1 4 2 1 2 0 2 5 3 2 3 1 3 2 4 7 4 3 4 0 5 7 5 4 5 0 6 1 6 2 6 7 7 6 7 5 7 4 8 5 8 1 8 5 9 6 9 2 9 2 10 6 10 7 10 0 11 3 11 7 11</p>
+        </polylist>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_animations>
+    <animation id="Armature_Bone_pose_matrix">
+      <source id="Armature_Bone_pose_matrix-input">
+        <float_array id="Armature_Bone_pose_matrix-input-array" count="4">0 0.1666666 0.4166666 0.6666667</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_pose_matrix-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_pose_matrix-output">
+        <float_array id="Armature_Bone_pose_matrix-output-array" count="64">1 0 0 0 0 0 -1 0 0 1 0 0 0 0 0 1 0.9737546 0.214364 0.07648522 -0.004637273 0.08486196 -0.03013701 -0.9959369 -7.68103e-4 -0.2111879 0.9762888 -0.0475374 0.004258301 0 0 0 1 0.98524 0.1282528 0.1133727 -0.003546728 0.1249254 -0.08592068 -0.9884388 3.33562e-5 -0.117029 0.9880126 -0.1006745 0.006697156 0 0 0 1 0.9916531 0.0394526 0.1227502 -0.002456184 0.1265829 -0.1168969 -0.9850441 8.34815e-4 -0.02451343 0.9923601 -0.1209152 0.007045563 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_pose_matrix-output-array" count="4" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_pose_matrix-interpolation">
+        <Name_array id="Armature_Bone_pose_matrix-interpolation-array" count="4">LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_pose_matrix-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Armature_Bone_pose_matrix-sampler">
+        <input semantic="INPUT" source="#Armature_Bone_pose_matrix-input"/>
+        <input semantic="OUTPUT" source="#Armature_Bone_pose_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#Armature_Bone_pose_matrix-interpolation"/>
+      </sampler>
+      <channel source="#Armature_Bone_pose_matrix-sampler" target="Bone/transform"/>
+    </animation>
+    <animation id="Armature_Bone_005_pose_matrix">
+      <source id="Armature_Bone_005_pose_matrix-input">
+        <float_array id="Armature_Bone_005_pose_matrix-input-array" count="4">0 0.1666666 0.4166666 0.6666667</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_005_pose_matrix-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_005_pose_matrix-output">
+        <float_array id="Armature_Bone_005_pose_matrix-output-array" count="64">1 -3.72529e-9 -9.28994e-8 -3.0268e-9 0 -1 7.45058e-9 1 -9.38307e-8 0 -1 -0.4109866 0 0 0 1 0.8204851 -0.5716679 -7.93952e-8 -4.77235e-4 -0.5716679 -0.8204851 5.96046e-8 1.00159 -1.04308e-7 0 -1 -0.4109866 0 0 0 1 0.6925744 0.7201223 0.04200686 0.008853928 0.7196134 -0.6857037 -0.1093946 1.050243 -0.04997325 0.1059926 -0.9931104 -0.4116638 0 0 0 1 0.9972165 0.01357391 0.0733149 -0.0119753 0.01735556 -0.9985381 -0.05119245 1.075345 0.07251283 0.05232237 -0.9959942 -0.4173193 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_005_pose_matrix-output-array" count="4" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_005_pose_matrix-interpolation">
+        <Name_array id="Armature_Bone_005_pose_matrix-interpolation-array" count="4">LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_005_pose_matrix-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Armature_Bone_005_pose_matrix-sampler">
+        <input semantic="INPUT" source="#Armature_Bone_005_pose_matrix-input"/>
+        <input semantic="OUTPUT" source="#Armature_Bone_005_pose_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#Armature_Bone_005_pose_matrix-interpolation"/>
+      </sampler>
+      <channel source="#Armature_Bone_005_pose_matrix-sampler" target="Bone_005/transform"/>
+    </animation>
+    <animation id="Armature_Bone_009_pose_matrix">
+      <source id="Armature_Bone_009_pose_matrix-input">
+        <float_array id="Armature_Bone_009_pose_matrix-input-array" count="4">0 0.1666666 0.4166666 0.6666667</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_009_pose_matrix-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_009_pose_matrix-output">
+        <float_array id="Armature_Bone_009_pose_matrix-output-array" count="64">1 -3.72529e-9 -9.28994e-8 1.3737e-8 0 -1 7.45058e-9 1 -9.38307e-8 0 -1 0.4109866 0 0 0 1 0.8413913 0.5404264 -7.70669e-8 0.001439913 0.5404264 -0.8413914 -3.72529e-8 0.9813829 -8.9407e-8 -7.45058e-9 -1 0.4109866 0 0 0 1 0.7211953 -0.6862734 0.0943719 0.004115957 -0.6922032 -0.7192476 0.05947954 0.9475158 0.02705756 -0.1082209 -0.9937586 0.4122395 0 0 0 1 0.9653514 -0.2606118 0.01334059 0.002322086 -0.2608525 -0.9651369 0.02161011 0.9284421 0.007243648 -0.02434127 -0.9996775 0.4142725 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_009_pose_matrix-output-array" count="4" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_009_pose_matrix-interpolation">
+        <Name_array id="Armature_Bone_009_pose_matrix-interpolation-array" count="4">LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_009_pose_matrix-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Armature_Bone_009_pose_matrix-sampler">
+        <input semantic="INPUT" source="#Armature_Bone_009_pose_matrix-input"/>
+        <input semantic="OUTPUT" source="#Armature_Bone_009_pose_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#Armature_Bone_009_pose_matrix-interpolation"/>
+      </sampler>
+      <channel source="#Armature_Bone_009_pose_matrix-sampler" target="Bone_009/transform"/>
+    </animation>
+    <animation id="Armature_Bone_001_pose_matrix">
+      <source id="Armature_Bone_001_pose_matrix-input">
+        <float_array id="Armature_Bone_001_pose_matrix-input-array" count="4">0 0.1666666 0.4166666 0.6666667</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_001_pose_matrix-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_001_pose_matrix-output">
+        <float_array id="Armature_Bone_001_pose_matrix-output-array" count="64">1 3.72529e-9 3.49246e-9 4.42378e-9 -1.86265e-9 1 -7.45058e-9 1 -1.04774e-8 0 1 -9.77889e-9 0 0 0 1 0.8293663 0.5578209 -0.03141903 4.42378e-9 -0.5587001 0.8282849 -0.04240973 1 0.002366856 0.05272701 0.9986062 -9.77889e-9 0 0 0 1 0.9616898 0.2723775 -0.03103575 4.42378e-9 -0.2728459 0.9619837 -0.01193725 1 0.02660446 0.01994791 0.999447 -9.77889e-9 0 0 0 1 0.9987277 -0.04002996 -0.0306661 4.42378e-9 0.04057454 0.999026 0.01734665 1 0.02994184 -0.01856886 0.9993792 -9.77889e-9 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_001_pose_matrix-output-array" count="4" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_001_pose_matrix-interpolation">
+        <Name_array id="Armature_Bone_001_pose_matrix-interpolation-array" count="4">LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_001_pose_matrix-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Armature_Bone_001_pose_matrix-sampler">
+        <input semantic="INPUT" source="#Armature_Bone_001_pose_matrix-input"/>
+        <input semantic="OUTPUT" source="#Armature_Bone_001_pose_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#Armature_Bone_001_pose_matrix-interpolation"/>
+      </sampler>
+      <channel source="#Armature_Bone_001_pose_matrix-sampler" target="Bone_001/transform"/>
+    </animation>
+    <animation id="Armature_Bone_003_pose_matrix">
+      <source id="Armature_Bone_003_pose_matrix-input">
+        <float_array id="Armature_Bone_003_pose_matrix-input-array" count="4">0 0.1666666 0.4166666 0.6666667</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_003_pose_matrix-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_003_pose_matrix-output">
+        <float_array id="Armature_Bone_003_pose_matrix-output-array" count="64">1 0 0 0 0 0 1 0.2064601 0 -1 0 0 0 0 0 1 0.7389746 -0.6737332 0 0.01061198 0 0 1 0.2064601 -0.6737332 -0.7389746 0 0.03292311 0 0 0 1 0.825278 0.5647267 0 8.86641e-4 0 0 1 0.2064601 0.5647267 -0.825278 0 0.08873726 0 0 0 1 0.9972452 -0.07417578 0 -0.009808913 0 0 1 0.2064601 -0.07417578 -0.9972452 0 0.1182494 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_003_pose_matrix-output-array" count="4" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_003_pose_matrix-interpolation">
+        <Name_array id="Armature_Bone_003_pose_matrix-interpolation-array" count="4">LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_003_pose_matrix-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Armature_Bone_003_pose_matrix-sampler">
+        <input semantic="INPUT" source="#Armature_Bone_003_pose_matrix-input"/>
+        <input semantic="OUTPUT" source="#Armature_Bone_003_pose_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#Armature_Bone_003_pose_matrix-interpolation"/>
+      </sampler>
+      <channel source="#Armature_Bone_003_pose_matrix-sampler" target="Bone_003/transform"/>
+    </animation>
+    <animation id="Armature_Bone_007_pose_matrix">
+      <source id="Armature_Bone_007_pose_matrix-input">
+        <float_array id="Armature_Bone_007_pose_matrix-input-array" count="4">0 0.1666666 0.4166666 0.6666667</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_007_pose_matrix-input-array" count="4" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_007_pose_matrix-output">
+        <float_array id="Armature_Bone_007_pose_matrix-output-array" count="64">1 0 0 0 0 0 1 -0.2064601 0 -1 0 0 0 0 0 1 0.5455062 0.8381068 0 0.03138636 0 0 1 -0.2064601 0.8381068 -0.5455062 0 -0.02973014 0 0 0 1 0.7215547 -0.6913527 -0.03728642 0.009769322 0.0345971 -0.01778325 0.9992431 -0.2075269 -0.6914924 -0.7222986 0.01108722 0.006600898 0 0 0 1 0.9896241 -0.1389051 -0.03673612 0.03030001 0.03459711 -0.01778325 0.9992431 -0.2075269 -0.1394532 -0.990146 -0.01279302 -0.01206169 0 0 0 1</float_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_007_pose_matrix-output-array" count="4" stride="16">
+            <param name="TRANSFORM" type="float4x4"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Armature_Bone_007_pose_matrix-interpolation">
+        <Name_array id="Armature_Bone_007_pose_matrix-interpolation-array" count="4">LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Armature_Bone_007_pose_matrix-interpolation-array" count="4" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Armature_Bone_007_pose_matrix-sampler">
+        <input semantic="INPUT" source="#Armature_Bone_007_pose_matrix-input"/>
+        <input semantic="OUTPUT" source="#Armature_Bone_007_pose_matrix-output"/>
+        <input semantic="INTERPOLATION" source="#Armature_Bone_007_pose_matrix-interpolation"/>
+      </sampler>
+      <channel source="#Armature_Bone_007_pose_matrix-sampler" target="Bone_007/transform"/>
+    </animation>
+  </library_animations>
+  <library_controllers>
+    <controller id="Armature_Cube_006-skin" name="Armature">
+      <skin source="#Cube_007-mesh">
+        <bind_shape_matrix>0.08542237 0 0 0 0 0.09655386 0 -0.4265754 0 0 0.5064864 0.4792968 0 0 0 1</bind_shape_matrix>
+        <source id="Armature_Cube_006-skin-joints">
+          <Name_array id="Armature_Cube_006-skin-joints-array" count="6">Bone Bone_005 Bone_009 Bone_001 Bone_003 Bone_007</Name_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_006-skin-joints-array" count="6" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_006-skin-bind_poses">
+          <float_array id="Armature_Cube_006-skin-bind_poses-array" count="96">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 -0.4109866 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 0.4109866 0 0 0 1 1 0 0 0 0 0 1 -1 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 -0.2064601 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 0.2064601 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_006-skin-bind_poses-array" count="6" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_006-skin-weights">
+          <float_array id="Armature_Cube_006-skin-weights-array" count="8">1 1 1 1 1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_006-skin-weights-array" count="8" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Armature_Cube_006-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Armature_Cube_006-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="8">
+          <input semantic="JOINT" source="#Armature_Cube_006-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Armature_Cube_006-skin-weights" offset="1"/>
+          <vcount>1 1 1 1 1 1 1 1 </vcount>
+          <v>2 0 2 1 2 2 2 3 2 4 2 5 2 6 2 7</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+    <controller id="Armature_Cube_002-skin" name="Armature">
+      <skin source="#Cube_003-mesh">
+        <bind_shape_matrix>0.08542237 0 0 0 0 -0.09655386 0 0.4265754 0 0 0.5064864 0.4792968 0 0 0 1</bind_shape_matrix>
+        <source id="Armature_Cube_002-skin-joints">
+          <Name_array id="Armature_Cube_002-skin-joints-array" count="6">Bone Bone_005 Bone_009 Bone_001 Bone_003 Bone_007</Name_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_002-skin-joints-array" count="6" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_002-skin-bind_poses">
+          <float_array id="Armature_Cube_002-skin-bind_poses-array" count="96">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 -0.4109866 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 0.4109866 0 0 0 1 1 0 0 0 0 0 1 -1 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 -0.2064601 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 0.2064601 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_002-skin-bind_poses-array" count="6" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_002-skin-weights">
+          <float_array id="Armature_Cube_002-skin-weights-array" count="23">1 0 0 0.9999789 7.91677e-7 2.02521e-5 0.9999341 0 6.59696e-5 1 0 0 1 0 1 0 0 1 0 0 1 0 0</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_002-skin-weights-array" count="23" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Armature_Cube_002-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Armature_Cube_002-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="8">
+          <input semantic="JOINT" source="#Armature_Cube_002-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Armature_Cube_002-skin-weights" offset="1"/>
+          <vcount>3 3 3 3 2 3 3 3 </vcount>
+          <v>1 0 3 1 4 2 1 3 3 4 4 5 1 6 3 7 4 8 1 9 3 10 4 11 1 12 3 13 1 14 3 15 4 16 1 17 3 18 4 19 1 20 3 21 4 22</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+    <controller id="Armature_Cube_005-skin" name="Armature">
+      <skin source="#Cube_006-mesh">
+        <bind_shape_matrix>0.08542237 0 0 0 0 0.07517035 0 -0.1957019 0 0 0.5064864 -0.5512856 0 0 0 1</bind_shape_matrix>
+        <source id="Armature_Cube_005-skin-joints">
+          <Name_array id="Armature_Cube_005-skin-joints-array" count="6">Bone Bone_005 Bone_009 Bone_001 Bone_003 Bone_007</Name_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_005-skin-joints-array" count="6" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_005-skin-bind_poses">
+          <float_array id="Armature_Cube_005-skin-bind_poses-array" count="96">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 -0.4109866 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 0.4109866 0 0 0 1 1 0 0 0 0 0 1 -1 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 -0.2064601 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 0.2064601 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_005-skin-bind_poses-array" count="6" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_005-skin-weights">
+          <float_array id="Armature_Cube_005-skin-weights-array" count="16">0 1 0.01118451 0.9888154 0 1 0 1 1.1592e-6 0.9999988 5.61431e-7 0.9999994 2.57161e-7 0.9999998 4.88962e-7 0.9999996</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_005-skin-weights-array" count="16" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Armature_Cube_005-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Armature_Cube_005-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="8">
+          <input semantic="JOINT" source="#Armature_Cube_005-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Armature_Cube_005-skin-weights" offset="1"/>
+          <vcount>2 2 2 2 2 2 2 2 </vcount>
+          <v>0 0 5 1 0 2 5 3 0 4 5 5 0 6 5 7 0 8 5 9 0 10 5 11 0 12 5 13 0 14 5 15</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+    <controller id="Armature_Cube_000-skin" name="Armature">
+      <skin source="#Cube_002-mesh">
+        <bind_shape_matrix>0.08542237 0 0 0 0 -0.07517035 0 0.1957019 0 0 0.5064864 -0.5512856 0 0 0 1</bind_shape_matrix>
+        <source id="Armature_Cube_000-skin-joints">
+          <Name_array id="Armature_Cube_000-skin-joints-array" count="6">Bone Bone_005 Bone_009 Bone_001 Bone_003 Bone_007</Name_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_000-skin-joints-array" count="6" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_000-skin-bind_poses">
+          <float_array id="Armature_Cube_000-skin-bind_poses-array" count="96">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 -0.4109866 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 0.4109866 0 0 0 1 1 0 0 0 0 0 1 -1 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 -0.2064601 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 0.2064601 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_000-skin-bind_poses-array" count="6" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_000-skin-weights">
+          <float_array id="Armature_Cube_000-skin-weights-array" count="24">0 0 1 0 1.44907e-4 0.9998551 0 0 1 0 0 1 0 0 1 0 0.08496844 0.9150316 0 0 1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_000-skin-weights-array" count="24" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Armature_Cube_000-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Armature_Cube_000-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="8">
+          <input semantic="JOINT" source="#Armature_Cube_000-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Armature_Cube_000-skin-weights" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 </vcount>
+          <v>0 0 2 1 4 2 0 3 2 4 4 5 0 6 2 7 4 8 0 9 2 10 4 11 0 12 2 13 4 14 0 15 2 16 4 17 0 18 2 19 4 20 0 21 2 22 4 23</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+    <controller id="Armature_Cube_009-skin" name="Armature">
+      <skin source="#Cube_011-mesh">
+        <bind_shape_matrix>0.2515237 0 0 0 0 0.3050879 0 0 0 0 0.3308402 1.343601 0 0 0 1</bind_shape_matrix>
+        <source id="Armature_Cube_009-skin-joints">
+          <Name_array id="Armature_Cube_009-skin-joints-array" count="6">Bone Bone_005 Bone_009 Bone_001 Bone_003 Bone_007</Name_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_009-skin-joints-array" count="6" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_009-skin-bind_poses">
+          <float_array id="Armature_Cube_009-skin-bind_poses-array" count="96">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 -0.4109866 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 0.4109866 0 0 0 1 1 0 0 0 0 0 1 -1 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 -0.2064601 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 0.2064601 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_009-skin-bind_poses-array" count="6" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_009-skin-weights">
+          <float_array id="Armature_Cube_009-skin-weights-array" count="17">0 1 0 0 1 0 0 0.9999999 0 9.75564e-4 0.9990244 6.73078e-6 0.9999932 1 0 1 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_009-skin-weights-array" count="17" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Armature_Cube_009-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Armature_Cube_009-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="8">
+          <input semantic="JOINT" source="#Armature_Cube_009-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Armature_Cube_009-skin-weights" offset="1"/>
+          <vcount>2 3 3 3 2 1 2 1 </vcount>
+          <v>1 0 3 1 1 2 2 3 3 4 1 5 2 6 3 7 1 8 2 9 3 10 1 11 3 12 3 13 2 14 3 15 3 16</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+    <controller id="Armature_Cube_001-skin" name="Armature">
+      <skin source="#Cube_001-mesh">
+        <bind_shape_matrix>0.08542238 0 0 0 0 -0.296926 0 0 0 0 0.5064864 0.4792968 0 0 0 1</bind_shape_matrix>
+        <source id="Armature_Cube_001-skin-joints">
+          <Name_array id="Armature_Cube_001-skin-joints-array" count="6">Bone Bone_005 Bone_009 Bone_001 Bone_003 Bone_007</Name_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_001-skin-joints-array" count="6" stride="1">
+              <param name="JOINT" type="name"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_001-skin-bind_poses">
+          <float_array id="Armature_Cube_001-skin-bind_poses-array" count="96">1 0 0 0 0 0 1 0 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 -0.4109866 0 0 0 1 1 0 0 0 0 0 -1 1 0 1 0 0.4109866 0 0 0 1 1 0 0 0 0 0 1 -1 0 -1 0 0 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 -0.2064601 0 0 0 1 1 0 0 0 0 0 -1 0 0 1 0 0.2064601 0 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_001-skin-bind_poses-array" count="6" stride="16">
+              <param name="TRANSFORM" type="float4x4"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Armature_Cube_001-skin-weights">
+          <float_array id="Armature_Cube_001-skin-weights-array" count="28">1 0 0 0.9999973 2.66617e-6 0 1 0 0 1 0 0 0.9999211 6.39235e-5 1.50369e-5 0 1 0 0 0 1 0 0 0 0.9993804 6.1966e-4 0 0</float_array>
+          <technique_common>
+            <accessor source="#Armature_Cube_001-skin-weights-array" count="28" stride="1">
+              <param name="WEIGHT" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <joints>
+          <input semantic="JOINT" source="#Armature_Cube_001-skin-joints"/>
+          <input semantic="INV_BIND_MATRIX" source="#Armature_Cube_001-skin-bind_poses"/>
+        </joints>
+        <vertex_weights count="8">
+          <input semantic="JOINT" source="#Armature_Cube_001-skin-joints" offset="0"/>
+          <input semantic="WEIGHT" source="#Armature_Cube_001-skin-weights" offset="1"/>
+          <vcount>3 3 3 3 4 4 4 4 </vcount>
+          <v>0 0 2 1 4 2 0 3 1 4 4 5 0 6 1 7 4 8 0 9 2 10 4 11 0 12 1 13 2 14 4 15 0 16 1 17 2 18 4 19 0 20 1 21 2 22 4 23 0 24 1 25 2 26 4 27</v>
+        </vertex_weights>
+      </skin>
+    </controller>
+  </library_controllers>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Armature" name="Armature" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <node id="Bone" name="Bone" sid="Bone" type="JOINT">
+          <matrix sid="transform">1 0 0 0 0 0 -1 0 0 1 0 0 0 0 0 1</matrix>
+          <node id="Bone_005" name="Bone.005" sid="Bone_005" type="JOINT">
+            <matrix sid="transform">1 0 -8.74228e-8 0 0 -1 0 1 -8.74228e-8 0 -1 -0.4109866 0 0 0 1</matrix>
+          </node>
+          <node id="Bone_009" name="Bone.009" sid="Bone_009" type="JOINT">
+            <matrix sid="transform">1 0 -8.74228e-8 0 0 -1 0 1 -8.74228e-8 0 -1 0.4109866 0 0 0 1</matrix>
+          </node>
+          <node id="Bone_001" name="Bone.001" sid="Bone_001" type="JOINT">
+            <matrix sid="transform">1 0 0 0 0 1 0 1 0 0 1 0 0 0 0 1</matrix>
+          </node>
+        </node>
+        <node id="Bone_003" name="Bone.003" sid="Bone_003" type="JOINT">
+          <matrix sid="transform">1 0 0 0 0 0 1 0.2064601 0 -1 0 0 0 0 0 1</matrix>
+        </node>
+        <node id="Bone_007" name="Bone.007" sid="Bone_007" type="JOINT">
+          <matrix sid="transform">1 0 0 0 0 0 1 -0.2064601 0 -1 0 0 0 0 0 1</matrix>
+        </node>
+      </node>
+      <node id="Cube_006" name="Cube_006" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Armature_Cube_006-skin">
+          <skeleton>#Bone</skeleton>
+          <skeleton>#Bone_003</skeleton>
+          <skeleton>#Bone_007</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+      <node id="Cube_002" name="Cube_002" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Armature_Cube_002-skin">
+          <skeleton>#Bone</skeleton>
+          <skeleton>#Bone_003</skeleton>
+          <skeleton>#Bone_007</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+      <node id="Cube_005" name="Cube_005" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Armature_Cube_005-skin">
+          <skeleton>#Bone</skeleton>
+          <skeleton>#Bone_003</skeleton>
+          <skeleton>#Bone_007</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+      <node id="Cube_000" name="Cube_000" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Armature_Cube_000-skin">
+          <skeleton>#Bone</skeleton>
+          <skeleton>#Bone_003</skeleton>
+          <skeleton>#Bone_007</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+      <node id="Cube_009" name="Cube_009" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Armature_Cube_009-skin">
+          <skeleton>#Bone</skeleton>
+          <skeleton>#Bone_003</skeleton>
+          <skeleton>#Bone_007</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+      <node id="Cube_001" name="Cube_001" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 0</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_controller url="#Armature_Cube_001-skin">
+          <skeleton>#Bone</skeleton>
+          <skeleton>#Bone_003</skeleton>
+          <skeleton>#Bone_007</skeleton>
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material-material" target="#Material-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_controller>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>
