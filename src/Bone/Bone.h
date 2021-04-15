@@ -52,31 +52,27 @@ static glm::mat4 AiToGLMMat4(aiMatrix4x4& in_mat)
 class Bone
 {
 public:
-	std::string name;
 	Mesh* mesh;
 	unsigned int id;
+	std::string name;
 	aiNode* node;
+	glm::mat4 offset_matrix;
 	aiNodeAnim* animNode;
 	Bone* parent_bone;
-	glm::mat4 parent_transforms;
-	glm::mat4 offset_matrix;
-	glm::vec3 pos;
-	glm::quat rot;
-	glm::vec3 scale;
-	glm::vec3 p1;
-	glm::vec3 p2;
-
-	unsigned int FindPosition(float time);
-	glm::vec3 CalcInterpolatedPosition(float time);
-	unsigned int FindScaling(float time);
-	glm::vec3 CalcInterpolatedSkaling(float time);
-	unsigned int FindRotation(float time);
-	glm::quat CalcInterpolatedRotation(float time);
-
 	
-	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, aiMatrix4x4 in_o_mat);
-	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, glm::mat4 in_o_mat);
-	void UpdateKeyframeTransform(float time);
+	
+	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, aiMatrix4x4 in_o_mat): 
+	mesh(in_mesh),
+		id(in_id),
+	name(in_name),
+	offset_matrix(AiToGLMMat4(in_o_mat)),
+	parent_bone(nullptr){};
+
+	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, glm::mat4 in_o_mat) :
+		mesh(in_mesh),
+		id(in_id),
+		name(in_name),
+		offset_matrix(in_o_mat) {};
 	glm::mat4 GetParentTransforms();
 };
 

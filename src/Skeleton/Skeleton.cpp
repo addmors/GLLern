@@ -25,14 +25,9 @@ void Skeleton::UpdateBoneMatsVector() {
 
 	for (int i = 0; i < 100; i++)
 	{
-		if (i > bones.size() - 1)
-			boneMats.push_back(glm::mat4(1.0));
-		else
-		{
-			boneMats.push_back(bones[i].GetParentTransforms() * bones[i].offset_matrix);
-		}
+		if (i > bones.size() - 1) boneMats.push_back(glm::mat4(1.0));
+		else boneMats.push_back(bones[i].GetParentTransforms() * bones[i].offset_matrix);
 	}
-	int a;
 }
 void Skeleton::Update() {
 	UpdateBoneMatsVector();

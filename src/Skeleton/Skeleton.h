@@ -36,9 +36,6 @@ public:
 	//This one isn't really...
 	void UpdateBoneMatsVector();
 	void Update();
-	void PlayAnimation(Animation& anim, bool loop, bool reset_to_start);
-	void SetIdleAnimation(Animation* in_anim);
-	void StopAnimating();
 
 };
 

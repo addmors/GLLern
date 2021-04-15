@@ -2,24 +2,79 @@
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
+void setCurrAnimatiom(Animation& Current, Animation& Seted);
+void Model::loadAnims(string path, string name)
+{
+	aiScene* Ascene;
+	Animation animation;
+	Assimp::Importer importer;
+	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
+	Ascene = importer.GetOrphanedScene();
+	// check for errors
+	if (!Ascene || !Ascene->mRootNode) // if is Not Zero
+	{
+		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+		return;
+	}
+	if (Ascene->mNumAnimations == 0) {
+		return;
+	}
+
+	for (int i = 0; i < Ascene->mAnimations[0]->mNumChannels; i++) {
+		ai_nodes_anim.push_back(Ascene->mAnimations[0]->mChannels[i]);
+		std::cout << "GET animation " << Ascene->mAnimations[0]->mChannels[i]->mNodeName.C_Str() << endl;
+		animation.anims.push_back(AnimNode(FindAiNode(Ascene->mAnimations[0]->mChannels[i]->mNodeName.data),
+			Ascene->mAnimations[0]->mChannels[i]));
+	}
+	animation.name = name;
+	animation.end_time = Ascene->mAnimations[0]->mDuration;
+	Anims.push_back(animation);
+}
+
+void Model::loadIdleAnimaitons(string path)
+{
+	aiScene* Ascene;
+	Assimp::Importer importer;
+	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
+	Ascene = importer.GetOrphanedScene();
+	// check for errors
+	if (!Ascene || !Ascene->mRootNode) // if is Not Zero
+	{
+		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+		return;
+	}
+	if (Ascene->mNumAnimations == 0) {
+		return;
+	}
+
+	for (int i = 0; i < Ascene->mAnimations[0]->mNumChannels; i++) {
+		ai_nodes_anim.push_back(Ascene->mAnimations[0]->mChannels[i]);
+		std::cout << "GET animation " << Ascene->mAnimations[0]->mChannels[i]->mNodeName.C_Str() << endl;
+		Animations.anims.push_back(AnimNode(FindAiNode(Ascene->mAnimations[0]->mChannels[i]->mNodeName.data),
+			Ascene->mAnimations[0]->mChannels[i]));
+	}
+	Animations.end_time = Ascene->mAnimations[0]->mDuration;
+	CurrAnimation = &Animations;
+}
+
+
+void Model::PlayAnimation(float delta) {
+	CurrAnimation->PlayAnimation(delta);
+};
 
 void Model::DrawAnim(Shader shader, glm::mat4 model, glm::mat4 wiew, glm::mat4 projection) {
 	if (!anim)    //If the object is rigged...
 	{
-		//UpdateSkeleton();    //... we update the skeleton (remember that this
-
-		Animations.PlayAnimation(1);
 		for (int i = 0; i <meshes.size(); i++) {
 			if (meshes[i].sceneLoaderSkeleton.bones.size()>0) {
 				meshes[i].sceneLoaderSkeleton.Update();
 				meshes[i].DrawRigged(shader, model, wiew, projection);
 			}
-			else meshes[i].Draw(shader);
+			else meshes[i].Draw(shader); 
 		}
 	}
 	else
 	{
-
 		for (int i = 0; i < meshes.size(); i++)
 			meshes[i].Draw(shader);
 	}
@@ -30,8 +85,6 @@ void Model::Draw(Shader shader)
 		meshes[i].Draw(shader);
 }
 
-
-
 Animation* Model::FindAnimation(std::string anim_to_find)
 {
 	for (int i = 0; i < animations.size(); i++)
@@ -41,6 +94,22 @@ Animation* Model::FindAnimation(std::string anim_to_find)
 	}
 	return nullptr;
 }
+
+void Model::key_callback(int key, int action)
+{
+	keys[key] = action;
+	if (key < 49 && key > 59) return;
+	if (key - 48 > Anims.size() && key < 59) {
+		CurrAnimation = &Animations; return;
+	} 
+	for (int i = 49; i < 49 + Anims.size(); i++) {
+		if (keys[i] && CurrAnimation->name != Anims[i - 49].name) {
+			CurrAnimation = &Anims[i - 49];
+			break;
+		}
+	}
+}
+
 Bone* Model::FindBone(std::string name) {
 	for (int i = 0; i < bones.size(); i++)
 	{
@@ -57,6 +126,7 @@ aiNode* Model::FindAiNode(std::string name) {
 	}
 	return nullptr;
 }
+
 aiNodeAnim* Model::FindAiNodeAnim(std::string name)
 {
 	for (int i = 0; i < ai_nodes_anim.size(); i++)
@@ -70,6 +140,7 @@ aiNodeAnim* Model::FindAiNodeAnim(std::string name)
 	//the actual animation portion of skeletal animation.
 	return nullptr;
 }
+
 int Model::FindBoneIDByName(std::string name)
 {
 	for (int i = 0; i < bones.size(); i++)
@@ -90,7 +161,6 @@ int Model::FindBoneIDByName(std::string name)
 void Model::loadModel(string path) {
 	// read file via ASSIMP
 	Assimp::Importer importer;
-
 	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
 	scene = importer.GetOrphanedScene();
 	// check for errors
@@ -136,10 +206,6 @@ void Model::loadModel(string path) {
 			cout << "Create a parent bone" << b_name << " " << p_bone->name << endl;
 		}
 	}
-	//if (meshes.size() > 0) {//If there are, in fact, meshes.
-	//skel.Init(bones, globalInverseTransform);
-	//}
-	//skel.PlayAnimation(Anim_Test_Idle2, true,true);
 	for (int i = 0; i < meshes.size(); i++) {
 		vector<Bone> bonestep;
 		for (int j = 0; j < bones.size(); j++) {
@@ -187,6 +253,7 @@ void Model::AnimNodeProcess() {
 			scene->mAnimations[0]->mChannels[i]));
 	}
 }
+
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformation)
 {
 	vector<Vertex> vertices;
@@ -354,4 +421,8 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 
 	return textureID;
 }
-	
+
+
+void setCurrAnimatiom(Animation& Current, Animation& Seted) {
+
+}

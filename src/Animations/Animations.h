@@ -27,9 +27,8 @@ public:
 	float start_time;
 	float end_time;
 	int priority;
-	bool loop = false;
 	std::string name;
 	float time;
-	void PlayAnimation(bool loop);
+	void PlayAnimation(float);
 };
 

@@ -16,7 +16,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-glm::vec3 skaling = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 skaling = glm::vec3(0.1f, 0.1f, 0.1f);
 glm::vec3 cameraPos = glm::vec3(10.0f, 0.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(-1.0f, -0.0f, -0.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -29,6 +29,7 @@ GLfloat fov = 45.0f;
 GLfloat lastX = 400, lastY = 300; //Координаты мышки;
 static Animation Anim_Test_Idle2("", FramesToTime(glm::vec2(0, 40)), 1);
 Camera camera(cameraPos, cameraFront, cameraUp, fov, yaw, pitch);
+Model ourModel;
 void key_callback_for_movement(int key, int action);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -75,8 +76,14 @@ int main() {
 	Shader shader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
 	Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
 	Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
+	ourModel.loadModel("resources/objects/Black Dragon NEW/ganfaul_m_aure.dae");
+
 	Shader screen("src/shader/shadowshader.vs", "src/shader/shadowshader.fs");
-	Model ourModel("resources/objects/myne/mango2.dae");
+
+	ourModel.loadIdleAnimaitons("resources/objects/Black Dragon NEW/idle.dae");
+	ourModel.loadAnims("resources/objects/Black Dragon NEW/Walking.dae","Walking");
+	ourModel.loadAnims("resources/objects/Black Dragon NEW/Walking Backwards.dae","WalkBackWard");
+
 
 	GLfloat vertices[] = {
 		//Первый квадрат в кубе 
@@ -272,7 +279,6 @@ int main() {
 	};
 	vector<glm::vec3> lightPos;
 	glm::mat4 projection;
-	glm::mat4 model = glm::mat4();
 	glm::mat4 view;
 	for (int i = 1; i < 40; i++) {
 		lightPos.push_back(glm::vec3(i, 0, 0));
@@ -290,9 +296,11 @@ int main() {
 	//objclrShader.SetInt("material.texture_specular1", 1);
 	while (!glfwWindowShouldClose(window))
 	{
+		glm::mat4 model = glm::mat4();
 		glfwPollEvents();
 		GLfloat currentFrame = glfwGetTime();
-		camera.deltaTime = currentFrame - lastFrame;
+		float deltaTime = currentFrame - lastFrame;
+		camera.deltaTime = deltaTime;
 		lastFrame = currentFrame;
 		camera.do_movement();
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -323,17 +331,22 @@ int main() {
 		objclrShader.SetMat4("projection", projection);
 		objclrShader.SetMat4("view", view);
 		objclrShader.SetMat4("model", model);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		ourModel.DrawAnim(objclrShader, model, view, projection);
-
-		//glBindVertexArray(VAO);
+		ourModel.PlayAnimation(deltaTime);
+		Light.UseLight(view, projection, lightPos);
+	
 		//for (GLuint i = 0; i < sizeof(cubePositions) / sizeof(glm::vec3); i++) {
+		//	glBindVertexArray(VAO);
 		//	glm::mat4 model;
 		//	model = glm::translate(model, cubePositions[i]);
+		//	cubePositions[i] = cubePositions[i] + glm::vec3( i/(float)1, i / (float)1, i / (float)1);
+		//	objclrShader.SetMat4("model", model);
 		//	GLfloat angle = glm::pi<float>() / 4;
 		//	//model = glm::rotate(model, angle*i, glm::vec3(1.0f, 1.0f, 0.0f));
-		//	objclrShader.SetMat4("model", model);
+		//	
 		//	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		//	glBindVertexArray(0);
 		//}
 		//glm::mat4 model;
 		//model = glm::translate(model, glm::vec3(-10,0,0));
@@ -342,8 +355,7 @@ int main() {
 		//objclrShader.SetMat4("model", model);
 		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
-		//glBindVertexArray(0);
-		//Light.UseLight(view,projection,lightPos);
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, 0); // возвращаем буфер кадра по умолчанию
 		
 		glDisable(GL_DEPTH_TEST);
@@ -381,6 +393,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	else {
 		camera.key_callback(key, action);
 		key_callback_for_movement(key, action);
+		ourModel.key_callback(key, action);
 	}
 }
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -397,10 +410,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 
 void key_callback_for_movement(int key, int action) {
-	if (action == 1) {
-		keys[key] = true;
-		std::cout << key;
-	}
-	else if (action == 0)
-		keys[key] = false;
+	keys[key] = action;
+	if (action == 1)  std::cout << key;
 };

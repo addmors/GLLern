@@ -23,16 +23,16 @@ void light::UseLight(glm::mat4 view, glm::mat4 projection, std::vector<glm::vec3
 {	
 	glm::mat4 model = glm::mat4();
 	lightShader.Use();
-	glBindVertexArray(lightVAO);
 	lightShader.SetMat4("view", view);
 	lightShader.SetMat4("projection", projection);
 	for (GLuint i = 0; i < lightPos.size(); i++) {
+		glBindVertexArray(lightVAO);
 		model = glm::mat4();
 		model = glm::translate(model, lightPos[i]);
 		model = glm::scale(model, glm::vec3(0.2f));
 		//model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 		lightShader.SetMat4("model", model);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 	}
-	glBindVertexArray(0);
 }

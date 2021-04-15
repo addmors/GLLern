@@ -13,13 +13,7 @@ Camera::Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov, GLfloa
 }
 void Camera::key_callback(int key, int action)
 {
-	// Когда пользователь нажимает ESC, мы устанавливаем свойство WindowShouldClose в true, 
-	// и приложение после этого закроется
-	if (action == 1) {
-		keys[key] = true;
-	}
-	else if (action == 0)
-		keys[key] = false;
+	keys[key] = action;
 }
 void Camera::mouse_callback(double xpos, double ypos) {
 
