@@ -1,6 +1,6 @@
 #ifndef CAMERA
 #define CAMERA
-
+#include<vector>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -9,12 +9,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>; // Подключаем glew для того, чтобы получить все необходимые заголовочные файлы OpenGL
+#include "../Precompile.h"
 
 class Camera
 {
 public:
 	// Идентификатор программы
 	glm::vec3 cameraPos;
+	glm::vec3 objPos;
 	glm::vec3 cameraFront;
 	glm::vec3 cameraUp;
 	GLfloat fov;
@@ -23,12 +25,10 @@ public:
 	GLfloat lastX;
 	GLfloat lastY;
 	GLfloat deltaTime;
-	bool keys[1024];
+	GLfloat lengthtoobj;
+	std::vector<bool>* keys;
 
-	// Конструктор считывает и собирает шейдер
-	Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov, GLfloat yaw, GLfloat pitch);
-	// Использование программы
-	void key_callback(int key, int action);
+	Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov);
 	void mouse_callback(double xpos, double ypos);
 	void scroll_callback(double xoffset, double yoffset);
 	glm::mat4 LoocAt();

@@ -77,7 +77,7 @@ void Mesh::Draw(Shader shader)
 	// always good practice to set everything back to defaults once configured.
 	glActiveTexture(GL_TEXTURE0);
 }
-void Mesh::DrawRigged(Shader shader, glm::mat4 model, glm::mat4 wiew, glm::mat4 projection)
+void Mesh::DrawRigged(Shader shader)
 {
 	shader.Use();
 	unsigned int diffuseNr = 1;
@@ -122,7 +122,7 @@ void Mesh::DrawRigged(Shader shader, glm::mat4 model, glm::mat4 wiew, glm::mat4 
 	glVertexAttribPointer(vweights, 4, GL_FLOAT, GL_TRUE, 0, 0);
 	glEnableVertexAttribArray(vbids);
 	glEnableVertexAttribArray(vweights);
-
+	sceneLoaderSkeleton.UpdateBoneMatsVector();
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "gBones"),  sceneLoaderSkeleton.boneMats.size(), GL_FALSE, glm::value_ptr(sceneLoaderSkeleton.boneMats[0]));
 	//std::cout << diffuseNr << " " << specularNr << " " << std::endl;
 	// draw mesh

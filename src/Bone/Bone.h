@@ -56,23 +56,32 @@ public:
 	unsigned int id;
 	std::string name;
 	aiNode* node;
+	aiNodeAnim* animNode = nullptr;
+	Bone* parent_bone = nullptr;
 	glm::mat4 offset_matrix;
-	aiNodeAnim* animNode;
-	Bone* parent_bone;
-	
-	
-	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, aiMatrix4x4 in_o_mat): 
+	glm::mat4 nowTransformation;
+
+
+	void getTransform();
+
+	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, aiMatrix4x4 in_o_mat, aiNode* _node, aiNodeAnim* _animNode): 
 	mesh(in_mesh),
 		id(in_id),
 	name(in_name),
-	offset_matrix(AiToGLMMat4(in_o_mat)),
-	parent_bone(nullptr){};
+	node(_node),
+	animNode(_animNode),
+	parent_bone(nullptr),
+	offset_matrix(AiToGLMMat4(in_o_mat)){};
 
-	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, glm::mat4 in_o_mat) :
-		mesh(in_mesh),
+	Bone(Mesh* in_mesh, unsigned int in_id, std::string in_name, glm::mat4 in_o_mat, aiNode* _node, aiNodeAnim* _animNode) :
+	mesh(in_mesh),
 		id(in_id),
-		name(in_name),
-		offset_matrix(in_o_mat) {};
+	name(in_name),
+	node(_node),
+	animNode(_animNode),
+	parent_bone(nullptr),
+	offset_matrix(in_o_mat) {};
+
 	glm::mat4 GetParentTransforms();
 };
 

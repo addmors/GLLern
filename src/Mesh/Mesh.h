@@ -7,6 +7,7 @@
 #include <string>
 #include "../shader/Shad.h"
 #include "../Skeleton/Skeleton.h"
+
 using namespace std;
 
 struct Vertex {
@@ -40,7 +41,7 @@ public:
 	/*  Functions  */
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
 	void Draw(Shader shader);
-	void DrawRigged(Shader shader, glm::mat4 model, glm::mat4 wiew, glm::mat4 projection);
+	void DrawRigged(Shader shader);
 private:
 	/*  Render data  */
 	unsigned int VAO, VBO, EBO, VBO_Pos, VBO_UVs, VBO_Nor, VBO_IDs, VBO_Weights;

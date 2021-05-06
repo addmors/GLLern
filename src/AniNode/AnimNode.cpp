@@ -8,6 +8,32 @@ static aiMatrix4x4 GLMMat4ToAi(glm::mat4 mat)
 		mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
 }
 
+
+static glm::mat4 AiToGLMMat4(aiMatrix4x4& in_mat)
+{
+	glm::mat4 tmp;
+	tmp[0][0] = in_mat.a1;
+	tmp[1][0] = in_mat.b1;
+	tmp[2][0] = in_mat.c1;
+	tmp[3][0] = in_mat.d1;
+
+	tmp[0][1] = in_mat.a2;
+	tmp[1][1] = in_mat.b2;
+	tmp[2][1] = in_mat.c2;
+	tmp[3][1] = in_mat.d2;
+
+	tmp[0][2] = in_mat.a3;
+	tmp[1][2] = in_mat.b3;
+	tmp[2][2] = in_mat.c3;
+	tmp[3][2] = in_mat.d3;
+
+	tmp[0][3] = in_mat.a4;
+	tmp[1][3] = in_mat.b4;
+	tmp[2][3] = in_mat.c4;
+	tmp[3][3] = in_mat.d4;
+	return tmp;
+};
+
 unsigned int AnimNode::FindPosition(float time)
 {
 	for (unsigned int i = 0; i < animNode->mNumPositionKeys - 1; i++)
@@ -77,7 +103,6 @@ glm::vec3 AnimNode::CalcInterpolatedSkaling(float time) {
 	glm::vec3 p1(StartPosition.x, StartPosition.y, StartPosition.z);
 	glm::vec3 p2(EndPosition.x, EndPosition.y, EndPosition.z);
 	glm::vec3 val = glm::mix(p1, p2, Factor);
-
 	return val;
 }
 glm::quat AnimNode::CalcInterpolatedRotation(float time) {
@@ -101,6 +126,12 @@ glm::quat AnimNode::CalcInterpolatedRotation(float time) {
 	return val;
 
 }
+
+void AnimNode::SLERP(float time_end, float time_now)
+{
+
+}
+
 void AnimNode::UpdateKeyframeTransform(float time) {
 	if (animNode == nullptr) {
 		//node->mTransformation.Transpose();
@@ -113,6 +144,34 @@ void AnimNode::UpdateKeyframeTransform(float time) {
 	mat = glm::translate(mat, pos);
 	mat *= glm::mat4_cast(rot);
 	mat = glm::scale(mat, scale);
-
 	node->mTransformation = GLMMat4ToAi(glm::transpose(mat));
+	
+}
+
+glm::mat4 AnimNode::GetKeyframeTransform(float time) {
+	if (animNode == nullptr) {
+		//node->mTransformation.Transpose();
+		return glm::mat4();
+	}
+	pos = CalcInterpolatedPosition(time);
+	rot = CalcInterpolatedRotation(time);
+	scale = CalcInterpolatedSkaling(time);
+	glm::mat4 mat;
+	mat = glm::translate(mat, pos);
+	mat *= glm::mat4_cast(rot);
+	mat = glm::scale(mat, scale);
+	return glm::transpose(mat);
+
+}
+
+
+glm::mat4 AnimNode::getZeroPos()
+{
+	return zeroPos;
+}
+
+glm::mat4 AnimNode::getNowPos()
+{
+	nowPos = AiToGLMMat4(node->mTransformation);
+	return nowPos;
 }

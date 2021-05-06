@@ -1,4 +1,9 @@
 #include "Bone.h"
+
+void Bone::getTransform()
+{
+	nowTransformation = GetParentTransforms()* offset_matrix;
+}
 glm::mat4 Bone::GetParentTransforms()
 {
 	aiNode* b = this->node;    //In order to recursively concatenate the transforms,

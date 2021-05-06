@@ -1,19 +1,18 @@
 #include "Camera.h"
 
-Camera::Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov, GLfloat yaw, GLfloat pitch){
+Camera::Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov){
+	this->objPos = glm::vec3(0);
 	this->cameraPos = Pos;
-	this->cameraFront = glm::normalize(Front);
+	this->lengthtoobj = glm::length(Pos);
+	this->cameraFront = glm::normalize(-Pos);
 	this->cameraUp = Up;
 	this->fov = fov;
-	this->pitch = glm::degrees(glm::atan(Front.y,-Front.z));
+	this->pitch = glm::degrees(glm::asin(cameraFront.y));
+	//V TLK0
 	//this->yaw = yaw;
-	this->yaw = glm::degrees(glm::atan(Front.z , Front.x));
+	this->yaw = glm::degrees(glm::atan(cameraFront.z , cameraFront.x));
 	this->lastX = 400;
 	this->lastY = 300;
-}
-void Camera::key_callback(int key, int action)
-{
-	keys[key] = action;
 }
 void Camera::mouse_callback(double xpos, double ypos) {
 
@@ -37,6 +36,9 @@ void Camera::mouse_callback(double xpos, double ypos) {
 	front.y = sin(glm::radians(pitch));
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	cameraFront = glm::normalize(front);
+	
+	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
+	cameraPos.y += 100;
 }
 void Camera::scroll_callback (double xoffset, double yoffset)
 {
@@ -52,18 +54,22 @@ void Camera::do_movement()
 {
 	// Camera controls
 	GLfloat cameraSpeed = 5.0f * deltaTime;
-	if (keys[87])
-		cameraPos += cameraSpeed * cameraFront;
-	if (keys[83])
-		cameraPos -= cameraSpeed * cameraFront;
-	if (keys[65])
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (keys[68])
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (keys[81])
-		cameraPos += cameraSpeed * cameraUp;
-	if(keys[69])
-		cameraPos -= cameraSpeed * cameraUp;
+	if (keys->at(87))
+		objPos += cameraSpeed * cameraFront;
+		
+	if (keys->at(83))
+		objPos -= cameraSpeed * cameraFront;
+	if (keys->at(65))
+		objPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (keys->at(68))
+		objPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (keys->at(81))
+		objPos += cameraSpeed * cameraUp;
+	if(keys->at(69))
+		objPos -= cameraSpeed * cameraUp;
+	objPos.y = 0;
+	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
+	cameraPos.y += 1.8;
 }glm::mat4 Camera::LoocAt() {
 	return glm::lookAt(this->cameraPos, this->cameraPos + this->cameraFront, this->cameraUp);
 }

@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include <string>
-#include "../shader/Shad.h"
 #include "../Mesh/Mesh.h"
 #include<SOIL.h>
 #include <assimp/Importer.hpp>
@@ -16,22 +15,26 @@
 #include "../Bone/Bone.h"
 #include "../AniNode/AnimNode.h"
 #include "../Animations/Animations.h"
+#include "../Precompile.h"
+#include "../MenegerAnimation.h"
+
 using namespace std;
 
 class Model
 {
 public:
 	/*  Методы   */
+	vector<bool>* keys;
 	std::vector<Animation> animations;
 	vector<Texture> textures_loaded;
 	vector<Mesh> meshes;
 	Animation Animations{ "idle",glm::vec2(0,0),0};
-	Animation* CurrAnimation;
+	MenegerAnimation CurrAnimation = MenegerAnimation(&Animations);
 	vector<Animation> Anims;
 	string directory;
 	vector <Bone> bones;
-	std::vector<aiNode*> ai_nodes;
-	std::vector<aiNodeAnim*> ai_nodes_anim; 
+	vector<aiNode*> ai_nodes;
+	vector<aiNodeAnim*> ai_nodes_anim; 
 	bool anim = false;
 	Skeleton skel;
 	Animation* FindAnimation(std::string anim_to_find);
@@ -49,7 +52,7 @@ public:
 	void loadAnims(string path, string name);
 	
 	void loadIdleAnimaitons(string path);
-	void DrawAnim(Shader shader, glm::mat4 model, glm::mat4 wiew, glm::mat4 projection);
+	void DrawAnim(Shader &shader);
 	void Draw(Shader shader);
 	void AnimNodeProcess();
 	aiScene* scene;
@@ -59,6 +62,7 @@ private:
 	/*  Данные модели  */
 
 	/*  Методы   */
+
 	Bone* FindBone(std::string name);
 	aiNode* FindAiNode(std::string name);
 	aiNodeAnim* FindAiNodeAnim(std::string name);
@@ -67,6 +71,8 @@ private:
 	void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 transformation);
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformation);
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
-	bool keys[1024];
+	
+	Shader* shader;
+	//Shader _def_shader;
 };
 

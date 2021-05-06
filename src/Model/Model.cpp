@@ -59,16 +59,17 @@ void Model::loadIdleAnimaitons(string path)
 
 
 void Model::PlayAnimation(float delta) {
-	CurrAnimation->PlayAnimation(delta);
+	if (not keys->at(87) and not keys->at(83)) CurrAnimation.resetCur(&Animations);
+	CurrAnimation.Play(delta);
 };
 
-void Model::DrawAnim(Shader shader, glm::mat4 model, glm::mat4 wiew, glm::mat4 projection) {
+void Model::DrawAnim(Shader& shader) {
 	if (!anim)    //If the object is rigged...
 	{
+		skel.Update();
 		for (int i = 0; i <meshes.size(); i++) {
 			if (meshes[i].sceneLoaderSkeleton.bones.size()>0) {
-				meshes[i].sceneLoaderSkeleton.Update();
-				meshes[i].DrawRigged(shader, model, wiew, projection);
+				meshes[i].DrawRigged(shader);
 			}
 			else meshes[i].Draw(shader); 
 		}
@@ -97,17 +98,19 @@ Animation* Model::FindAnimation(std::string anim_to_find)
 
 void Model::key_callback(int key, int action)
 {
-	keys[key] = action;
-	if (key < 49 && key > 59) return;
-	if (key - 48 > Anims.size() && key < 59) {
-		CurrAnimation = &Animations; return;
-	} 
-	for (int i = 49; i < 49 + Anims.size(); i++) {
-		if (keys[i] && CurrAnimation->name != Anims[i - 49].name) {
-			CurrAnimation = &Anims[i - 49];
+	if(action)
+		switch (key)
+		{
+		case 83:
+			CurrAnimation.resetCur(&*find_if(begin(Anims), end(Anims), [](Animation& a) {return a.name == "WalkBackWard";}));
 			break;
-		}
-	}
+		case 87:
+			CurrAnimation.resetCur(&*find_if(begin(Anims), end(Anims), [](Animation& a) {return a.name == "Walking"; }));
+			break;
+		default:
+			CurrAnimation.resetCur(&Animations);
+			break;
+		}	
 }
 
 Bone* Model::FindBone(std::string name) {
@@ -153,7 +156,7 @@ int Model::FindBoneIDByName(std::string name)
 	//rigging of our model within the vertex shader.
 	return -1;    //In case we don't find a bone ID, we return -1.
 				  //Just to avoid any confusion later on as to whether or not the
-				  //ID was found. (It serves the same purpose as returning nullptr).
+				  //ID was found. (It serves the same purpose as returning nullptör).
 }
 
 
@@ -185,9 +188,8 @@ void Model::loadModel(string path) {
 			glm::mat4 b_mat = glm::transpose(AiToGLMMat4(scene->mMeshes[i]->mBones[j]->mOffsetMatrix));
 			std::cout << "Bone" << j << " in meshes["<< i <<"] " << scene->mMeshes[i]->mName.C_Str() <<" "<< b_name << std::endl;
 		
-			Bone bone(&meshes[i],j, b_name, b_mat);
-				bone.node = FindAiNode(b_name);
-				bone.animNode = FindAiNodeAnim(b_name);
+			Bone bone(&meshes[i],j, b_name, b_mat, FindAiNode(b_name), FindAiNodeAnim(b_name));
+			
 				//bone.node->mTransformation.Transpose();
 				if (bone.animNode == nullptr)
 					std::cout << "No Animations were found for " + b_name << std::endl;
@@ -206,13 +208,13 @@ void Model::loadModel(string path) {
 			cout << "Create a parent bone" << b_name << " " << p_bone->name << endl;
 		}
 	}
+	skel.Init(bones, globalInverseTransform);
 	for (int i = 0; i < meshes.size(); i++) {
-		vector<Bone> bonestep;
+		vector<Bone*> bonestep;
 		for (int j = 0; j < bones.size(); j++) {
 			if (&meshes[i] == bones[j].mesh) {
-				bonestep.push_back(bones[j]);
+				bonestep.push_back(&bones[j]);
 			}
-			
 		}
 		meshes[i].sceneLoaderSkeleton.Init(bonestep, globalInverseTransform);
 	}
