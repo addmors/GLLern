@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\pEngine\pEngine.cpp" />
     <ClCompile Include="src\Capsule\Capsule.cpp" />
     <ClCompile Include="src\mCylinder\mCylinder.cpp" />
     <ClCompile Include="src\MenegerAnimation.cpp" />
@@ -150,6 +151,7 @@
     <ClCompile Include="src\variables.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\pEngine\pEngine.h" />
     <ClInclude Include="src\Capsule\Capsule.h" />
     <ClInclude Include="libs\include\btBulletCollisionCommon.h" />
     <ClInclude Include="libs\include\btBulletDynamicsCommon.h" />
@@ -169,13 +171,17 @@
     <ClInclude Include="src\Sphere\Sphere.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shader\3.1.2.shadow_mapping.vs" />
+    <None Include="src\shader\3.1.2.shadow_mapping_depth.fs" />
+    <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
     <None Include="src\shader\lampshad.fs" />
     <None Include="src\shader\objvithcolor.fs" />
     <None Include="src\shader\shader.fs" />
     <None Include="src\shader\shader.vs" />
     <None Include="src\shader\shader3.vs" />
-    <None Include="src\shader\shadowshader.fs" />
-    <None Include="src\shader\shadowshader.vs" />
+    <None Include="src\shader\frameshader.fs" />
+    <None Include="src\shader\frameshader.vs" />
+    <None Include="src\shader\3.1.2.shadow_mapping.fs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

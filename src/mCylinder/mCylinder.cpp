@@ -32,7 +32,7 @@ const int MIN_STACK_COUNT  = 1;
 // ctor
 ///////////////////////////////////////////////////////////////////////////////
 Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectors,
-                   int stacks, bool smooth) : interleavedStride(32)
+    int stacks, bool smooth) : interleavedStride(32) , color_({1.0,1.0,1.0})
 {
     set(baseRadius, topRadius, height, sectors, stacks, smooth);
     glGenBuffers(1, &VBO);
@@ -157,6 +157,7 @@ void Cylinder::draw(glm::mat4 view, glm::mat4 projection, glm::mat4 model)
     //model = glm::scale(model, glm::vec3(0.2f));
     //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
     lightShader.SetMat4("model", model);
+    lightShader.SetVec3("color", color_);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
     //// interleaved array

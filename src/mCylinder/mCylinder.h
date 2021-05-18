@@ -84,7 +84,9 @@ public:
     void drawSide() const;      // draw side only
     void drawLines(const float lineColor[4]) const;     // draw lines only
     void drawWithLines(const float lineColor[4]) const; // draw surface and lines
-
+    void SetColor(glm::vec3 t) {
+        color_ = t;
+    }
 
     void Delete() {
         (glDeleteVertexArrays(1, &cyrcleVAO));
@@ -135,6 +137,7 @@ private:
     GLuint VBO;
     GLuint EBO;
     GLuint cyrcleVAO;
+    glm::vec3 color_;
 };
 
 #endif

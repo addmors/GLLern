@@ -21,6 +21,7 @@ private:
 	GLuint VBO;
 	GLuint EBO;
 	GLuint lightVAO;
+	glm::vec3 color_ = {1.0,1.0,1.0};
 
 };
 

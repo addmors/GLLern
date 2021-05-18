@@ -17,10 +17,10 @@ struct Vertex {
 	glm::vec3 Normal;
 	// texCoords
 	glm::vec2 TexCoords;
-	// tangent
-	//glm::vec3 Tangent;
+	//tangent
+	glm::vec3 Tangent;
 	//// bitangent
-	//glm::vec3 Bitangent;
+	glm::vec3 Bitangent;
 	//Bone
 	glm::vec4 weight;
 	glm::ivec4 id;
@@ -40,8 +40,16 @@ public:
 	Skeleton sceneLoaderSkeleton;
 	/*  Functions  */
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
-	void Draw(Shader shader);
-	void DrawRigged(Shader shader);
+	void Delete() {
+			glDeleteVertexArrays(1, &VAO);
+			glDeleteBuffers(1, &VBO);
+			glDeleteBuffers(1, &EBO);
+		};
+
+	void Draw();
+	void SetStandartParam(Shader shader);
+	void SetRigged(Shader shader);
+
 private:
 	/*  Render data  */
 	unsigned int VAO, VBO, EBO, VBO_Pos, VBO_UVs, VBO_Nor, VBO_IDs, VBO_Weights;

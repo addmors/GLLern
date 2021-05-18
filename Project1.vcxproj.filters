@@ -63,6 +63,9 @@
     <ClCompile Include="src\Capsule\Capsule.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\pEngine\pEngine.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\Shad.h">
@@ -116,6 +119,9 @@
     <ClInclude Include="src\Capsule\Capsule.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\pEngine\pEngine.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shader\shader.fs" />
@@ -123,7 +129,11 @@
     <None Include="src\shader\lampshad.fs" />
     <None Include="src\shader\objvithcolor.fs" />
     <None Include="src\shader\shader3.vs" />
-    <None Include="src\shader\shadowshader.vs" />
-    <None Include="src\shader\shadowshader.fs" />
+    <None Include="src\shader\frameshader.vs" />
+    <None Include="src\shader\frameshader.fs" />
+    <None Include="src\shader\3.1.2.shadow_mapping_depth.fs" />
+    <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
+    <None Include="src\shader\3.1.2.shadow_mapping.vs" />
+    <None Include="src\shader\3.1.2.shadow_mapping.fs" />
   </ItemGroup>
 </Project>

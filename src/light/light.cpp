@@ -24,6 +24,8 @@ void light::UseLight(glm::mat4 view, glm::mat4 projection, std::vector<glm::vec3
 	lightShader.Use();
 	lightShader.SetMat4("view", view);
 	lightShader.SetMat4("projection", projection);
+	lightShader.SetVec3("color", color_);
+
 	for (GLuint i = 0; i < lightPos.size(); i++) {
 		glBindVertexArray(lightVAO);
 		model = glm::mat4();

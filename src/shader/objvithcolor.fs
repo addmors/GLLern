@@ -38,12 +38,14 @@ uniform SpotLight spotlight;
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
+	sampler2D texture_normal1;
     float shininess;
 }; 
 out vec4 color;
 in vec3 Normal;
 in vec3 FragPos;
 in vec2 TexCoord;
+in mat3 TBN;
 uniform Material material;
 // Прототип фонарного света;
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -54,17 +56,20 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main()
 {
 	//Вектро от фрагмента к источкнику 
+	vec3 normal = texture(material.texture_normal1, TexCoord).rgb;
+	normal = normalize(normal * 2.0 - 1.0);   
+	normal = normalize(TBN * normal);    
+	//vec3 normal = Normal;
 	vec3 viewDir = normalize(-FragPos);
-	vec3 norm = normalize(Normal);
-	vec3 result = CalcDirLight(dirLight, norm, viewDir);
+	vec3 result = CalcDirLight(dirLight, normal, viewDir);
 	for(int i = 0; i < NR_POINT_LIGHTS; i++)
-      result += CalcPointLight(pointLights[i], norm, FragPos, viewDir); 
-	result += CalcSpotLight(spotlight, norm, FragPos, viewDir);
+      result += CalcPointLight(pointLights[i], normal, FragPos, viewDir); 
+	result += CalcSpotLight(spotlight, normal, FragPos, viewDir);
 	color = vec4(result, 1.0f);
 }
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 {
-    vec3 lightDir = normalize(-light.direction);
+    vec3 lightDir = normalize( (-light.direction));
     // диффузное освещение
     float diff = max(dot(normal, lightDir), 0.0);
     // освещение зеркальных бликов
@@ -78,7 +83,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
 } 
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightDir = normalize((light.position - fragPos));
     // диффузное освещение
     float diff = max(dot(normal, lightDir), 0.0);
     // освещение зеркальных бликов
@@ -90,7 +95,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
   			     light.quadratic * (distance * distance));    
     // комбинируем результаты
     vec3 ambient  = light.ambient  * vec3(texture(material.texture_diffuse1, TexCoord));
-    vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.texture_diffuse1, TexCoord));
+    vec3 diffuse  = light.diffuse  * diff * vec3(texture(material.texture_diffuse1, TexCoord).rgb);
     vec3 specular = light.specular * spec * vec3(texture(material.texture_specular1, TexCoord));
     ambient  *= attenuation;
     diffuse  *= attenuation;
@@ -100,7 +105,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
 	
-	vec3 lightDir = normalize(light.position - fragPos);
+	vec3 lightDir = normalize((light.position - fragPos));
 	float theta = dot(lightDir, normalize(-light.direction));
 	//Интенсивность для плавного затемнения к кроям окужности (Инерполяция света)
 	float epsilon   = light.cutOff - light.outercutOff;

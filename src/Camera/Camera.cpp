@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov){
+Camera::Camera(glm::vec3 Pos = glm::vec3(3.0f, 0.0f, 3.0f), glm::vec3 Front = glm::vec3(-1.0f, -0.0f, -0.0f), glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f), GLfloat fov = 45.0f){
 	this->objPos = glm::vec3(0);
 	this->cameraPos = Pos;
 	this->lengthtoobj = glm::length(Pos);
@@ -54,7 +54,7 @@ void Camera::do_movement()
 {
 	// Camera controls
 	GLfloat cameraSpeed = 5.0f * deltaTime;
-	if (keys->at(87))
+	/*if (keys->at(87))
 		objPos += cameraSpeed * cameraFront;
 		
 	if (keys->at(83))
@@ -67,7 +67,7 @@ void Camera::do_movement()
 		objPos += cameraSpeed * cameraUp;
 	if(keys->at(69))
 		objPos -= cameraSpeed * cameraUp;
-	objPos.y = 0;
+	objPos.y = 0;*/
 	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
 	cameraPos.y += 1.8;
 }glm::mat4 Camera::LoocAt() {

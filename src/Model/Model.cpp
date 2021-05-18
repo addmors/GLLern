@@ -68,22 +68,29 @@ void Model::DrawAnim(Shader& shader) {
 	{
 		skel.Update();
 		for (int i = 0; i <meshes.size(); i++) {
+			meshes[i].SetStandartParam(shader);
 			if (meshes[i].sceneLoaderSkeleton.bones.size()>0) {
-				meshes[i].DrawRigged(shader);
+				meshes[i].SetRigged(shader);
+				meshes[i].Draw();
 			}
-			else meshes[i].Draw(shader); 
+			else meshes[i].Draw(); 
 		}
 	}
 	else
 	{
-		for (int i = 0; i < meshes.size(); i++)
-			meshes[i].Draw(shader);
+		for (int i = 0; i < meshes.size(); i++) {
+			meshes[i].SetStandartParam(shader);
+			meshes[i].Draw();
+		}
 	}
 }
 void Model::Draw(Shader shader)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].Draw(shader);
+	{
+	meshes[i].SetStandartParam(shader);
+	meshes[i].Draw();
+	}
 }
 
 Animation* Model::FindAnimation(std::string anim_to_find)
@@ -164,7 +171,7 @@ int Model::FindBoneIDByName(std::string name)
 void Model::loadModel(string path) {
 	// read file via ASSIMP
 	Assimp::Importer importer;
-	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
+	importer.ReadFile(path, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_FlipUVs );
 	scene = importer.GetOrphanedScene();
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
@@ -288,15 +295,15 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 		}
 		else
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-		//vector.x = mesh->mTangents[i].x;
-		//vector.y = mesh->mTangents[i].y;
-		//vector.z = mesh->mTangents[i].z;
-		//vertex.Tangent = vector;
-		//// bitangent
-		//vector.x = mesh->mBitangents[i].x;
-		//vector.y = mesh->mBitangents[i].y;
-		//vector.z = mesh->mBitangents[i].z;
-		//vertex.Bitangent = vector;
+		vector.x = mesh->mTangents[i].x;
+		vector.y = mesh->mTangents[i].y;
+		vector.z = mesh->mTangents[i].z;
+		vertex.Tangent = vector;
+		// bitangent
+		vector.x = mesh->mBitangents[i].x;
+		vector.y = mesh->mBitangents[i].y;
+		vector.z = mesh->mBitangents[i].z;
+		vertex.Bitangent = vector;
 		vertices.push_back(vertex);
 	}
 	int WEIGHTS_PER_VERTEX = 4;
@@ -339,7 +346,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	// 3. normal maps
-	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
+	std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
 	textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
 	// 4. height maps
 	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
@@ -371,7 +378,7 @@ vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type,
 		if (!skip)
 		{   // if texture hasn't been loaded already, load it
 			Texture texture;
-			texture.id = TextureFromFile(str.C_Str(), this->directory);
+			texture.id = TextureFromFile(str.C_Str(), this->directory, type == aiTextureType_NORMALS);
 			texture.type = typeName;
 			texture.path = str.C_Str();
 			textures.push_back(texture);
@@ -396,16 +403,9 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 
 	if (data)
 	{
-		/*GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;*/
-
+		
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, gamma ? GL_RGB : GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

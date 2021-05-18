@@ -151,7 +151,7 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 			Quadratic.insert(12, std::to_string(i));
 			SetVec3(&Position, glm::vec3(view*glm::vec4(lightPos[i],1.0f)));
 			SetVec3(&Ambient, 0.05f, 0.05f, 0.05f);
-			SetVec3(&Diffuse, 0.8f, 0.8f, 0.8f);
+			SetVec3(&Diffuse, .8f, .8f, .8f);
 			SetVec3(&Specular, 1.0f, 1.0f, 1.0f);
 			SetFloat(&Constant, 1.0f);
 			SetFloat(&Linear, 0.09);
