@@ -66,6 +66,12 @@
     <ClCompile Include="src\pEngine\pEngine.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\RendererEngine.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Terrian.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\Shad.h">
@@ -122,6 +128,12 @@
     <ClInclude Include="src\pEngine\pEngine.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\RendererEngine.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Terrian.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shader\shader.fs" />
@@ -135,5 +147,7 @@
     <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping.fs" />
+    <None Include="src\shader\terrianShader.vs" />
+    <None Include="src\shader\terrianShader.fs" />
   </ItemGroup>
 </Project>

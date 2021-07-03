@@ -78,7 +78,7 @@ public:
     unsigned int getSideStartIndex() const  { return 0; }   // side starts from the begining
 
     // draw in VertexArray mode
-    void draw(glm::mat4 view, glm::mat4 projection, glm::mat4 lightPos);          // draw all
+    void draw();          // draw all
     void drawBase() const;      // draw base cap only
     void drawTop() const;       // draw top cap only
     void drawSide() const;      // draw side only
@@ -96,7 +96,6 @@ public:
 
     // debug
     void printSelf() const;
-    Shader lightShader{ "src/shader/shader.vs", "src/shader/lampshad.fs" };
 protected:
 
 private:

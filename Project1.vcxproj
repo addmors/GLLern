@@ -91,10 +91,12 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\Engine1.0\Project1\libs\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\Engine1.0\Project1\libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>BulletCollision_Debug.lib;BulletDynamics_Debug.lib;BulletSoftBody_Debug.lib;LinearMath_Debug.lib;glfw3.lib;opengl32.lib;glew32s.lib;SOIL.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>AntTweakBar64.lib;BulletCollision_Debug.lib;BulletDynamics_Debug.lib;BulletSoftBody_Debug.lib;LinearMath_Debug.lib;glfw3.lib;opengl32.lib;glew32s.lib;SOIL.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\RendererEngine.cpp" />
     <ClCompile Include="src\pEngine\pEngine.cpp" />
     <ClCompile Include="src\Capsule\Capsule.cpp" />
     <ClCompile Include="src\mCylinder\mCylinder.cpp" />
@@ -149,8 +152,10 @@
     <ClCompile Include="src\shader\Shad.cpp" />
     <ClCompile Include="src\Sphere\Sphere.cpp" />
     <ClCompile Include="src\variables.h" />
+    <ClCompile Include="src\Terrian.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\RendererEngine.h" />
     <ClInclude Include="src\pEngine\pEngine.h" />
     <ClInclude Include="src\Capsule\Capsule.h" />
     <ClInclude Include="libs\include\btBulletCollisionCommon.h" />
@@ -169,6 +174,7 @@
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\shader\Shad.h" />
     <ClInclude Include="src\Sphere\Sphere.h" />
+    <ClInclude Include="src\Terrian.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shader\3.1.2.shadow_mapping.vs" />
@@ -182,6 +188,8 @@
     <None Include="src\shader\frameshader.fs" />
     <None Include="src\shader\frameshader.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping.fs" />
+    <None Include="src\shader\terrianShader.fs" />
+    <None Include="src\shader\terrianShader.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

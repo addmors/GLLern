@@ -89,15 +89,6 @@ void Mesh::SetStandartParam(Shader shader)
 
 void Mesh::SetRigged(Shader shader)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_IDs);
-	unsigned int vbids = glGetAttribLocation(shader.ID, "s_vIDs");
-	glVertexAttribIPointer(vbids, 4, GL_INT, 0, 0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_Weights);
-	unsigned int vweights = glGetAttribLocation(shader.ID, "s_vWeights");
-	glVertexAttribPointer(vweights, 4, GL_FLOAT, GL_TRUE, 0, 0);
-	glEnableVertexAttribArray(vbids);
-	glEnableVertexAttribArray(vweights);
 	sceneLoaderSkeleton.UpdateBoneMatsVector();
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "gBones"), sceneLoaderSkeleton.boneMats.size(), GL_FALSE, glm::value_ptr(sceneLoaderSkeleton.boneMats[0]));
 }

@@ -27,6 +27,7 @@ public:
 		camera(&_camera),
 		currentShader(&_curshader)
 	{
+
 		btTransform startTransform;
 		startTransform.setIdentity();
 		startTransform.setOrigin(btVector3(0, 0, 0));
@@ -36,12 +37,15 @@ public:
 		m_ghostObject = new btPairCachingGhostObject();
 		m_ghostObject->setWorldTransform(startTransform);
 		m_ghostObject->setCollisionShape(capsule);
+		m_ghostObject->setFriction(20);
+		m_ghostObject->setRollingFriction(20);
+
 		m_ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 		
 		charCon = new btKinematicCharacterController(m_ghostObject, capsule, 0.05f);
 		charCon->setGravity(btScalar(10));
 		charCon->setMaxJumpHeight(1.5);
-
+		
 		pengine->getBroadPhase()->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 		pengine->getWorld()->addCollisionObject(m_ghostObject, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::AllFilter);
 		pengine->getWorld()->addAction(charCon);

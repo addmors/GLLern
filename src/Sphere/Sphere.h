@@ -67,14 +67,13 @@ public:
     }
 
     // draw in VertexArray mode
-    void draw(glm::mat4 view, glm::mat4 projection, glm::mat4 model);                                  // draw surface
+    void draw();                                  // draw surface
     void drawLines(const float lineColor[4]) const;     // draw lines only
     void drawWithLines(const float lineColor[4]) const; // draw surface and lines
 
     // debug
     void printSelf() const;
 
-    Shader lightShader{ "src/shader/shader.vs", "src/shader/lampshad.fs" };
 protected:
 
 private:

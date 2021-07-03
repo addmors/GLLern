@@ -117,6 +117,7 @@ public:
     aiMatrix4x4t operator * (const TReal& aFloat) const;
     aiMatrix4x4t operator + (const aiMatrix4x4t& aMatrix) const;
 
+
     template <typename TOther>
     operator aiMatrix4x4t<TOther> () const;
 

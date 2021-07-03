@@ -25,6 +25,7 @@ class Model
 public:
 	/*  Ìועמהû   */
 	vector<bool>* keys;
+	float min_x, min_y, min_z, max_x, max_y, max_z;
 	std::vector<Animation> animations;
 	vector<Texture> textures_loaded;
 	vector<Mesh> meshes;

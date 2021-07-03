@@ -38,15 +38,24 @@ Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectors,
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, (vertices.size()+normals.size()+texCoords.size()) * sizeof(float),nullptr, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), &vertices.at(0));
+    glBufferSubData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), normals.size()*sizeof(float), &normals.at(0));
+    glBufferSubData(GL_ARRAY_BUFFER, (vertices.size()+normals.size()) * sizeof(float), texCoords.size() * sizeof(float), &texCoords.at(0));
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
     glGenVertexArrays(1, &cyrcleVAO);
     glBindVertexArray(cyrcleVAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(vertices.size() * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)((vertices.size() + normals.size()) * sizeof(float)));
+    glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 
 }
@@ -148,32 +157,12 @@ void Cylinder::printSelf() const
 // draw a cylinder in VertexArray mode
 // OpenGL RC must be set before calling it
 ///////////////////////////////////////////////////////////////////////////////
-void Cylinder::draw(glm::mat4 view, glm::mat4 projection, glm::mat4 model)
+void Cylinder::draw()
 {
-    lightShader.Use();
-    lightShader.SetMat4("view", view);
-    lightShader.SetMat4("projection", projection);
     glBindVertexArray(cyrcleVAO);
-    //model = glm::scale(model, glm::vec3(0.2f));
-    //model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-    lightShader.SetMat4("model", model);
-    lightShader.SetVec3("color", color_);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
-    //// interleaved array
-    //glEnableClientState(GL_VERTEX_ARRAY);
-    //glEnableClientState(GL_NORMAL_ARRAY);
-    //glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    //glVertexPointer(3, GL_FLOAT, interleavedStride, &interleavedVertices[0]);
-    //glNormalPointer(GL_FLOAT, interleavedStride, &interleavedVertices[3]);
-    //glTexCoordPointer(2, GL_FLOAT, interleavedStride, &interleavedVertices[6]);
-
-    //glDrawElements(GL_TRIANGLES, (unsigned int)indices.size(), GL_UNSIGNED_INT, indices.data());
-
-    //glDisableClientState(GL_VERTEX_ARRAY);
-    //glDisableClientState(GL_NORMAL_ARRAY);
-    //glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-}
+ }
 
 
 

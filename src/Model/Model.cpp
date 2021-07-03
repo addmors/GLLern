@@ -2,7 +2,6 @@
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
-void setCurrAnimatiom(Animation& Current, Animation& Seted);
 void Model::loadAnims(string path, string name)
 {
 	aiScene* Ascene;
@@ -60,7 +59,7 @@ void Model::loadIdleAnimaitons(string path)
 
 void Model::PlayAnimation(float delta) {
 	if (not keys->at(87) and not keys->at(83)) CurrAnimation.resetCur(&Animations);
-	CurrAnimation.Play(delta);
+		CurrAnimation.Play(delta);
 };
 
 void Model::DrawAnim(Shader& shader) {
@@ -182,11 +181,9 @@ void Model::loadModel(string path) {
 	// retrieve the directory path of the filepath
 	directory = path.substr(0, path.find_last_of('/'));
 	// process ASSIMP's root node recursively
-	aiNode* m_rootNode = scene->mRootNode;
-	recursiveNodeProcess(m_rootNode);
+	recursiveNodeProcess(scene->mRootNode);
 	globalInverseTransform = glm::inverse(AiToGLMMat4(scene->mRootNode->mTransformation));
-	aiMatrix4x4 transform = scene->mRootNode->mTransformation;
-	processNode(scene->mRootNode, scene, transform);
+	processNode(scene->mRootNode, scene, scene->mRootNode->mTransformation);
 	AnimNodeProcess();
 	for (int i = 0; i < scene->mNumMeshes; i++)
 	{
@@ -218,11 +215,9 @@ void Model::loadModel(string path) {
 	skel.Init(bones, globalInverseTransform);
 	for (int i = 0; i < meshes.size(); i++) {
 		vector<Bone*> bonestep;
-		for (int j = 0; j < bones.size(); j++) {
-			if (&meshes[i] == bones[j].mesh) {
-				bonestep.push_back(&bones[j]);
-			}
-		}
+		for (int j = 0; j < bones.size(); j++) 
+			if (&meshes[i] == bones[j].mesh) bonestep.push_back(&bones[j]);
+
 		meshes[i].sceneLoaderSkeleton.Init(bonestep, globalInverseTransform);
 	}
 }
@@ -271,45 +266,18 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
-
 		Vertex vertex;
-		glm::vec4 vector(1.0f);
-
-			
-		aiVector3D v =  mesh->mVertices[i];
-		vector.x =v.x;
-		vector.y = v.y;
-		vector.z = v.z;
-		vertex.Position =  vector;
-		vector.x = mesh->mNormals[i].x;
-		vector.y = mesh->mNormals[i].y;
-		vector.z = mesh->mNormals[i].z;
-		vertex.Normal = vector;
-
+		vertex.Position = { mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z };
+		vertex.Normal = {mesh->mNormals[i].x,mesh->mNormals[i].y,mesh->mNormals[i].z};
 		if (mesh->mTextureCoords[0]) // сетка обладает набором текстурных координат?
-		{
-			glm::vec2 vec;
-			vec.x = mesh->mTextureCoords[0][i].x;
-			vec.y = mesh->mTextureCoords[0][i].y;
-			vertex.TexCoords = vec;
-		}
-		else
-			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-		vector.x = mesh->mTangents[i].x;
-		vector.y = mesh->mTangents[i].y;
-		vector.z = mesh->mTangents[i].z;
-		vertex.Tangent = vector;
-		// bitangent
-		vector.x = mesh->mBitangents[i].x;
-		vector.y = mesh->mBitangents[i].y;
-		vector.z = mesh->mBitangents[i].z;
-		vertex.Bitangent = vector;
+			vertex.TexCoords = { mesh->mTextureCoords[0][i].x , mesh->mTextureCoords[0][i].y};
+		else vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+		vertex.Tangent = { mesh->mTangents[i].x ,mesh->mTangents[i].y ,mesh->mTangents[i].z };
+		vertex.Bitangent = { mesh->mBitangents[i].x ,mesh->mBitangents[i].y ,mesh->mBitangents[i].z };
 		vertices.push_back(vertex);
 	}
 	int WEIGHTS_PER_VERTEX = 4;
 	int boneArraysSize = mesh->mNumVertices*WEIGHTS_PER_VERTEX;
-	std::vector<int> boneIDs;
-	boneIDs.resize(boneArraysSize);
 	std::vector<float> boneWeights;
 	boneWeights.resize(boneArraysSize);
 	for (int i = 0; i < mesh->mNumBones; i++) {
@@ -323,7 +291,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 				if (boneWeights.at(vertexStart + k) == 0)
 				{
 					boneWeights.at(vertexStart + k) = weight.mWeight;
-					boneIDs.at(vertexStart + k) = i;
 					vertices.at(weight.mVertexId).id[k] = i;
 					vertices.at(weight.mVertexId).weight[k] = weight.mWeight;
 					break;
@@ -351,7 +318,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	// 4. height maps
 	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
 
 	return Mesh(vertices, indices, textures);
 }
@@ -422,9 +388,4 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 	}
 
 	return textureID;
-}
-
-
-void setCurrAnimatiom(Animation& Current, Animation& Seted) {
-
 }

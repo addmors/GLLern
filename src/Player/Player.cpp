@@ -24,14 +24,12 @@ void Player::update() {
         dir += glm::normalize(glm::cross(camera->cameraFront, camera->cameraUp));
     if (dir != glm::vec3(0, 0, 0))
     {
-        if (charCon->onGround())
-            charCon->setWalkDirection(btVector3(dir.x, 0, dir.z).normalized() / 10);
-        else
-            charCon->setWalkDirection(btVector3(dir.x, 0, dir.z).normalized() / 30);
+        charCon->setWalkDirection(btVector3(dir.x, 0, dir.z).normalized() / 10);
     }
 
-    else
-        charCon->setWalkDirection(btVector3(0, -10, 0));
+    else {
+        charCon->setWalkDirection(btVector3(0, -0.00001, 0));
+    }
 
     camera->objPos = glm::vec3(pos.x(), pos.y(), pos.z());
     

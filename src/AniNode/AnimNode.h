@@ -23,19 +23,18 @@ public:
 	glm::vec3 pos;
 	glm::quat rot;
 	glm::vec3 scale;
-	glm::mat4 zeroPos;
-	glm::mat4 nowPos;
+	aiMatrix4x4 zeroPos;
+	aiMatrix4x4 nowPos;
 
 	unsigned int FindPosition(float time);
-	glm::vec3 CalcInterpolatedPosition(float time);
+	aiVector3D CalcInterpolatedPosition(float time);
 	unsigned int FindScaling(float time);
-	glm::vec3 CalcInterpolatedSkaling(float time);
+	aiVector3D CalcInterpolatedSkaling(float time);
 	unsigned int FindRotation(float time);
-	glm::quat CalcInterpolatedRotation(float time);
-	void SLERP(float, float);
+	aiQuaternion CalcInterpolatedRotation(float time);
 	void UpdateKeyframeTransform(float time);
-	glm::mat4 GetKeyframeTransform(float time);
-	glm::mat4 getZeroPos();
-	glm::mat4 getNowPos();
+	aiMatrix4x4 GetKeyframeTransform(float time);
+	aiMatrix4x4 getZeroPos();
+	aiMatrix4x4 getNowPos();
 };
 

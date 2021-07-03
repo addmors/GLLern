@@ -16,7 +16,7 @@ public:
 
 	void Play(float Factor) {
 		for (auto& a : New->anims) {
-			a.node->mTransformation = GLMMat4ToAi(glm::mix(a.nowPos, a.zeroPos, Factor*10));
+			a.node->mTransformation = GLMMat4ToAi(glm::mix(AiToGLMMat4(a.nowPos), AiToGLMMat4(a.zeroPos), Factor*10));
 		}
 	}
 };
@@ -43,10 +43,8 @@ public:
 		if (Time < TransTime) {
 			Time += delta;
 			trans.Play(Time);
-			cout << "TransPlayAnimation: " << Time << endl;
 		}
 		else {
-			cout << "PlayAnimation: " << curAnimation->name << endl;
 			if (curAnimation != nullptr)  curAnimation->PlayAnimation(delta);
 		}
 	}

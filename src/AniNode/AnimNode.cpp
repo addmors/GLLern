@@ -67,12 +67,10 @@ unsigned int AnimNode::FindRotation(float time)
 	return 0;
 }
 
-glm::vec3 AnimNode::CalcInterpolatedPosition(float time) {
+aiVector3D AnimNode::CalcInterpolatedPosition(float time) {
 	if (animNode->mNumPositionKeys == 1)
 	{
-		aiVector3D assimp_val = animNode->mPositionKeys[0].mValue;
-		glm::vec3 val(assimp_val.x, assimp_val.y, assimp_val.z);
-		return val;
+		return  animNode->mPositionKeys[0].mValue;
 	}
 	unsigned int PositionIndex = FindPosition(time);
 	unsigned int NextPositionIndex = (PositionIndex + 1);
@@ -80,19 +78,14 @@ glm::vec3 AnimNode::CalcInterpolatedPosition(float time) {
 	float Factor = (time - (float)animNode->mPositionKeys[PositionIndex].mTime) / DeltaTime;
 	const aiVector3D StartPosition = animNode->mPositionKeys[PositionIndex].mValue;
 	const aiVector3D EndPosition = animNode->mPositionKeys[NextPositionIndex].mValue;
-	glm::vec3 p1(StartPosition.x, StartPosition.y, StartPosition.z);
-	glm::vec3 p2(EndPosition.x, EndPosition.y, EndPosition.z);
-	glm::vec3 val = glm::mix(p1, p2, Factor);
-
-	return val;
+	aiVector3D Delta = EndPosition - StartPosition;
+	return StartPosition + Factor * Delta;
 }
 
-glm::vec3 AnimNode::CalcInterpolatedSkaling(float time) {
+aiVector3D AnimNode::CalcInterpolatedSkaling(float time) {
 	if (animNode->mNumPositionKeys == 1)
 	{
-		aiVector3D assimp_val = animNode->mScalingKeys[0].mValue;
-		glm::vec3 val(assimp_val.x, assimp_val.y, assimp_val.z);
-		return val;
+		return animNode->mScalingKeys[0].mValue;
 	}
 	unsigned int SkalingIndex = FindScaling(time);
 	unsigned int NextSkalingIndex = (SkalingIndex + 1);
@@ -100,18 +93,13 @@ glm::vec3 AnimNode::CalcInterpolatedSkaling(float time) {
 	float Factor = (time - (float)animNode->mScalingKeys[SkalingIndex].mTime) / DeltaTime;
 	const aiVector3D StartPosition = animNode->mScalingKeys[SkalingIndex].mValue;
 	const aiVector3D EndPosition = animNode->mScalingKeys[NextSkalingIndex].mValue;
-	glm::vec3 p1(StartPosition.x, StartPosition.y, StartPosition.z);
-	glm::vec3 p2(EndPosition.x, EndPosition.y, EndPosition.z);
-	glm::vec3 val = glm::mix(p1, p2, Factor);
-	return val;
+	aiVector3D Delta = EndPosition - StartPosition;
+	return StartPosition + Factor * Delta;
 }
-glm::quat AnimNode::CalcInterpolatedRotation(float time) {
+aiQuaternion AnimNode::CalcInterpolatedRotation(float time) {
 	if (animNode->mNumRotationKeys == 1)
-	{
-		aiQuaternion assimp_val = animNode->mRotationKeys[0].mValue;
-		glm::quat val(assimp_val.w, assimp_val.x, assimp_val.y, assimp_val.z);
-		return val;
-	}
+		return animNode->mRotationKeys[0].mValue;
+	
 
 	unsigned int RotationIndex = FindRotation(time);
 	unsigned int NextRotationIndex = (RotationIndex + 1);
@@ -119,59 +107,57 @@ glm::quat AnimNode::CalcInterpolatedRotation(float time) {
 	float Factor = (time - (float)animNode->mRotationKeys[RotationIndex].mTime) / DeltaTime;
 	const aiQuaternion& StartRotationQ = animNode->mRotationKeys[RotationIndex].mValue;
 	const aiQuaternion& EndRotationQ = animNode->mRotationKeys[NextRotationIndex].mValue;
-	glm::quat r1(StartRotationQ.w, StartRotationQ.x, StartRotationQ.y, StartRotationQ.z);
-	glm::quat r2(EndRotationQ.w, EndRotationQ.x, EndRotationQ.y, EndRotationQ.z);
-
-	glm::quat val = glm::slerp(r1, r2, Factor);
+	aiQuaternion val;
+	aiQuaternion::Interpolate(val, StartRotationQ, EndRotationQ, Factor);
+	val = val.Normalize();
 	return val;
 
 }
 
-void AnimNode::SLERP(float time_end, float time_now)
-{
-
-}
 
 void AnimNode::UpdateKeyframeTransform(float time) {
 	if (animNode == nullptr) {
 		//node->mTransformation.Transpose();
 		return;
 	}
-	pos = CalcInterpolatedPosition(time);
-	rot = CalcInterpolatedRotation(time);
-	scale = CalcInterpolatedSkaling(time);
-	glm::mat4 mat;
-	mat = glm::translate(mat, pos);
-	mat *= glm::mat4_cast(rot);
-	mat = glm::scale(mat, scale);
-	node->mTransformation = GLMMat4ToAi(glm::transpose(mat));
-	
+	aiMatrix4x4 val;
+	//Pos
+	aiMatrix4x4::Translation(CalcInterpolatedPosition(time), val);
+	//Rot
+	val *= aiMatrix4x4(CalcInterpolatedRotation(time).GetMatrix());
+	//Scale
+	aiMatrix4x4 scalemat;
+	val  *= aiMatrix4x4::Scaling(CalcInterpolatedSkaling(time), scalemat);
+
+	node->mTransformation =val;
 }
 
-glm::mat4 AnimNode::GetKeyframeTransform(float time) {
+aiMatrix4x4 AnimNode::GetKeyframeTransform(float time) {
 	if (animNode == nullptr) {
 		//node->mTransformation.Transpose();
-		return glm::mat4();
+		return aiMatrix4x4();
 	}
-	pos = CalcInterpolatedPosition(time);
-	rot = CalcInterpolatedRotation(time);
-	scale = CalcInterpolatedSkaling(time);
-	glm::mat4 mat;
-	mat = glm::translate(mat, pos);
-	mat *= glm::mat4_cast(rot);
-	mat = glm::scale(mat, scale);
-	return glm::transpose(mat);
+	aiMatrix4x4 val;
+	//Pos
+	aiMatrix4x4::Translation(CalcInterpolatedPosition(time), val);
+	//Rot
+	val *= aiMatrix4x4(CalcInterpolatedRotation(time).GetMatrix());
+	//Scale
+	aiMatrix4x4 scalemat;
+	val *= aiMatrix4x4::Scaling(CalcInterpolatedSkaling(time), scalemat);
+	return val;
+	
 
 }
 
 
-glm::mat4 AnimNode::getZeroPos()
+aiMatrix4x4 AnimNode::getZeroPos()
 {
 	return zeroPos;
 }
 
-glm::mat4 AnimNode::getNowPos()
+aiMatrix4x4 AnimNode::getNowPos()
 {
-	nowPos = AiToGLMMat4(node->mTransformation);
-	return nowPos;
+	nowPos = node->mTransformation;
+	return node->mTransformation;
 }

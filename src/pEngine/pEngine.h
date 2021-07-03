@@ -1,12 +1,23 @@
 #pragma once
 #include<vector>
+#include <memory>
 #include<btBulletDynamicsCommon.h>
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <tuple>
+#include<set>
 
 class Sphere;
 class Cylinder;
+class Terrian;
+
+using mBodyParam = std::tuple<
+	std::shared_ptr<btRigidBody>,
+	std::shared_ptr<btMotionState>,
+	std::shared_ptr<btCollisionShape>>;
+
 class pEngine
 {
 public:
@@ -15,57 +26,74 @@ public:
 	~pEngine();
 
 	void step(float delta) {
+		
+		for (int i = 0; i < bodies.size(); i++) {
+			btVector3 t = std::get<0>(bodies.at(i))->getWorldTransform().getOrigin();
+			if (abs(t.x()) > 128.0 || abs(t.z()) > 128.0f) {
+				world->removeRigidBody(std::get<0>(bodies.at(i)).get());
+				bodies.erase(bodies.begin()+i);
+			}
+		}
 		if (world != nullptr)  world->stepSimulation(delta);
 	}
-	btDynamicsWorld*& getWorld() {
-		return world;
-	}
-	btBroadphaseInterface* getBroadPhase() { return broadPhase; }
-	void RenderSphere(btRigidBody* sphere, Sphere* sphereRen, glm::mat4 view, glm::mat4 projectoin);
-	void RenderCylinder(btRigidBody* cylinder, Cylinder* cylinderRen, glm::mat4 view, glm::mat4 projectoin);
-	std::vector<btRigidBody*>& getBody() { return bodies; }
+	btDynamicsWorld* getWorld() { return world.get();}
+	btBroadphaseInterface* getBroadPhase() { return broadPhase.get(); }
+	
+
+	btRigidBody* addTerrian(Terrian* terrian);
+
+	glm::mat4 getmatSphere(btRigidBody* sphere);
+
+	glm::mat4 getmatCylinder(btRigidBody* cylinder);
+
+	auto& getBody() { return bodies; }
+
 	btRigidBody* addSphere(float rad, float x, float y, float z, float mass) {
 		btTransform t;
 		t.setIdentity();
 		t.setOrigin({ x,y,z });
-		btSphereShape* sphere = new btSphereShape(rad);
+		auto sphere = std::make_shared<btSphereShape>(rad);
 		btVector3 inertia(0, 0, 0);
 		if (mass != 0.0) {
 			sphere->calculateLocalInertia(mass, inertia);
 		}
-		btMotionState* motion = new btDefaultMotionState(t);
+		std::shared_ptr<btMotionState> motion = std::make_shared<btDefaultMotionState>(t);
 
-		btRigidBody::btRigidBodyConstructionInfo info(mass, motion, sphere, inertia);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, motion.get(), sphere.get(), inertia);
 
-		btRigidBody* body = new btRigidBody(info);
-		world->addRigidBody(body);
-		bodies.push_back(body);
-		return body;
+		auto body = std::make_shared<btRigidBody>(info);
+
+		world->addRigidBody(body.get());
+		bodies.push_back(std::make_tuple(body, motion, sphere));
+		return body.get();
 	}
 	btRigidBody* addCylinder(float d, float h, float x, float y, float z, float mass) {
 		btTransform t;
 		t.setIdentity();
 		t.setOrigin({ x,y,z });
 		btVector3 inertial;
-		btCylinderShape* cyrcle = new btCylinderShape(btVector3(d / 2.0, h / 2.0, d / 2.0));
+		std::shared_ptr<btCylinderShape> cyrcle = std::make_shared<btCylinderShape>(btVector3(d / 2.0, h / 2.0, d / 2.0));
 		if (mass != 0) {
 			cyrcle->calculateLocalInertia(mass, inertial);
 		}
-		btMotionState* motion = new btDefaultMotionState(t);
-		btRigidBody::btRigidBodyConstructionInfo info(mass, motion, cyrcle, inertial);
+		std::shared_ptr<btMotionState> motion = std::make_shared<btDefaultMotionState>(t);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, motion.get(), cyrcle.get(), inertial);
+		
+		std::shared_ptr<btRigidBody> body = std::make_shared<btRigidBody>(info);
+		body->getWorldTransform().getOrigin();
+		world->addRigidBody(body.get());
+		bodies.push_back(std::make_tuple(body,motion,cyrcle));
 
-		btRigidBody* body = new btRigidBody(info);
-		world->addRigidBody(body);
-		bodies.push_back(body);
-		return body;
+		return body.get();
 	}
 
 private:
-	btDynamicsWorld* world;
-	btDispatcher* dispather;
-	btBroadphaseInterface* broadPhase;
-	btConstraintSolver* solver;
-	btCollisionConfiguration* collisionConfig;
-	std::vector<btRigidBody*> bodies;
+	std::shared_ptr<btDynamicsWorld> world;
+	std::shared_ptr<btDispatcher> dispather;
+	std::shared_ptr<btBroadphaseInterface> broadPhase;
+	std::shared_ptr<btConstraintSolver> solver;
+	std::shared_ptr<btCollisionConfiguration> collisionConfig;
+	std::vector<mBodyParam> bodies;
+	btRigidBody* terrian;
 };
 
