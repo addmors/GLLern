@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Loader.h" />
     <ClCompile Include="src\RendererEngine.cpp" />
     <ClCompile Include="src\pEngine\pEngine.cpp" />
     <ClCompile Include="src\Capsule\Capsule.cpp" />
@@ -180,6 +181,7 @@
     <None Include="src\shader\3.1.2.shadow_mapping.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.fs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
+    <None Include="src\shader\jastshad.vs" />
     <None Include="src\shader\lampshad.fs" />
     <None Include="src\shader\objvithcolor.fs" />
     <None Include="src\shader\shader.fs" />
@@ -188,6 +190,8 @@
     <None Include="src\shader\frameshader.fs" />
     <None Include="src\shader\frameshader.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping.fs" />
+    <None Include="src\shader\skybox.fs" />
+    <None Include="src\shader\skybox.vs" />
     <None Include="src\shader\terrianShader.fs" />
     <None Include="src\shader\terrianShader.vs" />
   </ItemGroup>

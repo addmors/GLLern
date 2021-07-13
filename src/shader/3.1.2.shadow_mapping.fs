@@ -6,13 +6,17 @@ in VS_OUT {
     vec3 Normal;
     vec2 TexCoords;
     vec4 FragPosLightSpace;
+    float visibility;
 } fs_in;
+
+
 
 uniform sampler2D diffuseTexture;
 uniform sampler2D shadowMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform vec3 skyColor;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -71,4 +75,5 @@ void main()
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
     FragColor = vec4(lighting, 1.0);
+    FragColor = mix(vec4(skyColor,1.0),FragColor, fs_in.visibility);
 }

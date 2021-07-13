@@ -4,8 +4,8 @@
 #include <iostream>
 #include <memory>
 #include<iterator>
-#include<GL/glew.h>
-#include<GLFW/glfw3.h>
+#include <GL\glew.h>
+#include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Precompile.h"
 #include"shader/Shad.h"
@@ -13,6 +13,7 @@
 #include "light/light.h"
 #include"Camera/Camera.h"
 #include"Model/Model.h"
+#include"Loader.h"
 #include "Player\Player.h"
 #include "pEngine\pEngine.h"
 #include <AntTweakBar.h>
@@ -37,7 +38,7 @@ Camera camera(cameraPos, cameraFront, cameraUp, fov);
 std::unique_ptr<pEngine> pengine = std::make_unique<pEngine>();
 Model ourModel;
 GLFWwindow* window;
-
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback_for_movement(int key, int action);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -58,7 +59,6 @@ void mouseKey(GLFWwindow* window, int button, int action, int mode)
 	TwMouseButton(ma, btn);
 };
 
-unsigned int loadTexture(const char* path);
 glm::mat4 getInbtTransform(btTransform& t);
 
 unsigned int planeVAO;
@@ -93,7 +93,7 @@ int main() {
 		return -1;
 	}
 
-	
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPos(window, lastX, lastY); TwDefine(" TweakBar size='200 400' color='96 216 224' "); // change default tweak bar size and color
 
 	glfwSetScrollCallback(window, scroll_callback); //активаци колесика мыши
@@ -101,10 +101,12 @@ int main() {
 	glfwSetCursorPosCallback(window, mouse_callback); //Функции по движению мыши
 	glfwSetMouseButtonCallback(window, mouseKey);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Активация курсора скрыть указатель 
-	int width, height;
+	
+	Model Modeltree;
+	Modeltree.loadModel("resources/objects/tree/Tree.obj");
+	int width = 1920, height = 1080;
 	glfwGetFramebufferSize(window, &width, &height);	
-	glViewport(0, 0, width, height);
-
+	
 	TwWindowSize(width, height);
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL_CORE, NULL);
@@ -122,6 +124,7 @@ int main() {
 
 	vector<glm::vec3> lightPos;
 	glm::vec3 lightPosForShad(0.01f, 7.0f, 0.0f);
+	glm::vec3 dirLight(0, -1, 0);
 
 	lightPos.push_back(glm::vec3(4.0f, 4.0f, 4.0f));
 	lightPos.push_back(glm::vec3(-4.0f, 4.0f, 4.0f));
@@ -131,23 +134,20 @@ int main() {
 	TW_TYPE_OGLDEV_VECTOR3F = TwDefineStruct("Vector3f", Vector3fMembers, 3, sizeof(glm::vec3), NULL, NULL);
 
 	TwAddButton(bar, "Camera", NULL, NULL, "");
-	TwAddVarRW(bar, "Position", TW_TYPE_OGLDEV_VECTOR3F, (void*)&lightPosForShad, NULL);
+	TwAddVarRW(bar, "Position", TW_TYPE_OGLDEV_VECTOR3F, (void*)&dirLight, NULL);
 	TwAddVarRW(bar, "DirectionCamera", TW_TYPE_DIR3F, (void*)&camera.cameraFront, NULL);
-	TwAddVarRW(bar, "DirectionLght", TW_TYPE_DIR3F, (void*)&lightPosForShad, "axisx=-x  axisy=-y axisz=-z");
+	TwAddVarRW(bar, "DirectionLght", TW_TYPE_DIR3F, (void*)&dirLight, "axisx=x  axisy=y axisz=z");
 	TwAddVarRW(bar, "Epsilon", TW_TYPE_FLOAT, &epsilon, "min=0 max=5 step=0.1");
 
 	TwAddButton(bar, "AutoRotate", cameraMoveCB, NULL, " label='CameraMove' ");
 	
-	Shader shader("src/shader/3.1.2.shadow_mapping.vs", "src/shader/3.1.2.shadow_mapping.fs");
-	Shader shaderTerrian("src/shader/terrianShader.vs", "src/shader/terrianShader.fs");
-	Shader simpleDepthShader("src/shader/3.1.2.shadow_mapping_depth.vs", "src/shader/3.1.2.shadow_mapping_depth.fs");
-	Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
-	Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
-	Shader screen("src/shader/frameshader.vs", "src/shader/frameshader.fs");
-
 	
-	unsigned int woodTexture = loadTexture("rook.png");
+	Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
+	//Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
+	
+	unsigned int woodTexture = loadTexture("Cyrcle.png");
 	unsigned int grassTexture = loadTexture("grass.png");
+
 	ourModel.loadModel("resources/objects/Black Dragon NEW/ganfaul_m_aure.dae");
 
 	ourModel.loadIdleAnimaitons("resources/objects/Black Dragon NEW/idle.dae");
@@ -155,30 +155,35 @@ int main() {
 	ourModel.loadAnims("resources/objects/Black Dragon NEW/Walking Backwards.dae","WalkBackWard");
 
 
-	Player persone(ourModel, camera, objclrShader, pengine.get());
+	Player persone(camera, pengine.get());
 	//get key
 	camera.keys = &Key.keys;
 	ourModel.keys = &Key.keys;
 	persone.keys = &Key.keys;
 	RendererEngine renderer;
-	Terrian terrain = Terrian(256, "height.bmp");
+	Terrian terrain = Terrian(512, "heightmap6.png");
+	terrain.loadTextures("blendMap.png", "rTexture.png", "grass2.png", "bTexture.png", "grass.png");
+	
 	renderer.t = &terrain;
+
+	//create Shaders
+	// -----------------------
+	renderer.configureShareds();
 
 	// configure depth map FBO
 	// -----------------------
+
 	renderer.configurateDepthBuf();
+
+	// skybox configuration
+	// --------------------
+	renderer.configureSkyBox();
 
 	// shader configuration
 	// --------------------
-	shader.Use();
-	shader.SetInt("diffuseTexture", 0);
-	shader.SetInt("shadowMap", 1);
-
-	shaderTerrian.Use();
-	shaderTerrian.SetInt("diffuseTexture", 0);
-	shaderTerrian.SetInt("shadowMap", 1);
-	
 	renderer.configurateHDR(width, height);
+
+	
 	//Frame texture	
 	//End Frame buffer;
 
@@ -186,37 +191,52 @@ int main() {
 	light Light(std::begin(vertices),std::end(vertices), std::begin(indices),std::end(indices), lightPos);
 
 	pengine->addCylinder(2, 5, 0, 30, 0, 1.0);
-	pengine->addSphere(1.0,0,20,0,1.0);
+	pengine->addSphere(1.0,0,25,0,1.0);
 	
 	auto terrianBody = pengine->addTerrian(&terrain);
-
+	lastFrame = glfwGetTime();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)width / (float)height, 0.1f, 400.0f);
 	while (!glfwWindowShouldClose(window))
 	{
-		
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-
 		glm::mat4 model = glm::mat4();
+		
 		GLfloat currentFrame = glfwGetTime();
+		
 		float deltaTime = currentFrame - lastFrame;
-		pengine->step(deltaTime);
-		camera.deltaTime = deltaTime;
+		
 		lastFrame = currentFrame;
+		
+		pengine->step(deltaTime);
+		
+		camera.deltaTime = deltaTime;
 		camera.do_movement();
 
 		glm::mat4 view = camera.LoocAt();
 
-		glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)width / (float)height, 0.1f, 100.0f);
-		renderer.renderInShadow(lightPosForShad, &simpleDepthShader);
+		btVector3 position = persone.charCon->getGhostObject()->getWorldTransform().getOrigin();
+		
+		if (position.y() < -20) {
+			btTransform matPos;
+			matPos.setIdentity();
+			matPos.setOrigin({ position.x(),20,position.z() });
+			persone.charCon->getGhostObject()->setWorldTransform(matPos);
+		}
+		lightPosForShad = { position.x(), position.y(), position.z() };
+
+		lightPos.back() = lightPosForShad - dirLight * 70.0f;
+		renderer.renderInShadow(lightPos.back(), lightPosForShad);
+
+
 		renderer.EnableHDR();
 		
 		btTransform t;
 		//terrianBody->getMotionState()->getWorldTransform(t);
 		//model = getInbtTransform(t);
+		
+	
 		renderer.bodiesMatrixTrans.resize(pengine->getBody().size());
 		auto s = renderer.bodiesMatrixTrans.begin();
+
 		for (auto [a, b, c] : pengine->getBody()) {
 			if (a->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
 				auto pr = std::make_pair("sphere", pengine->getmatSphere(a.get()));
@@ -230,44 +250,41 @@ int main() {
 		}
 
 
-		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		renderer.renderTerrian(width, height, &shaderTerrian, camera.cameraPos,model, view, projection, lightPosForShad, grassTexture);
-		renderer.renderScene(width, height, &shader, camera.cameraPos, view, projection, lightPosForShad, woodTexture);
 
-		objclrShader.Use();
-		view = camera.LoocAt();
+
+		
+		renderer.renderTerrian(width, height, camera.cameraPos,model, view, projection, lightPos.back());
+		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
+
+
 		t = persone.charCon->getGhostObject()->getWorldTransform();
 		glm::mat4 glmatrix = getInbtTransform(t);
-		//model = glm::translate(model, glm::vec3(camera.objPos.x,0, camera.objPos.z)); // translate it down so it's at the center of the scene
-		//if(Key.keys[67])
-			glmatrix = glm::rotate(glmatrix, glm::radians(90.0f - camera.yaw), glm::vec3(0.0, 1.0, 0.0));
+		glmatrix = glm::rotate(glmatrix, glm::radians(90.0f - camera.yaw), glm::vec3(0.0, 1.0, 0.0));
 
-		//model = glm::scale(model,skaling);
+		persone.update(deltaTime);
+		glm::mat4 modelTreeTrans = glm::mat4();
+		
+		modelTreeTrans = glm::translate(modelTreeTrans, glm::vec3(10.1f, 1.1f, 0.1));
+		modelTreeTrans = glm::scale(modelTreeTrans, glm::vec3(0.5f));
+		//renderer.renderModel(&Modeltree, modelTreeTrans, view, lightPos);
 
-		objclrShader.Design(view, lightPos);
-		
-		objclrShader.SetMat4("projection", projection);
-		objclrShader.SetMat4("view", view);
-		objclrShader.SetMat4("model", glmatrix);
-		
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		
-		persone.update();
-		persone.show();
-		persone.Persone->PlayAnimation(deltaTime);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+		renderer.renderModel(&Modeltree, modelTreeTrans, view, lightPos);
+		renderer.renderModelAnim(&ourModel,glmatrix, view, deltaTime, lightPos);
+
+		ourModel.PlayAnimation(deltaTime);
+
+
+		glDisable(GL_CULL_FACE);
 		Light.UseLight(view, projection, lightPos);	
+		glEnable(GL_CULL_FACE);
+		renderer.renderSkyBox(view, projection, currentFrame);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0); // возвращаем буфер кадра по умолчанию
-		
-		glDisable(GL_DEPTH_TEST);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		renderer.DisableHDR();
-		renderer.renderHDR(&screen, epsilon);
+		renderer.renderHDR(epsilon);
 
 		TwDraw();
 
@@ -334,42 +351,13 @@ void key_callback_for_movement(int key, int action) {
 	Key.keys[key] = action;
 };
 
-unsigned int loadTexture(char const* path)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-
-	int width, height, nrComponents;
-	unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
-	if (data)
-	{
-		GLenum format;
-		if (nrComponents == 1)
-			format = GL_RED;
-		else if (nrComponents == 3)
-			format = GL_RGB;
-		else if (nrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // for this tutorial: use GL_CLAMP_TO_EDGE to prevent semi-transparent borders. Due to interpolation it takes texels from next repeat 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		stbi_image_free(data);
-	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(data);
-	}
-
-	return textureID;
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
 }
+
 
 glm::mat4 getInbtTransform(btTransform& t) {
 	float mat[16];

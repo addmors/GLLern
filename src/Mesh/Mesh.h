@@ -40,14 +40,15 @@ public:
 	Skeleton sceneLoaderSkeleton;
 	/*  Functions  */
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+
 	void Delete() {
 			glDeleteVertexArrays(1, &VAO);
 			glDeleteBuffers(1, &VBO);
 			glDeleteBuffers(1, &EBO);
 		};
 
-	void Draw();
-	void SetStandartParam(Shader shader);
+	void DrawSelf();
+	void bindTexture(Shader shader);
 	void SetRigged(Shader shader);
 
 private:

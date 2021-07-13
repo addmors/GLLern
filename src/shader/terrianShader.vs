@@ -10,6 +10,7 @@ out VS_OUT {
     vec3 Normal;
     vec2 TexCoords;
     vec4 FragPosLightSpace;
+    float visibility;
 } vs_out;
 
 uniform mat4 projection;
@@ -17,11 +18,20 @@ uniform mat4 view;
 uniform mat4 model;
 uniform mat4 lightSpaceMatrix;
 
+
+const float density = 0.0035;
+const float gradient = 5;
+
 void main()
 {
     vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
     vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
     vs_out.TexCoords = aTexCoords;
+    vec4 positionRelativeToCam = view*model*vec4(aPos, 1.0); 
     vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    gl_Position = projection * positionRelativeToCam;
+
+    float distance = length(positionRelativeToCam.xyz);
+    vs_out.visibility = exp(-pow((distance*density),gradient));
+    vs_out.visibility = clamp(vs_out.visibility,0.0,1.0);
 }   

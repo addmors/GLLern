@@ -12,7 +12,7 @@ pEngine::pEngine() {
 	broadPhase = std::make_shared<btDbvtBroadphase>();
 	solver = std::make_shared<btSequentialImpulseConstraintSolver>();
 	world = std::make_shared<btDiscreteDynamicsWorld>(dispather.get(), broadPhase.get(), solver.get(), collisionConfig.get());
-	world->setGravity(btVector3(0, -10, 0));
+	world->setGravity(btVector3(0, -20, 0));
 }
 
 
@@ -20,14 +20,12 @@ btRigidBody* pEngine::addTerrian(Terrian* terrian) {
 	btTransform t;
 	t.setIdentity();
 	t.setOrigin({0,0,0});
-	terrian->getHeightField()->setLocalScaling({ 1,1,1 });
 	std::shared_ptr<btMotionState> motion = std::make_shared<btDefaultMotionState>(t);
 	btRigidBody::btRigidBodyConstructionInfo info(0.0, motion.get(), terrian->getHeightField().get());
 	std::shared_ptr<btRigidBody> body = std::make_shared<btRigidBody>(info);
-
-	world->addRigidBody(body.get());
-
 	
+	this->sizePlane = terrian->getSize()/2;
+	world->addRigidBody(body.get());
 	bodies.push_back(std::make_tuple(body, motion, terrian->getHeightField()));
 	return body.get();
 }

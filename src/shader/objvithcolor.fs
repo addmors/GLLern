@@ -39,6 +39,7 @@ struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
 	sampler2D texture_normal1;
+	sampler2D texture_opacity1;
     float shininess;
 }; 
 out vec4 color;
@@ -55,6 +56,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main()
 {
+	if(texture(material.texture_diffuse1, TexCoord).a<0.1) discard;
 	//Вектро от фрагмента к источкнику 
 	vec3 normal = texture(material.texture_normal1, TexCoord).rgb;
 	normal = normalize(normal * 2.0 - 1.0);   
@@ -63,7 +65,8 @@ void main()
 	vec3 viewDir = normalize(-FragPos);
 	vec3 result = CalcDirLight(dirLight, normal, viewDir);
 	for(int i = 0; i < NR_POINT_LIGHTS; i++)
-      result += CalcPointLight(pointLights[i], normal, FragPos, viewDir); 
+			
+    result += CalcPointLight(pointLights[i], normal, FragPos, viewDir); 
 	result += CalcSpotLight(spotlight, normal, FragPos, viewDir);
 	color = vec4(result, 1.0f);
 }

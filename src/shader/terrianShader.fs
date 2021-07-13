@@ -6,20 +6,25 @@ in VS_OUT {
     vec3 Normal;
     vec2 TexCoords;
     vec4 FragPosLightSpace;
+    float visibility;
 } fs_in;
 
-uniform sampler2D diffuseTexture;
+
 uniform sampler2D blendMap;
+
 uniform sampler2D backgroundTexture;
+
 uniform sampler2D rTexture;
 uniform sampler2D gTexture;
 uniform sampler2D bTexture;
+
 
 uniform sampler2D shadowMap;
 
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
+uniform vec3 skyColor;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
@@ -58,19 +63,19 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 void main()
 {   
     vec4 blendMapColour = texture(blendMap, fs_in.TexCoords);
-    vec4 backTextureAmount = 1-(blendMapColour.r+ blendMapColour.g.g+blendMapColour.b)
-    vec2 tiledCoord = fs_in.TexCoords* 40.0;
+    float backTextureAmount = 1-(blendMapColour.r+ blendMapColour.g+blendMapColour.b);
+    vec2 tiledCoord = fs_in.TexCoords * 70.0;
     vec4 backGroundTextureColour = texture(backgroundTexture, tiledCoord)*backTextureAmount;
-    vec4 rTextureClour = texture(rTexture,tiledCoord)*blendMapColour.r;
-    vec4 gTextureClour = texture(gTexture,tiledCoord)*blendMapColour.g;
-    vec4 rTextureClour = texture(bTexture,tiledCoord)*blendMapColour.b;
+    vec4 rTextureClour = texture(rTexture, tiledCoord)*blendMapColour.r;
+    vec4 gTextureClour = texture(gTexture, tiledCoord)*blendMapColour.g;
+    vec4 bTextureClour = texture(bTexture, tiledCoord)*blendMapColour.b;
     vec4 totalColor = rTextureClour+gTextureClour+bTextureClour+backGroundTextureColour;
     //vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
 
     vec3 normal = normalize(fs_in.Normal);
     vec3 lightColor = vec3(0.3);
     // ambient
-    vec3 ambient = 0.3*totalColor;
+    vec3 ambient = 0.3*totalColor.rgb;
     // diffuse
     vec3 lightDir = normalize(lightPos - fs_in.FragPos);
     float diff = max(dot(lightDir, normal), 0.0);
@@ -84,7 +89,8 @@ void main()
     vec3 specular = spec * lightColor;    
     // calculate shadow
     float shadow = ShadowCalculation(fs_in.FragPosLightSpace);                      
-    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * totalColor;    
+    vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * totalColor.rgb;    
     
     FragColor = vec4(lighting, 1.0);
+    FragColor = mix(vec4(skyColor,1.0),FragColor, fs_in.visibility);
 }

@@ -72,6 +72,9 @@
     <ClCompile Include="src\Terrian.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\Loader.h">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\Shad.h">
@@ -149,5 +152,8 @@
     <None Include="src\shader\3.1.2.shadow_mapping.fs" />
     <None Include="src\shader\terrianShader.vs" />
     <None Include="src\shader\terrianShader.fs" />
+    <None Include="src\shader\skybox.vs" />
+    <None Include="src\shader\skybox.fs" />
+    <None Include="src\shader\jastshad.vs" />
   </ItemGroup>
 </Project>

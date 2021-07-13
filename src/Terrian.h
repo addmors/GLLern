@@ -1,5 +1,6 @@
 #pragma once
 #include "shader/Shad.h";
+#include "Loader.h"
 #include <string>
 #include <utility>
 #include <stb_image.h>
@@ -7,8 +8,8 @@
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 #define MAP_SIZE 256
-#define MX_HEIGHT 10
-#define MN_HEIGHT -10
+#define MX_HEIGHT 40
+#define MN_HEIGHT -40
 using std::vector;
 
 struct VertexTerrarian {
@@ -35,8 +36,35 @@ private:
 	std::shared_ptr<btHeightfieldTerrainShape> heightfieldShape;
 	unsigned VAO, VBO, EBO;
 	vector<float> height_map;
+	unsigned int blendMap, rTexture, gTexture, bTexture, backGround;
 
 public:
+	void loadTextures(const char* blendMap, const char* rTexture, const char* gTexture, const char* bTexture, const char* backGround) {
+		this->blendMap = loadTextureRGB(blendMap);
+		this->rTexture = loadTexture(rTexture);
+		this->gTexture = loadTexture(gTexture);
+		this->bTexture = loadTexture(bTexture);
+		this->backGround = loadTexture(backGround);
+
+	}
+	void ActiveTexture() {
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, blendMap);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, backGround);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, rTexture);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, gTexture);
+
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, bTexture);
+
+	}
 	float getSize() { return SIZE; };
 	std::pair<float, float> getScaleTerrian() { return std::make_pair(scaleX, scaleY); };
 	std::shared_ptr<btHeightfieldTerrainShape> getHeightField() { return heightfieldShape; };
@@ -47,8 +75,8 @@ public:
 		///gen buffer in image 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		unsigned char* data = stbi_load(pathHeightMap, &VERTEX_COUNT_X, &VERTEX_COUNT_Y, &nrComponents, 0);
-		this->scaleX = VERTEX_COUNT_X / SIZE;
-		this->scaleY = VERTEX_COUNT_Y / SIZE;
+		this->scaleX = SIZE / VERTEX_COUNT_X;
+		this->scaleY = SIZE / VERTEX_COUNT_Y;
 		vertexs.resize(VERTEX_COUNT_X * VERTEX_COUNT_X);
 		height_map.resize(VERTEX_COUNT_X * VERTEX_COUNT_X);
 		float z = getHeightinMinMaxinter(Height(data, 0, 0));
@@ -68,7 +96,7 @@ public:
 					maxHeight = z;
 				}
 				vertexs[j * VERTEX_COUNT_X + i] = {
-						glm::vec3((float)i / ((float)VERTEX_COUNT_X - 1) * SIZE, z , (float)j / ((float)VERTEX_COUNT_Y - 1) * SIZE),
+						glm::vec3((float)i / ((float)VERTEX_COUNT_X - 1) * VERTEX_COUNT_X, z , (float)j / ((float)VERTEX_COUNT_Y - 1) * VERTEX_COUNT_Y),
 						glm::vec3(0,1,0),
 						glm::vec2((float)i / ((float)VERTEX_COUNT_X - 1),(float)j / ((float)VERTEX_COUNT_Y - 1))
 				};
@@ -82,10 +110,11 @@ public:
 			VERTEX_COUNT_Y,
 			&height_map[0],
 			0,
-			minHeight, maxHeight,
+			MN_HEIGHT, MX_HEIGHT,
 			1, PHY_FLOAT, false
 		);
-		heightfieldShape->setLocalScaling({ scaleX,1,scaleY });
+		btVector3 scale{ scaleX,1,scaleY };
+		heightfieldShape->setLocalScaling(scale);
 		
 		///gen Indices 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -109,6 +138,7 @@ public:
 	}
 	void setupTerrarian()
 	{
+
 		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &VBO);
 		glGenBuffers(1, &EBO);
@@ -145,7 +175,7 @@ public:
 	unsigned char Height(unsigned char* pHeightMap, int X, int Y) {
 		//if (!pHeightMap) return 0;
 		// All right - returning our height
-		return pHeightMap[(Y + (X * MAP_SIZE)) * 3];
+		return pHeightMap[(Y + (X * MAP_SIZE)) * 4];
 	}
 
 	float getHeightinMinMaxinter(float x) {

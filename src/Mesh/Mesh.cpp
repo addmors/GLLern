@@ -47,7 +47,7 @@ void Mesh::setupMesh()
 	glBindVertexArray(0);
 }
 
-void Mesh::Draw()
+void Mesh::DrawSelf()
 {	
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -55,7 +55,7 @@ void Mesh::Draw()
 	glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::SetStandartParam(Shader shader)
+void Mesh::bindTexture(Shader shader)
 {
 	shader.Use();
 	unsigned int diffuseNr = 1;
@@ -76,7 +76,8 @@ void Mesh::SetStandartParam(Shader shader)
 			number = std::to_string(normalNr++); // transfer unsigned int to stream
 		else if (name == "texture_height")
 			number = std::to_string(heightNr++); // transfer unsigned int to stream
-
+		else if (name == "texture_opasity")
+			number = std::to_string(heightNr++);
 		// now set the sampler to the correct texture unit
 		glUniform1i(glGetUniformLocation(shader.ID, ("material." + name + number).c_str()), i);
 		// and finally bind the texture

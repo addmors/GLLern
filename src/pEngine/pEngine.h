@@ -7,7 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <tuple>
-#include<set>
+#include<list>
+#include <iterator>
 
 class Sphere;
 class Cylinder;
@@ -26,15 +27,26 @@ public:
 	~pEngine();
 
 	void step(float delta) {
-		
-		for (int i = 0; i < bodies.size(); i++) {
-			btVector3 t = std::get<0>(bodies.at(i))->getWorldTransform().getOrigin();
-			if (abs(t.x()) > 128.0 || abs(t.z()) > 128.0f) {
+		if (world != nullptr)  world->stepSimulation(delta);
+		auto curr = bodies.begin();
+		while (curr != bodies.end()) {
+			auto nextBody = std::next(curr);
+			btVector3 t = std::get<0>(*curr)->getWorldTransform().getOrigin();
+			if(abs(t.x()) > sizePlane || abs(t.z()) > sizePlane) {
+				world->removeRigidBody(&*std::get<0>(*curr));
+				bodies.erase(curr);
+			}
+			curr = nextBody;
+		}
+
+		/*for (int i = 0; i < bodies.size(); i++) {
+			std::get<0>(bodies.at(i))->setGravity({ 0,-delta * 512,0 });
+;			btVector3 t = std::get<0>(bodies.at(i))->getWorldTransform().getOrigin();
+			if (abs(t.x()) > sizePlane || abs(t.z()) > sizePlane) {
 				world->removeRigidBody(std::get<0>(bodies.at(i)).get());
 				bodies.erase(bodies.begin()+i);
 			}
-		}
-		if (world != nullptr)  world->stepSimulation(delta);
+		}*/
 	}
 	btDynamicsWorld* getWorld() { return world.get();}
 	btBroadphaseInterface* getBroadPhase() { return broadPhase.get(); }
@@ -93,7 +105,7 @@ private:
 	std::shared_ptr<btBroadphaseInterface> broadPhase;
 	std::shared_ptr<btConstraintSolver> solver;
 	std::shared_ptr<btCollisionConfiguration> collisionConfig;
-	std::vector<mBodyParam> bodies;
-	btRigidBody* terrian;
+	std::list<mBodyParam> bodies;
+	float sizePlane = 128.0f;
 };
 

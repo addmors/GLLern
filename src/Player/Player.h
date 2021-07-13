@@ -21,16 +21,14 @@ public:
 	pEngine* pengine;
 	vector<bool>* keys;
 
-	Player(Model& model, Camera& _camera, Shader& _curshader, pEngine* _pengine) 
+	Player(Camera& _camera, pEngine* _pengine) 
 		:pengine(_pengine),
-		Persone(&model),
-		camera(&_camera),
-		currentShader(&_curshader)
+		camera(&_camera)
 	{
 
 		btTransform startTransform;
 		startTransform.setIdentity();
-		startTransform.setOrigin(btVector3(0, 0, 0));
+		startTransform.setOrigin(btVector3(0,40, 0));
 
 		btConvexShape* capsule = new btCapsuleShape(0.5, 0.5);
 
@@ -43,7 +41,7 @@ public:
 		m_ghostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
 		
 		charCon = new btKinematicCharacterController(m_ghostObject, capsule, 0.05f);
-		charCon->setGravity(btScalar(10));
+		//charCon->setGravity(btScalar(10));
 		charCon->setMaxJumpHeight(1.5);
 		
 		pengine->getBroadPhase()->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
@@ -57,15 +55,13 @@ public:
 		if (m_ghostObject != nullptr) delete m_ghostObject;
 		if (charCon != nullptr) delete charCon;
 	};
-	void update();
-	void show();
+	void update(float delta);
 	
-	Model* Persone = nullptr;
 	Camera* camera = nullptr;
-	Shader* currentShader = nullptr;
 	string name = "def_name";
 	bool ongroud = 0, iscollidet  = 0;
 	btPairCachingGhostObject* m_ghostObject;
 	btKinematicCharacterController* charCon;
+	glm::vec3 lastDir;
 };
 

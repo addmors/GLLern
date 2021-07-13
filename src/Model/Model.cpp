@@ -62,35 +62,15 @@ void Model::PlayAnimation(float delta) {
 		CurrAnimation.Play(delta);
 };
 
-void Model::DrawAnim(Shader& shader) {
-	if (!anim)    //If the object is rigged...
-	{
-		skel.Update();
-		for (int i = 0; i <meshes.size(); i++) {
-			meshes[i].SetStandartParam(shader);
-			if (meshes[i].sceneLoaderSkeleton.bones.size()>0) {
-				meshes[i].SetRigged(shader);
-				meshes[i].Draw();
-			}
-			else meshes[i].Draw(); 
-		}
-	}
-	else
-	{
-		for (int i = 0; i < meshes.size(); i++) {
-			meshes[i].SetStandartParam(shader);
-			meshes[i].Draw();
-		}
-	}
-}
-void Model::Draw(Shader shader)
-{
-	for (unsigned int i = 0; i < meshes.size(); i++)
-	{
-	meshes[i].SetStandartParam(shader);
-	meshes[i].Draw();
-	}
-}
+
+//void Model::Draw(Shader shader)
+//{
+//	for (unsigned int i = 0; i < meshes.size(); i++)
+//	{
+//	meshes[i].SetStandartParam(shader);
+//	meshes[i].Draw();
+//	}
+//}
 
 Animation* Model::FindAnimation(std::string anim_to_find)
 {
@@ -170,7 +150,7 @@ int Model::FindBoneIDByName(std::string name)
 void Model::loadModel(string path) {
 	// read file via ASSIMP
 	Assimp::Importer importer;
-	importer.ReadFile(path, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_FlipUVs );
+	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
 	scene = importer.GetOrphanedScene();
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
@@ -272,8 +252,16 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 		if (mesh->mTextureCoords[0]) // сетка обладает набором текстурных координат?
 			vertex.TexCoords = { mesh->mTextureCoords[0][i].x , mesh->mTextureCoords[0][i].y};
 		else vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-		vertex.Tangent = { mesh->mTangents[i].x ,mesh->mTangents[i].y ,mesh->mTangents[i].z };
-		vertex.Bitangent = { mesh->mBitangents[i].x ,mesh->mBitangents[i].y ,mesh->mBitangents[i].z };
+		if (mesh->mTangents != nullptr)
+		{
+			vertex.Tangent = { mesh->mTangents[i].x ,mesh->mTangents[i].y ,mesh->mTangents[i].z };
+			vertex.Bitangent = { mesh->mBitangents[i].x ,mesh->mBitangents[i].y ,mesh->mBitangents[i].z };
+
+		}
+		else {
+			vertex.Tangent = { 0,0,0 };
+			vertex.Bitangent = { 0,0,0 };
+		}
 		vertices.push_back(vertex);
 	}
 	int WEIGHTS_PER_VERTEX = 4;
@@ -309,6 +297,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+	
 	// 2. specular maps
 	vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
@@ -318,6 +307,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	// 4. height maps
 	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+	std::vector<Texture> opacityMaps = loadMaterialTextures(material, aiTextureType_OPACITY, "texture_opacity");
+	textures.insert(textures.end(), opacityMaps.begin(), opacityMaps.end());
 
 	return Mesh(vertices, indices, textures);
 }
@@ -364,14 +355,13 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-
-	unsigned char* data = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* data = SOIL_load_image(filename.c_str(), &width, &height, 0, SOIL_LOAD_RGBA);
 
 	if (data)
 	{
 		
 		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, gamma ? GL_RGB : GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0,  GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
