@@ -19,9 +19,11 @@ struct PointLight {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
-};  
+};
+
 #define NR_POINT_LIGHTS 4  
 uniform PointLight pointLights[NR_POINT_LIGHTS];
+
 struct SpotLight{
 	vec3 position;
 	vec3 direction;
@@ -35,6 +37,7 @@ struct SpotLight{
 	vec3 specular;
 };
 uniform SpotLight spotlight;
+
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
@@ -64,9 +67,8 @@ void main()
 	//vec3 normal = Normal;
 	vec3 viewDir = normalize(-FragPos);
 	vec3 result = CalcDirLight(dirLight, normal, viewDir);
-	for(int i = 0; i < NR_POINT_LIGHTS; i++)
-			
-    result += CalcPointLight(pointLights[i], normal, FragPos, viewDir); 
+	for(int i = 0; i < NR_POINT_LIGHTS; i++)		
+		result += CalcPointLight(pointLights[i], normal, FragPos, viewDir); 
 	result += CalcSpotLight(spotlight, normal, FragPos, viewDir);
 	color = vec4(result, 1.0f);
 }

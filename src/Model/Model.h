@@ -25,7 +25,6 @@ class Model
 public:
 	/*  Методы   */
 	vector<bool>* keys;
-	float min_x, min_y, min_z, max_x, max_y, max_z;
 	std::vector<Animation> animations;
 	vector<Texture> textures_loaded;
 	vector<Mesh> meshes;
@@ -57,13 +56,9 @@ public:
 	void Draw(Shader shader);
 	void AnimNodeProcess();
 	aiScene* scene;
-
 	void loadModel(string path);
+	glm::vec3 center;
 private:
-	/*  Данные модели  */
-
-	/*  Методы   */
-
 	Bone* FindBone(std::string name);
 	aiNode* FindAiNode(std::string name);
 	aiNodeAnim* FindAiNodeAnim(std::string name);
@@ -71,9 +66,6 @@ private:
 	void recursiveNodeProcess(aiNode* node);
 	void processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 transformation);
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformation);
-	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
-	
-	Shader* shader;
-	//Shader _def_shader;
+	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);	
 };
 

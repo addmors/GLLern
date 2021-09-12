@@ -16,6 +16,9 @@ Camera::Camera(glm::vec3 Pos = glm::vec3(3.0f, 0.0f, 3.0f), glm::vec3 Front = gl
 }
 void Camera::mouse_callback(double xpos, double ypos) {
 
+	
+	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
+	cameraPos.y += 1.8;
 	GLfloat xoffset = xpos - lastX;
 	GLfloat yoffset = lastY - ypos; // Обратный порядок вычитания потому что оконные Y-координаты возрастают с верху вниз 
 	lastX = xpos;
@@ -31,14 +34,7 @@ void Camera::mouse_callback(double xpos, double ypos) {
 		pitch = 89.0f;
 	if (pitch < -89.0f)
 		pitch = -89.0f;
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
 	
-	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
-	cameraPos.y += 100;
 }
 void Camera::scroll_callback (double xoffset, double yoffset)
 {
@@ -48,12 +44,11 @@ void Camera::scroll_callback (double xoffset, double yoffset)
 		fov = 1.0f;
 	if (fov >= 45.0f)
 		fov = 45.0f;
-	std::cout << fov << " ";
 }
 void Camera::do_movement()
 {
 	// Camera controls
-	GLfloat cameraSpeed = 5.0f * deltaTime;
+	//GLfloat cameraSpeed = 5.0f * deltaTime;
 	/*if (keys->at(87))
 		objPos += cameraSpeed * cameraFront;
 		
@@ -68,8 +63,15 @@ void Camera::do_movement()
 	if(keys->at(69))
 		objPos -= cameraSpeed * cameraUp;
 	objPos.y = 0;*/
+	cameraFront = glm::normalize(front);
 	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
 	cameraPos.y += 1.8;
-}glm::mat4 Camera::LoocAt() {
+}
+glm::mat4 Camera::LoocAt() {
+	
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	this->cameraFront = glm::normalize(front);
 	return glm::lookAt(this->cameraPos, this->cameraPos + this->cameraFront, this->cameraUp);
 }

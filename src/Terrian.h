@@ -1,5 +1,5 @@
 #pragma once
-#include "shader/Shad.h";
+#include "shader/Shad.h"
 #include "Loader.h"
 #include <string>
 #include <utility>
@@ -7,6 +7,7 @@
 #include<memory>
 #include "btBulletDynamicsCommon.h"
 #include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
+
 #define MAP_SIZE 256
 #define MX_HEIGHT 40
 #define MN_HEIGHT -40
@@ -22,13 +23,22 @@ struct VertexTerrarian {
 	//tangent
 };
 
-static 
+static float barryCentric(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, glm::vec2 pos) {
+	float det = (p2.z - p3.z) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.z - p3.z);
+	float l1 = ((p2.z - p3.z) * (pos.x - p3.x) + (p3.x - p2.x) * (pos.y - p3.z)) / det;
+	float l2 = ((p3.z - p1.z) * (pos.x - p3.x) + (p1.x - p3.x) * (pos.y - p3.z)) / det;
+	float l3 = 1.0f - l1 - l2;
+	return l1 * p1.y + l2 * p2.y + l3 * p3.y;
+};
+
+
 
 class Terrian {
 private:
 	float scaleX;
 	float scaleY;
 	float MAX_HIEGHT;
+	unsigned char* data;
 
 	float  SIZE;
 	vector<VertexTerrarian> vertexs;
@@ -36,7 +46,9 @@ private:
 	std::shared_ptr<btHeightfieldTerrainShape> heightfieldShape;
 	unsigned VAO, VBO, EBO;
 	vector<float> height_map;
+
 	unsigned int blendMap, rTexture, gTexture, bTexture, backGround;
+	int VERTEX_COUNT_X, VERTEX_COUNT_Y;
 
 public:
 	void loadTextures(const char* blendMap, const char* rTexture, const char* gTexture, const char* bTexture, const char* backGround) {
@@ -71,33 +83,25 @@ public:
 
 	Terrian(float sizeTerrian, const char* pathHeightMap) :SIZE(sizeTerrian) {
 
-		int VERTEX_COUNT_X, VERTEX_COUNT_Y, nrComponents;
+		int nrComponents;
 		///gen buffer in image 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		unsigned char* data = stbi_load(pathHeightMap, &VERTEX_COUNT_X, &VERTEX_COUNT_Y, &nrComponents, 0);
+		data = stbi_load(pathHeightMap, &VERTEX_COUNT_X, &VERTEX_COUNT_Y, &nrComponents, 0);
 		this->scaleX = SIZE / VERTEX_COUNT_X;
 		this->scaleY = SIZE / VERTEX_COUNT_Y;
 		vertexs.resize(VERTEX_COUNT_X * VERTEX_COUNT_X);
 		height_map.resize(VERTEX_COUNT_X * VERTEX_COUNT_X);
-		float z = getHeightinMinMaxinter(Height(data, 0, 0));
-		float minHeight = z;
-		float maxHeight = z;
-
+		
 		///gen VErtex map 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		for (int i = 0; i < VERTEX_COUNT_X; i++)
 			for (int j = 0; j < VERTEX_COUNT_Y; j++) {
 				float z = getHeightinMinMaxinter(Height(data, i, j));
 				height_map[j * VERTEX_COUNT_X + i] = z;
-				if (z < minHeight) {
-					minHeight = z;
-				}
-				if (z > maxHeight) {
-					maxHeight = z;
-				}
+				
 				vertexs[j * VERTEX_COUNT_X + i] = {
-						glm::vec3((float)i / ((float)VERTEX_COUNT_X - 1) * VERTEX_COUNT_X, z , (float)j / ((float)VERTEX_COUNT_Y - 1) * VERTEX_COUNT_Y),
-						glm::vec3(0,1,0),
+						glm::vec3((float)i / ((float)VERTEX_COUNT_X - 1) * VERTEX_COUNT_X*scaleX, z , (float)j / ((float)VERTEX_COUNT_Y - 1) * VERTEX_COUNT_Y*scaleY),
+						getNormal(data,i,j),
 						glm::vec2((float)i / ((float)VERTEX_COUNT_X - 1),(float)j / ((float)VERTEX_COUNT_Y - 1))
 				};
 
@@ -113,8 +117,10 @@ public:
 			MN_HEIGHT, MX_HEIGHT,
 			1, PHY_FLOAT, false
 		);
-		btVector3 scale{ scaleX,1,scaleY };
+		btVector3 scale{ scaleX* VERTEX_COUNT_X/(VERTEX_COUNT_X-1),1,scaleY* VERTEX_COUNT_Y / (VERTEX_COUNT_Y-1)};
 		heightfieldShape->setLocalScaling(scale);
+		heightfieldShape->setUseDiamondSubdivision(true);
+
 		
 		///gen Indices 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
@@ -126,12 +132,22 @@ public:
 				int topRight = topLeft + 1;
 				int bottomLeft = ((gz + 1) * VERTEX_COUNT_X) + gx;
 				int bottomRight = bottomLeft + 1;
-				indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6] = (topLeft);
-				indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 1] = (bottomLeft);
-				indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 2] = (topRight);
-				indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 3] = (topRight);
-				indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 4] = (bottomLeft);
-				indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 5] = (bottomRight);
+				if ((gz + gx) % 2 == 0) {
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6] = (bottomRight);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 1] = (topRight);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 2] = (topLeft);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 3] = (bottomLeft);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 4] = (bottomRight);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 5] = (topLeft);
+				}
+				else {
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6] = (topLeft);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 1] = (bottomLeft);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 2] = (topRight);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 3] = (topRight);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 4] = (bottomLeft);
+					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 5] = (bottomRight);
+				}
 			}
 		}
 		setupTerrarian();
@@ -167,11 +183,11 @@ public:
 	void Draw()
 	{
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		glActiveTexture(GL_TEXTURE0);
 	}
-
+	
 	unsigned char Height(unsigned char* pHeightMap, int X, int Y) {
 		//if (!pHeightMap) return 0;
 		// All right - returning our height
@@ -181,4 +197,19 @@ public:
 	float getHeightinMinMaxinter(float x) {
 		return ((MX_HEIGHT - MN_HEIGHT) * (x) / 256.0F) + MN_HEIGHT;
 	}
+
+	glm::vec3 getNormal(unsigned char* pHeightMap, int x, int z) {
+		if (x >= MAP_SIZE) return glm::vec3(0, 1, 0);
+		if (z >= MAP_SIZE) return glm::vec3(0, 1, 0);
+		if (x <= 0) return glm::vec3(0, 1, 0);
+		if (z <= 0) return glm::vec3(0, 1, 0);
+
+		float heightL = getHeightinMinMaxinter(Height(pHeightMap, x - 1, z));
+		float heightR = getHeightinMinMaxinter(Height(pHeightMap, x + 1, z));
+		float heightD = getHeightinMinMaxinter(Height(pHeightMap, x, z - 1));
+		float heightU = getHeightinMinMaxinter(Height(pHeightMap, x, z + 1));
+		return glm::normalize(glm::vec3(heightL - heightR, 2, heightD - heightU));
+	};
+
+	float getHeightOfTerrian(float x, float y);
 };

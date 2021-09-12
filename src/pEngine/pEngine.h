@@ -101,7 +101,7 @@ public:
 
 private:
 	std::shared_ptr<btDynamicsWorld> world;
-	std::shared_ptr<btDispatcher> dispather;
+	std::shared_ptr<btCollisionDispatcher> dispather;
 	std::shared_ptr<btBroadphaseInterface> broadPhase;
 	std::shared_ptr<btConstraintSolver> solver;
 	std::shared_ptr<btCollisionConfiguration> collisionConfig;

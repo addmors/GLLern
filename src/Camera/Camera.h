@@ -25,6 +25,7 @@ public:
 	GLfloat lastX;
 	GLfloat lastY;
 	GLfloat deltaTime;
+	glm::vec3 front;
 	GLfloat lengthtoobj;
 	std::vector<bool>* keys;
 

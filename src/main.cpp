@@ -29,7 +29,7 @@ GLfloat yaw = -135.0f;
 GLfloat pitch = 0.0f;
 GLfloat fov = 45.0f;
 GLfloat lastX = 400, lastY = 300; //Координаты мышки;
-float epsilon = 0.4;
+float epsilon = 2.4;
 
 TwType TW_TYPE_OGLDEV_VECTOR3F;
 TwType TW_TYPE_OGLDEV_ATTENUATION;
@@ -43,6 +43,9 @@ void key_callback_for_movement(int key, int action);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+float inline randFloat(float LO, float HI) {
+	return LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
+};
 static int OgldevKeyToATBKey(int OgldevKey);
 
 bool CameraMove = false;
@@ -102,8 +105,7 @@ int main() {
 	glfwSetMouseButtonCallback(window, mouseKey);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Активация курсора скрыть указатель 
 	
-	Model Modeltree;
-	Modeltree.loadModel("resources/objects/tree/Tree.obj");
+	
 	int width = 1920, height = 1080;
 	glfwGetFramebufferSize(window, &width, &height);	
 	
@@ -161,9 +163,52 @@ int main() {
 	ourModel.keys = &Key.keys;
 	persone.keys = &Key.keys;
 	RendererEngine renderer;
-	Terrian terrain = Terrian(512, "heightmap6.png");
+	Terrian terrain = Terrian(32768/64, "heightmap6.png");
 	terrain.loadTextures("blendMap.png", "rTexture.png", "grass2.png", "bTexture.png", "grass.png");
 	
+
+	Model Modeltree;
+	Modeltree.loadModel("resources/objects/tree/Tree.obj");
+
+	std::vector<glm::vec3> positions;
+	for (int i = 0; i < 10; i++) {
+		glm::mat4 model = glm::mat4(1.0f);
+		float x = i*2;
+		float z = 0;
+		float y = terrain.getHeightOfTerrian(x, z);
+		positions.push_back({ x,y,z });
+
+		pengine->addCylinder(2, 5, x, y, z, 0);
+	}
+	for (int i = 0; i < 10; i++) {
+		glm::mat4 model = glm::mat4(1.0f);
+		float x = i*2;
+		float z = 30;
+		float y = terrain.getHeightOfTerrian(x, z);
+		positions.push_back({ x,y,z });
+
+		pengine->addCylinder(2, 5, x, y, z, 0);
+	}
+	for (int i = 0; i < 10; i++) {
+		glm::mat4 model = glm::mat4(1.0f);
+		float x = 0;
+		float z = i*2;
+		float y = terrain.getHeightOfTerrian(x, z);
+		positions.push_back({ x,y,z });
+
+		pengine->addCylinder(2, 5, x, y, z, 0);
+	}
+	for (int i = 0; i < 10; i++) {
+		glm::mat4 model = glm::mat4(1.0f);
+		float x = 30;
+		float z = i*2;
+		float y = terrain.getHeightOfTerrian(x, z);
+		positions.push_back({ x,y,z });
+
+		pengine->addCylinder(2, 5, x, y, z, 0);
+	}
+	
+
 	renderer.t = &terrain;
 
 	//create Shaders
@@ -172,7 +217,6 @@ int main() {
 
 	// configure depth map FBO
 	// -----------------------
-
 	renderer.configurateDepthBuf();
 
 	// skybox configuration
@@ -182,7 +226,11 @@ int main() {
 	// shader configuration
 	// --------------------
 	renderer.configurateHDR(width, height);
+	
 
+	// water configuration
+	// --------------------
+	renderer.configurateWater(width, height, "dudvmap.png");
 	
 	//Frame texture	
 	//End Frame buffer;
@@ -190,12 +238,13 @@ int main() {
 
 	light Light(std::begin(vertices),std::end(vertices), std::begin(indices),std::end(indices), lightPos);
 
-	pengine->addCylinder(2, 5, 0, 30, 0, 1.0);
-	pengine->addSphere(1.0,0,25,0,1.0);
+	//pengine->addCylinder(2, 5, 0, 30, 0, 1.0);
+	//pengine->addSphere(1.0,0,25,0,1.0);
 	
 	auto terrianBody = pengine->addTerrian(&terrain);
 	lastFrame = glfwGetTime();
 	glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)width / (float)height, 0.1f, 400.0f);
+	renderer.getProjection() = &projection;
 	while (!glfwWindowShouldClose(window))
 	{
 		glm::mat4 model = glm::mat4();
@@ -212,80 +261,109 @@ int main() {
 		camera.do_movement();
 
 		glm::mat4 view = camera.LoocAt();
-
 		btVector3 position = persone.charCon->getGhostObject()->getWorldTransform().getOrigin();
 		
-		if (position.y() < -20) {
+
+		float minHeight = terrain.getHeightOfTerrian(position.x(), position.z()) - 1;
+		
+		if (position.y() < minHeight-5) {
 			btTransform matPos;
 			matPos.setIdentity();
-			matPos.setOrigin({ position.x(),20,position.z() });
+			matPos.setOrigin({ position.x(),minHeight+5,position.z() });
 			persone.charCon->getGhostObject()->setWorldTransform(matPos);
 		}
 		lightPosForShad = { position.x(), position.y(), position.z() };
 
 		lightPos.back() = lightPosForShad - dirLight * 70.0f;
-		renderer.renderInShadow(lightPos.back(), lightPosForShad);
-
-
-		renderer.EnableHDR();
 		
 		btTransform t;
-		//terrianBody->getMotionState()->getWorldTransform(t);
-		//model = getInbtTransform(t);
-		
-	
 		renderer.bodiesMatrixTrans.resize(pengine->getBody().size());
 		auto s = renderer.bodiesMatrixTrans.begin();
-
 		for (auto [a, b, c] : pengine->getBody()) {
-			if (a->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
-				auto pr = std::make_pair("sphere", pengine->getmatSphere(a.get()));
-				*(s) = pr;
+			if (a->getInvMass() != 0) {
+				if (a->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
+					auto pr = std::make_pair("sphere", pengine->getmatSphere(a.get()));
+					*(s) = pr;
+				}
+				else if (a->getCollisionShape()->getShapeType() == CYLINDER_SHAPE_PROXYTYPE) {
+					*(s) = std::make_pair("cylinder", std::move(pengine->getmatCylinder(a.get())));
+				}
+				else *(s) = std::make_pair("unknownobj", glm::mat4());
 			}
-			else if (a->getCollisionShape()->getShapeType() == CYLINDER_SHAPE_PROXYTYPE) {
-				*(s) = std::make_pair("cylinder", std::move(pengine->getmatCylinder(a.get())));
-			}
-			else *(s) = std::make_pair("unknownobj", glm::mat4());
 			s++;
 		}
 
-
-
-
 		
-		renderer.renderTerrian(width, height, camera.cameraPos,model, view, projection, lightPos.back());
-		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
-
-
-		t = persone.charCon->getGhostObject()->getWorldTransform();
-		glm::mat4 glmatrix = getInbtTransform(t);
-		glmatrix = glm::rotate(glmatrix, glm::radians(90.0f - camera.yaw), glm::vec3(0.0, 1.0, 0.0));
 
 		persone.update(deltaTime);
-		glm::mat4 modelTreeTrans = glm::mat4();
-		
-		modelTreeTrans = glm::translate(modelTreeTrans, glm::vec3(10.1f, 1.1f, 0.1));
-		modelTreeTrans = glm::scale(modelTreeTrans, glm::vec3(0.5f));
-		//renderer.renderModel(&Modeltree, modelTreeTrans, view, lightPos);
-
-
-
-
-		renderer.renderModel(&Modeltree, modelTreeTrans, view, lightPos);
-		renderer.renderModelAnim(&ourModel,glmatrix, view, deltaTime, lightPos);
-
 		ourModel.PlayAnimation(deltaTime);
+		ourModel.skel.Update();
+		for (Mesh& mesh : ourModel.meshes) {
+			mesh.UpdateBoneMat();
+		};
+		glm::mat4 glmatrix = getInbtTransform(persone.charCon->getGhostObject()->getWorldTransform());
+		glmatrix = glm::rotate(glmatrix, glm::radians(90.0f - camera.yaw), glm::vec3(0.0, 1.0, 0.0));
+		glmatrix = glm::translate(glmatrix, glm::vec3(0, 0, -1));
+		
+		
+		std::vector<glm::mat4> modelMatrices;
+		for (auto& a : positions) {
+			glm::vec4 answer = projection * view * glm::vec4(a, 1.0);
+			answer /= answer.w;
+			if (abs(answer.x) > 1.1 || abs(answer.y) > 1.1 || abs(answer.z) > 1)
+				continue;
+			else {
+				glm::mat4 matrix = glm::mat4(1);
+				matrix = glm::translate(matrix, a);
+				modelMatrices.push_back(matrix);
+			}
+		};
+		renderer.prepareModelInstanse(modelMatrices);
+		
+		
+		renderer.renderInShadow(lightPos.back(), lightPosForShad);
+		glEnable(GL_CLIP_DISTANCE0);
+		
+		float distance = 2 * (camera.cameraPos.y - renderer.getWater().getHeight());
+		camera.cameraPos.y -= distance;
+		camera.pitch = -camera.pitch;	
+		view = camera.LoocAt();
 
+		
+		renderer.EnableReflectionWater();
+		renderer.renderTerrian(width, height, camera.cameraPos, model, view, projection, lightPos.back(), lightPos);
+		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
+		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size());
+		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos);
+		renderer.renderSkyBox(view, projection, currentFrame);
+		
+		camera.cameraPos.y += distance;
+		camera.pitch = -camera.pitch;
+		view = camera.LoocAt();
 
-		glDisable(GL_CULL_FACE);
-		Light.UseLight(view, projection, lightPos);	
-		glEnable(GL_CULL_FACE);
+		renderer.EnableRefractionWater();
+		renderer.renderTerrian(width, height, camera.cameraPos, model, view, projection, lightPos.back(), lightPos);
+		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
+		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size());
+		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos);
 		renderer.renderSkyBox(view, projection, currentFrame);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		renderer.DisableHDR();
-		renderer.renderHDR(epsilon);
+		
 
+		glDisable(GL_CLIP_DISTANCE0);
+		
+		renderer.EnableHDR();
+		renderer.renderTerrian(width, height, camera.cameraPos,model, view, projection, lightPos.back(), lightPos);
+		Light.UseLight(view, projection, lightPos);
+		renderer.renderWater(view, deltaTime, camera);
+		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
+		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size());
+		renderer.renderModelAnim(&ourModel,glmatrix, view, deltaTime, lightPos);
+		renderer.renderSkyBox(view, projection, currentFrame);
+		renderer.DisableHDR();
+		
+		renderer.renderHDR(epsilon);
+		//renderer.renderReflection(epsilon);
 		TwDraw();
 
 		glfwSwapBuffers(window);
@@ -343,7 +421,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (Key.keys[67])  skaling += (yoffset * 0.1);
+	if (Key.keys[GLFW_KEY_C])  skaling += (yoffset * 0.1);
 	else camera.scroll_callback(xoffset, yoffset);
 }
 
@@ -367,7 +445,6 @@ glm::mat4 getInbtTransform(btTransform& t) {
 		mat[8], mat[9], mat[10], mat[11],
 		mat[12], mat[13], mat[14], mat[15]};
 }
-
 
 static int OgldevKeyToATBKey(int OgldevKey)
 {

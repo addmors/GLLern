@@ -34,12 +34,12 @@ struct Texture {
 class Mesh {
 public:
 	/*  Mesh Data  */
-	vector<Vertex> vertices;
-	vector<unsigned int> indices;
-	vector<Texture> textures;
+	vector<Vertex> _vertices;
+	vector<unsigned int> _indices;
+	vector<Texture> _textures;
 	Skeleton sceneLoaderSkeleton;
 	/*  Functions  */
-	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures);
+	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, glm::vec3 center);
 
 	void Delete() {
 			glDeleteVertexArrays(1, &VAO);
@@ -50,10 +50,12 @@ public:
 	void DrawSelf();
 	void bindTexture(Shader shader);
 	void SetRigged(Shader shader);
+	void UpdateBoneMat();
 
+	unsigned int VAO, VBO, EBO, VBO_Pos, VBO_UVs, VBO_Nor, VBO_IDs, VBO_Weights;
 private:
 	/*  Render data  */
-	unsigned int VAO, VBO, EBO, VBO_Pos, VBO_UVs, VBO_Nor, VBO_IDs, VBO_Weights;
+	glm::vec3 _center;
 	/*  Functions    */
 	void setupMesh();
 };

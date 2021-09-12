@@ -74,6 +74,10 @@ void Shader::SetVec3(const GLchar* nameuniform,glm::vec3 vec) {
 	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
 	glUniform3f(Vec3Loc, vec.x, vec.y, vec.z);
 }
+void Shader::SetVec4(const GLchar* nameuniform, glm::vec4 vec) {
+	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
+	glUniform4f(Vec3Loc, vec.x, vec.y, vec.z,vec.w);
+}
 void Shader::SetFloat(const GLchar* nameuniform, GLfloat flt) {
 	GLint FloatLoc = glGetUniformLocation(ID, nameuniform);
 	glUniform1f(FloatLoc, flt);
@@ -130,8 +134,8 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 		SetVec3("spotlight.diffuse", 1.0f, 1.0f, 1.0f); // darken the light a bit to fit the scene
 		SetVec3("spotlight.specular", 1.0f, 1.0f, 1.0f);
 		SetFloat("spotlight.constant", 1.0f);
-		SetFloat("spotlight.linear", 0.027f);
-		SetFloat("spotlight.quadratic", 0.0028f);
+		SetFloat("spotlight.linear", 0.014f);
+		SetFloat("spotlight.quadratic", 0.00007f);
 		//////Тут больше не фонарик )))
 		////// Тут что то типо солнца, направленый свет без привязки к точке
 		SetVec3("dirLight.direction", glm::mat3(transpose(inverse(view)))*glm::vec3(0.0f, -1.0f, 0.0f));

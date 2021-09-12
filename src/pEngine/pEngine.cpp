@@ -3,12 +3,14 @@
 #include "../mCylinder/mCylinder.h"
 #include "../Terrian.h"
 #include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
+#include "BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h"
 
 
 
 pEngine::pEngine() {
 	collisionConfig = std::make_shared<btDefaultCollisionConfiguration>();
 	dispather = std::make_shared<btCollisionDispatcher>(collisionConfig.get());
+	btGImpactCollisionAlgorithm::registerAlgorithm(dispather.get());
 	broadPhase = std::make_shared<btDbvtBroadphase>();
 	solver = std::make_shared<btSequentialImpulseConstraintSolver>();
 	world = std::make_shared<btDiscreteDynamicsWorld>(dispather.get(), broadPhase.get(), solver.get(), collisionConfig.get());

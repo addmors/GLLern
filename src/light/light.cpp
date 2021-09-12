@@ -20,6 +20,7 @@ light::light(GLfloat* vertices_start, GLfloat* vertices_end,
 
 void light::UseLight(glm::mat4 view, glm::mat4 projection, std::vector<glm::vec3> &lightPos)
 {	
+	glDisable(GL_CULL_FACE);
 	glm::mat4 model = glm::mat4();
 	lightShader.Use();
 	lightShader.SetMat4("view", view);
@@ -36,4 +37,5 @@ void light::UseLight(glm::mat4 view, glm::mat4 projection, std::vector<glm::vec3
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
+	glEnable(GL_CULL_FACE);
 }

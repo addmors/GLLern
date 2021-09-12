@@ -63,15 +63,6 @@ void Model::PlayAnimation(float delta) {
 };
 
 
-//void Model::Draw(Shader shader)
-//{
-//	for (unsigned int i = 0; i < meshes.size(); i++)
-//	{
-//	meshes[i].SetStandartParam(shader);
-//	meshes[i].Draw();
-//	}
-//}
-
 Animation* Model::FindAnimation(std::string anim_to_find)
 {
 	for (int i = 0; i < animations.size(); i++)
@@ -150,7 +141,7 @@ int Model::FindBoneIDByName(std::string name)
 void Model::loadModel(string path) {
 	// read file via ASSIMP
 	Assimp::Importer importer;
-	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
+	importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes);
 	scene = importer.GetOrphanedScene();
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
@@ -240,6 +231,7 @@ void Model::AnimNodeProcess() {
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transformation)
 {
+	glm::vec3 center;
 	vector<Vertex> vertices;
 	vector<unsigned int> indices;
 	vector<Texture> textures;
@@ -248,6 +240,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	{
 		Vertex vertex;
 		vertex.Position = { mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z };
+		center += vertex.Position;
 		vertex.Normal = {mesh->mNormals[i].x,mesh->mNormals[i].y,mesh->mNormals[i].z};
 		if (mesh->mTextureCoords[0]) // сетка обладает набором текстурных координат?
 			vertex.TexCoords = { mesh->mTextureCoords[0][i].x , mesh->mTextureCoords[0][i].y};
@@ -264,6 +257,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 		}
 		vertices.push_back(vertex);
 	}
+	center /= mesh->mNumVertices;
+	
 	int WEIGHTS_PER_VERTEX = 4;
 	int boneArraysSize = mesh->mNumVertices*WEIGHTS_PER_VERTEX;
 	std::vector<float> boneWeights;
@@ -297,7 +292,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
 	textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-	
 	// 2. specular maps
 	vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 	textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
@@ -309,8 +303,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene, aiMatrix4x4 transfor
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 	std::vector<Texture> opacityMaps = loadMaterialTextures(material, aiTextureType_OPACITY, "texture_opacity");
 	textures.insert(textures.end(), opacityMaps.begin(), opacityMaps.end());
-
-	return Mesh(vertices, indices, textures);
+	return Mesh(vertices, indices, textures, center);
 }
 
 

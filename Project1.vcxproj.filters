@@ -75,6 +75,12 @@
     <ClCompile Include="src\Loader.h">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\Water\Water.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\intermediat_buffer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\Shad.h">
@@ -137,6 +143,12 @@
     <ClInclude Include="src\Terrian.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\Water\Water.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\intermediat_buffer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shader\shader.fs" />
@@ -155,5 +167,7 @@
     <None Include="src\shader\skybox.vs" />
     <None Include="src\shader\skybox.fs" />
     <None Include="src\shader\jastshad.vs" />
+    <None Include="src\shader\WaterShader.vs" />
+    <None Include="src\shader\WaterShader.fs" />
   </ItemGroup>
 </Project>

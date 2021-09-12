@@ -6,6 +6,7 @@
 #include "mCylinder\mCylinder.h"
 #include "Camera\Camera.h"
 #include "Model\Model.h"
+#include "Water\Water.h"
 #include <vector>
 #include<utility>
 #include <string>
@@ -127,13 +128,15 @@ class RendererEngine
 private:
 	std::vector<Model*> models; 
 	Shader shader{ "src/shader/3.1.2.shadow_mapping.vs", "src/shader/3.1.2.shadow_mapping.fs" };
+
 	Shader shaderTerrian{ "src/shader/terrianShader.vs", "src/shader/terrianShader.fs" };
+	
 	Shader simpleDepthShader{ "src/shader/3.1.2.shadow_mapping_depth.vs", "src/shader/3.1.2.shadow_mapping_depth.fs" };
 	Shader screen{"src/shader/frameshader.vs", "src/shader/frameshader.fs"};
 	Shader skyboxShader{ "src/shader/skybox.vs", "src/shader/skybox.fs" };
 	Shader objclrShader{ "src/shader/shader3.vs", "src/shader/objvithcolor.fs" };
 	Shader ShaderNoBone{ "src/shader/jastshad.vs", "src/shader/objvithcolor.fs" };
-
+	Shader WaterShader{ "src/shader/WaterShader.vs", "src/shader/WaterShader.fs" };
 	float rotation_sky = 0;
 	float ROTATION_STEP = 0.01f;
 	
@@ -158,7 +161,8 @@ private:
 
 	unsigned int screenTexture;
 	unsigned int intermediateFBO;
-		
+
+	unsigned int bufferTree;
 	unsigned int cubemapTexture;
 	unsigned int cubemapTexture2;
 	int time = 0;
@@ -167,10 +171,13 @@ private:
 	int height_;
 	glm::mat4 lightProjection, lightView;
 	glm::mat4 lightSpaceMatrix;
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)1920 / (float)1080, 0.1f, 400.0f);;
-	
+	glm::mat4* projection = nullptr;
+
+
 public:
+	
 	Terrian* t;
+	Camera* _camera;
 	std::vector<std::pair<std::string, glm::mat4>> bodiesMatrixTrans{};
 
 	void configurateDepthBuf() {
@@ -191,6 +198,11 @@ public:
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void configurateWater(int width, int height, const char* pathDuDvMap) {
+		water.Init(width, height);
+		water.loadDuDv(pathDuDvMap);
 	}
 
 	void configurateHDR(int width, int height) {
@@ -219,7 +231,6 @@ public:
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-
 		glGenRenderbuffers(1, &rbo);
 		glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, width, height);
@@ -240,6 +251,8 @@ public:
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
 	};
 	void configureShareds() {
+
+		glGenBuffers(1, &bufferTree);
 		//standartShared
 		shader.Use();
 		shader.SetInt("diffuseTexture", 0);
@@ -263,8 +276,15 @@ public:
 
 		skyboxShader.Use();
 		skyboxShader.SetInt("skybox1", 0);
-
 		skyboxShader.SetInt("skybox2", 1);
+		
+		WaterShader.Use();
+		WaterShader.SetInt("reflectionTexture", 0);
+		WaterShader.SetInt("refractionTexture", 1);
+		WaterShader.SetInt("dudvMap", 2);
+
+
+
 	}
 	void configureSkyBox() {
 		glGenVertexArrays(1, &skyboxVAO);
@@ -296,12 +316,55 @@ public:
 		cubemapTexture2 = loadCubemap(facesNight);
 	}
 	
-
+	glm::mat4*& getProjection() {
+		return projection;
+	}
+	Water& getWater() {
+		return water;
+	}
+	
+	
 	void EnableHDR() {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		shader.Use();
+		shader.SetVec4("plane", glm::vec4(0, -1, 0, 100000));
+		shaderTerrian.Use();
+		shaderTerrian.SetVec4("plane", glm::vec4(0, -1, 0 , 100000));
+		objclrShader.Use();								  
+		objclrShader.SetVec4("plane", glm::vec4(0, -1, 0, 100000));
+		ShaderNoBone.Use();								  
+		ShaderNoBone.SetVec4("plane", glm::vec4(0, -1, 0, 100000));
+	}
+
+	void EnableReflectionWater() {
+		water.EnableReflection();
+		shader.Use();
+		shader.SetVec4("plane", glm::vec4(0, 1, 0, -water.getHeight()));
+		shaderTerrian.Use();
+		shaderTerrian.SetVec4("plane", glm::vec4(0, 1, 0, -water.getHeight()));
+		objclrShader.Use();
+		objclrShader.SetVec4("plane", glm::vec4(0, 1, 0, -water.getHeight()));
+		ShaderNoBone.Use();
+		ShaderNoBone.SetVec4("plane", glm::vec4(0, 1, 0, -water.getHeight()));
+	}
+
+	void EnableRefractionWater() {
+		water.EnableRefraction();
+		shader.Use();
+		shader.SetVec4("plane", glm::vec4(0, -1, 0, water.getHeight()));
+		shaderTerrian.Use();
+		shaderTerrian.SetVec4("plane", glm::vec4(0, -1, 0, water.getHeight()));
+		objclrShader.Use();
+		objclrShader.SetVec4("plane", glm::vec4(0, -1, 0, water.getHeight()));
+		ShaderNoBone.Use();
+		ShaderNoBone.SetVec4("plane", glm::vec4(0, -1, 0, water.getHeight()));
+	}
+
+	void IdleFrameBuffer() {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	void DisableHDR() {
-
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_DEPTH_TEST);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -310,7 +373,7 @@ public:
 		glBlitFramebuffer(0, 0, width_, height_, 0, 0, width_, height_, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-
+	
 	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4 cameraLook, glm::mat4 projection, glm::vec3 lightPos, unsigned int texture) {
 		shader.Use();
 		shader.SetMat4("projection", projection);
@@ -355,6 +418,24 @@ public:
 
 		}
 	};
+	
+	void renderWater(glm::mat4 cameraLook, float deltaTime, Camera& camera) {
+		WaterShader.Use();
+		WaterShader.SetMat4("projection", *projection);
+		WaterShader.SetMat4("view", cameraLook);
+		water.addMoveFactor(deltaTime);
+		WaterShader.SetVec3("cameraPosition", camera.cameraPos);
+		WaterShader.SetFloat("moveFactor", water.getMoveFactor());
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-40, water.getHeight(), -40));
+		model = glm::scale(model, glm::vec3(60, 1, 60));
+
+		WaterShader.SetMat4("model", model);
+		glDisable(GL_CULL_FACE);
+		water.ActiveTexture();
+		water.drawWater();
+		glEnable(GL_CULL_FACE);
+	};
 	void renderSkyBox(glm::mat4& view, glm::mat4& projection, float currFrame) {
 		glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 		skyboxShader.Use();
@@ -369,23 +450,23 @@ public:
 		int texture2;
 		float blendFactor;
 		if (time >= 0 && time < 5000) {
-			texture1 = cubemapTexture2;
-			texture2 = cubemapTexture2;
+			texture1 = cubemapTexture;
+			texture2 = cubemapTexture;
 			blendFactor = (static_cast<float>(time) - 0.0f) / (5000.0f - 0.0f);
 		}
 		else if (time >= 5000 && time < 8000) {
-			texture1 = cubemapTexture2;
-			texture2 = cubemapTexture;
+			texture1 = cubemapTexture;
+			texture2 = cubemapTexture2;
 			blendFactor = (static_cast<float>(time) - 5000.0f) / (8000.0f - 5000.0f);
 		}
 		else if (time >= 8000 && time < 21000) {
-			texture1 = cubemapTexture;
-			texture2 = cubemapTexture;
+			texture1 = cubemapTexture2;
+			texture2 = cubemapTexture2;
 			blendFactor = (static_cast<float>(time) - 8000.0f) / (21000.0f - 8000.0f);
 		}
 		else {
-			texture1 = cubemapTexture;
-			texture2 = cubemapTexture2;
+			texture1 = cubemapTexture2;
+			texture2 = cubemapTexture;
 			blendFactor = (static_cast<float>(time) - 21000.0f) / (24000.0f - 21000.0f);
 		}
 
@@ -401,19 +482,16 @@ public:
 		glBindVertexArray(0);
 		glDepthFunc(GL_LESS); // set depth function back to default
 	}
-
-
 	void renderModelAnim(Model* model, glm::mat4& trans, glm::mat4 view, float deltaTime, std::vector<glm::vec3>& lightPos) {
 		objclrShader.Use();
 
 		objclrShader.Design(view, lightPos);
-		objclrShader.SetMat4("projection", projection);
+		objclrShader.SetMat4("projection", *projection);
 		objclrShader.SetMat4("view", view);
 		objclrShader.SetMat4("model", trans);
 
 		if (!model->anim)    //If the object is rigged...
 		{
-			model->skel.Update();
 			for (int i = 0; i < model->meshes.size(); i++) {
 				model->meshes[i].bindTexture(objclrShader);
 				if (model->meshes[i].sceneLoaderSkeleton.bones.size() > 0) {
@@ -431,16 +509,46 @@ public:
 		}
 
 	};
-	void renderModel(Model* model, glm::mat4& trans, glm::mat4 view, std::vector<glm::vec3>& lightPos) {
-		ShaderNoBone.Use();
+	void prepareModelInstanse(vector<glm::mat4>matrix) {
+		if (matrix.size() == 0) return;
+		glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 
+		glBufferData(GL_ARRAY_BUFFER, matrix.size() * sizeof(glm::mat4), &matrix[0], GL_DYNAMIC_DRAW);
+	};
+
+	void renderModel(Model* model, glm::mat4 view, std::vector<glm::vec3>& lightPos, int matrixSize) {
+		
+
+		if (matrixSize == 0) return;
+		glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
+		ShaderNoBone.Use();
 		ShaderNoBone.Design(view, lightPos);
-		ShaderNoBone.SetMat4("projection", projection);
+		ShaderNoBone.SetMat4("projection", *projection);
 		ShaderNoBone.SetMat4("view", view);
-		ShaderNoBone.SetMat4("model", trans);
 		for (int i = 0; i < model->meshes.size(); i++) {
+				unsigned int VAO = model->meshes[i].VAO;
+				glBindVertexArray(VAO);
+				// set attribute pointers for matrix (4 times vec4)
+				glEnableVertexAttribArray(5);
+				glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+				glEnableVertexAttribArray(6);
+				glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+				glEnableVertexAttribArray(7);
+				glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+				glEnableVertexAttribArray(8);
+				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+
+				glVertexAttribDivisor(5, 1);
+				glVertexAttribDivisor(6, 1);
+				glVertexAttribDivisor(7, 1);
+				glVertexAttribDivisor(8, 1);
+				
 			model->meshes[i].bindTexture(ShaderNoBone);
-			model->meshes[i].DrawSelf();
+			glBindVertexArray(model->meshes[i].VAO);
+			glDrawElementsInstanced(
+				GL_TRIANGLES, model->meshes[i]._indices.size(), GL_UNSIGNED_INT, 0, matrixSize);
+			glBindVertexArray(model->meshes[i].VAO);
 		}
 	};
 
@@ -515,11 +623,7 @@ public:
 	}
 
 	void renderInShadow(glm::vec3 PosLight,glm::vec3 dirLight) {
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
-		glCullFace(GL_BACK);
+	
 		float near_plane = 0.1f, far_plane = 110.0f;
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 		lightView = glm::lookAt(PosLight, dirLight, glm::vec3(0.0, 1.0, 0.0));
@@ -529,12 +633,16 @@ public:
 		simpleDepthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glCullFace(GL_BACK);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glm::mat4 model = glm::mat4(1.0f);
 		auto [scaleX, scaleZ] = t->getScaleTerrian();
 		float trans = t->getSize() / 2;
 		model = glm::translate(model, glm::vec3(-trans, 0, -trans));
-		model = glm::scale(model, glm::vec3(scaleX, 1, scaleZ));
 		simpleDepthShader.SetMat4("model", model);
 		glDisable(GL_CULL_FACE);
 		t->Draw();
@@ -572,34 +680,39 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void renderTerrian(int width, int height, glm::vec3& cameraPos, glm::mat4 model, glm::mat4 cameraLook, glm::mat4 projection, glm::vec3 lightPos) {
-		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shaderTerrian.Use();
-		shaderTerrian.SetMat4("projection", projection);
-		shaderTerrian.SetMat4("view", cameraLook);
-		// set light uniforms
-		shaderTerrian.SetVec3("viewPos", cameraPos);
-		shaderTerrian.SetVec3("lightPos", lightPos);
-		shaderTerrian.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
-		auto[scaleX,scaleZ]  = t->getScaleTerrian();
-		float trans = t->getSize()/2;
-		model = glm::translate(model, glm::vec3(-trans, 0.1, -trans));
-		model = glm::scale(model, glm::vec3(scaleX, 1, scaleZ));
-		shaderTerrian.SetMat4("model", model);
-		t->ActiveTexture();
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, depthMap);
-		t->Draw();
-	}
-
-
-	void renderHDR(float epsilon) {
+	void renderTerrian(int width, int height, glm::vec3& cameraPos, glm::mat4 model, glm::mat4 cameraLook, glm::mat4 projection, glm::vec3 lightPos, std::vector<glm::vec3>& lightsPos);
+	void renderHDR(float epsilon, glm::mat4 model = glm::mat4(1.0f)) {
 		screen.Use();
 		screen.SetFloat("epsilon", epsilon);
+		screen.SetMat4("model", model);
 		glBindVertexArray(quadVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, screenTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	void renderReflection(float epsilon, glm::mat4 model = glm::mat4(1.0f)) {
+		screen.Use();
+		screen.SetFloat("epsilon", epsilon);
+		screen.SetMat4("model", model);
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, water.getReflectionTexture());
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	void renderRefraction(float epsilon, glm::mat4 model = glm::mat4(1.0f)) {
+		screen.Use();
+		screen.SetFloat("epsilon", epsilon);
+		model = glm::scale(model, { 0.25,0.25,1 });
+		model = glm::translate(model, { -1,1,1 });
+
+		screen.SetMat4("model", model);
+		glBindVertexArray(quadVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, water.getRefractionTexture());
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -614,10 +727,13 @@ public:
 		glDeleteBuffers(1, &cubeVBO);
 		glDeleteVertexArrays(1, &skyboxVAO);
 		glDeleteBuffers(1, &skyboxVBO);
+		water.WaterDestroy();
+		glDeleteBuffers(1, &bufferTree);
 
 	}
 
 	private: 
 		Sphere sphere1{ 1.0f, 36, 18, 1 };
 		Cylinder cylinder1{ 1, 1, 1, 36, 3 };
+		Water water{};
 };

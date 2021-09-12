@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <GL/glew.h>; // Подключаем glew для того, чтобы получить все необходимые заголовочные файлы OpenGL
+#include <GL/glew.h> // Подключаем glew для того, чтобы получить все необходимые заголовочные файлы OpenGL
 
 class Shader
 {
@@ -29,6 +29,7 @@ public:
 
 	void SetVec3(std::string* nameuniform, GLfloat x, GLfloat y, GLfloat z);
 	void SetVec3(std::string* nameuniform, glm::vec3 vec);
+	void SetVec4(const GLchar* nameuniform, glm::vec4 vec);
 	void SetFloat(std::string* nameuniform, GLfloat flt);
 	void SetMat4(std::string* nameuniform, glm::mat4 mat4);
 	void SetInt(std::string* nameuniform, GLint num);
