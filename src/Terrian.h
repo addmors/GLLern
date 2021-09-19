@@ -42,7 +42,7 @@ private:
 
 	float  SIZE;
 	vector<VertexTerrarian> vertexs;
-	vector<unsigned int> indices;
+	vector<unsigned> indices;
 	std::shared_ptr<btHeightfieldTerrainShape> heightfieldShape;
 	unsigned VAO, VBO, EBO;
 	vector<float> height_map;
@@ -80,78 +80,7 @@ public:
 	float getSize() { return SIZE; };
 	std::pair<float, float> getScaleTerrian() { return std::make_pair(scaleX, scaleY); };
 	std::shared_ptr<btHeightfieldTerrainShape> getHeightField() { return heightfieldShape; };
-
-	Terrian(float sizeTerrian, const char* pathHeightMap) :SIZE(sizeTerrian) {
-
-		int nrComponents;
-		///gen buffer in image 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		data = stbi_load(pathHeightMap, &VERTEX_COUNT_X, &VERTEX_COUNT_Y, &nrComponents, 0);
-		this->scaleX = SIZE / VERTEX_COUNT_X;
-		this->scaleY = SIZE / VERTEX_COUNT_Y;
-		vertexs.resize(VERTEX_COUNT_X * VERTEX_COUNT_X);
-		height_map.resize(VERTEX_COUNT_X * VERTEX_COUNT_X);
-		
-		///gen VErtex map 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		for (int i = 0; i < VERTEX_COUNT_X; i++)
-			for (int j = 0; j < VERTEX_COUNT_Y; j++) {
-				float z = getHeightinMinMaxinter(Height(data, i, j));
-				height_map[j * VERTEX_COUNT_X + i] = z;
-				
-				vertexs[j * VERTEX_COUNT_X + i] = {
-						glm::vec3((float)i / ((float)VERTEX_COUNT_X - 1) * VERTEX_COUNT_X*scaleX, z , (float)j / ((float)VERTEX_COUNT_Y - 1) * VERTEX_COUNT_Y*scaleY),
-						getNormal(data,i,j),
-						glm::vec2((float)i / ((float)VERTEX_COUNT_X - 1),(float)j / ((float)VERTEX_COUNT_Y - 1))
-				};
-
-			}
-
-		///gen BtFileld
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		heightfieldShape = std::make_shared<btHeightfieldTerrainShape>(
-			VERTEX_COUNT_X,
-			VERTEX_COUNT_Y,
-			&height_map[0],
-			0,
-			MN_HEIGHT, MX_HEIGHT,
-			1, PHY_FLOAT, false
-		);
-		btVector3 scale{ scaleX* VERTEX_COUNT_X/(VERTEX_COUNT_X-1),1,scaleY* VERTEX_COUNT_Y / (VERTEX_COUNT_Y-1)};
-		heightfieldShape->setLocalScaling(scale);
-		heightfieldShape->setUseDiamondSubdivision(true);
-
-		
-		///gen Indices 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
-		int pointer = 0;
-		indices.resize((VERTEX_COUNT_X - 1) * (VERTEX_COUNT_Y - 1) * 6);
-		for (int gz = 0; gz < VERTEX_COUNT_Y - 1; gz++) {
-			for (int gx = 0; gx < VERTEX_COUNT_X - 1; gx++) {
-				int topLeft = (gz * VERTEX_COUNT_X) + gx;
-				int topRight = topLeft + 1;
-				int bottomLeft = ((gz + 1) * VERTEX_COUNT_X) + gx;
-				int bottomRight = bottomLeft + 1;
-				if ((gz + gx) % 2 == 0) {
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6] = (bottomRight);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 1] = (topRight);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 2] = (topLeft);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 3] = (bottomLeft);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 4] = (bottomRight);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 5] = (topLeft);
-				}
-				else {
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6] = (topLeft);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 1] = (bottomLeft);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 2] = (topRight);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 3] = (topRight);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 4] = (bottomLeft);
-					indices[(gz * (VERTEX_COUNT_X - 1) + gx) * 6 + 5] = (bottomRight);
-				}
-			}
-		}
-		setupTerrarian();
-	}
+	
 	void setupTerrarian()
 	{
 
@@ -162,7 +91,7 @@ public:
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-		glBufferData(GL_ARRAY_BUFFER, vertexs.size() * sizeof(vertexs), &vertexs[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, vertexs.size() * sizeof(vertexs), &vertexs[0], GL_DYNAMIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
@@ -180,6 +109,7 @@ public:
 
 	}
 
+	Terrian(float sizeTerrian, const char* pathHeightMap);
 	void Draw()
 	{
 		glBindVertexArray(VAO);
@@ -187,15 +117,15 @@ public:
 		glBindVertexArray(0);
 		glActiveTexture(GL_TEXTURE0);
 	}
-	
+
 	unsigned char Height(unsigned char* pHeightMap, int X, int Y) {
 		//if (!pHeightMap) return 0;
 		// All right - returning our height
-		return pHeightMap[(Y + (X * MAP_SIZE)) * 4];
+		return pHeightMap[(Y + (X * 256)) * 4];
 	}
 
 	float getHeightinMinMaxinter(float x) {
-		return ((MX_HEIGHT - MN_HEIGHT) * (x) / 256.0F) + MN_HEIGHT;
+		return ((80) * (x) / 256.0F) + MN_HEIGHT;
 	}
 
 	glm::vec3 getNormal(unsigned char* pHeightMap, int x, int z) {

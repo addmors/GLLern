@@ -125,15 +125,17 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\Engine1.0\Project1\libs\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>D:\Engine1.0\Project1\libs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;glew32s.lib;SOIL.lib;assimp-vc141-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>AntTweakBar64.lib;BulletCollision.lib;BulletDynamics.lib;BulletSoftBody.lib;LinearMath.lib;glfw3.lib;opengl32.lib;glew32s.lib;SOIL.lib;assimp-vc141-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Grass\grass.cpp" />
     <ClCompile Include="src\intermediat_buffer.cpp" />
     <ClCompile Include="src\Loader.h" />
     <ClCompile Include="src\RendererEngine.cpp" />
@@ -158,6 +160,7 @@
     <ClCompile Include="src\Water\Water.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Grass\grass.h" />
     <ClInclude Include="src\intermediat_buffer.h" />
     <ClInclude Include="src\RendererEngine.h" />
     <ClInclude Include="src\pEngine\pEngine.h" />
@@ -185,6 +188,9 @@
     <None Include="src\shader\3.1.2.shadow_mapping.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.fs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
+    <None Include="src\shader\grassShader.vs" />
+    <None Include="src\shader\grassTess.CS" />
+    <None Include="src\shader\grassTess.ES" />
     <None Include="src\shader\jastshad.vs" />
     <None Include="src\shader\lampshad.fs" />
     <None Include="src\shader\objvithcolor.fs" />

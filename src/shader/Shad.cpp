@@ -32,12 +32,12 @@ Shader::Shader(const GLchar * vertexPath, const GLchar * fragmentPath)
 	}
 	const GLchar* vShaderCode = vertexCode.c_str();
 	const GLchar* fShaderCode = fragmentCode.c_str();
-	GLuint vertex, fragment;
 	GLint success;
 	GLchar infoLog[512];
+	GLuint vertex, fragment;
 	vertex = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertex, 1, &vShaderCode, NULL);
-	glCompileShader(vertex);
+	glCompileShaderIncludeARB(vertex, 1, incPaths, NULL);
 	// Если есть ошибки - вывести их
 	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
 	if (!success)
@@ -47,11 +47,12 @@ Shader::Shader(const GLchar * vertexPath, const GLchar * fragmentPath)
 	};
 	fragment = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragment, 1, &fShaderCode, NULL);
-	glCompileShader(fragment);
+	glCompileShaderIncludeARB(fragment, 1, incPaths, NULL);
+	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
 		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	};
 	ID = glCreateProgram();
 	glAttachShader(ID, vertex);
@@ -66,6 +67,86 @@ Shader::Shader(const GLchar * vertexPath, const GLchar * fragmentPath)
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
 }
+
+Shader::Shader()
+{
+	ID = glCreateProgram();
+
+	if (ID == 0) {
+		fprintf(stderr, "Error creating shader program\n");
+	}
+}
+
+
+
+void Shader::AddShader(const GLchar* path, GLint type) {
+	GLuint ShaderObj = glCreateShader(type);
+	std::string pathCode;
+	std::ifstream pathShaderFile;
+	pathShaderFile.exceptions(std::ifstream::badbit);
+	try {
+		pathShaderFile.open(path);
+		std::stringstream pathShaderStream;
+		pathShaderStream << pathShaderFile.rdbuf();
+		pathShaderFile.close();
+		pathCode = pathShaderStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+	}
+	const GLchar* pathShaderCode = pathCode.c_str();
+
+	glShaderSource(ShaderObj, 1, &pathShaderCode, NULL);
+
+	glCompileShaderIncludeARB(ShaderObj, 1, incPaths, NULL);
+
+	GLint success;
+	GLchar infoLog[512];
+
+	glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
+	if (!success)
+	{
+		glGetShaderInfoLog(ShaderObj, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::"<<path<<"::COMPILATION_FAILED\n" << infoLog << std::endl;
+	};
+	m_shaderObj.push_back(ShaderObj);
+	glAttachShader(ID, ShaderObj);
+}
+
+
+void Shader::Finelize()
+{
+	GLint Success = 0;
+	GLchar ErrorLog[1024] = { 0 };
+
+	glLinkProgram(ID);
+
+	glGetProgramiv(ID, GL_LINK_STATUS, &Success);
+	if (Success == 0) {
+		glGetProgramInfoLog(ID, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+	}
+
+	glValidateProgram(ID);
+	glGetProgramiv(ID, GL_VALIDATE_STATUS, &Success);
+	if (!Success) {
+		glGetProgramInfoLog(ID, sizeof(ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
+	}
+
+	// Delete the intermediate shader objects that have been added to the program
+	for (std::vector<GLint>::iterator it = m_shaderObj.begin(); it != m_shaderObj.end(); it++)
+	{
+		glDeleteShader(*it);
+	}
+
+	m_shaderObj.clear();
+}
+
+
+
+
 void Shader::SetVec3(const GLchar* nameuniform, GLfloat x, GLfloat y, GLfloat z) {
 	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
 	glUniform3f(Vec3Loc, x, y, z);
@@ -170,4 +251,29 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 		};
 }
 void Shader::Use() { glUseProgram(ID); }
+
+void ADDFILE(const GLchar* path)
+{
+	std::string pathCode;
+	std::ifstream pathShaderFile;
+	pathShaderFile.exceptions(std::ifstream::badbit);
+	try {
+		pathShaderFile.open(path);
+		std::stringstream pathShaderStream;
+		pathShaderStream << pathShaderFile.rdbuf();
+		pathShaderFile.close();
+		pathCode = pathShaderStream.str();
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+	}
+	const GLchar* pathShaderCode = pathCode.c_str();
+	
+	glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(path), path, strlen(pathShaderCode), pathShaderCode);
+	
+};
+void DELETEFILE(const GLchar* path) {
+	glDeleteNamedStringARB(strlen(path), path);
+};
 

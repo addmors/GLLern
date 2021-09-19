@@ -1,6 +1,4 @@
-#ifndef SHADER_H
-#define SHADER_H
-
+#pragma once
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -11,14 +9,22 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h> // Подключаем glew для того, чтобы получить все необходимые заголовочные файлы OpenGL
 
+
+static void ADDFILE(const GLchar* Path);
+static void DELETEFILE(const GLchar* path);
+static std::vector<const GLchar*> paths;
+static const char* incPaths[1] = { "/" };
 class Shader
 {
 public:
 	unsigned int ID;
 	// Идентификатор программы
-	GLuint Program;
+	std::vector<GLint> m_shaderObj;
 	// Конструктор считывает и собирает шейдер
 	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
+	Shader();
+	void AddShader(const GLchar* Path, GLint Type);
+	void Finelize(); 
 	// Использование программы
 	void Use();
 	void SetVec3(const GLchar* nameuniform, GLfloat x, GLfloat y, GLfloat z);
@@ -35,5 +41,3 @@ public:
 	void SetInt(std::string* nameuniform, GLint num);
 	void Design(glm::mat4 view, std::vector<glm::vec3> &lightPos);
 };
-
-#endif
