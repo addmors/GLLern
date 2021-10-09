@@ -16,8 +16,10 @@
 #include"Loader.h"
 #include "Player\Player.h"
 #include "pEngine\pEngine.h"
+#include "Grass\grass.h"
 #include <AntTweakBar.h>
 #include "Terrian.h"
+#include"Grass\grass.h"
 
 glm::vec3 skaling = glm::vec3(0.1f, 0.1f, 0.1f);
 glm::vec3 cameraPos = glm::vec3(3.0f, 0.0f, 3.0f);
@@ -38,11 +40,13 @@ Camera camera(cameraPos, cameraFront, cameraUp, fov);
 std::unique_ptr<pEngine> pengine = std::make_unique<pEngine>();
 Model ourModel;
 GLFWwindow* window;
+std::vector<std::string> FileLoader::names = {};
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback_for_movement(int key, int action);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+float get(float x, float y);
 float inline randFloat(float LO, float HI) {
 	return LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
 };
@@ -124,6 +128,12 @@ int main() {
 	{ "z", TW_TYPE_FLOAT, offsetof(glm::vec3, z), "" }
 	};
 
+
+	FileLoader::ADDFILE("src/shader/inc/classicnoise2D.glsl");
+	FileLoader::ADDFILE("src/shader/inc/classicnoise3D.glsl");
+	FileLoader::ADDFILE("src/shader/inc/shared.glsl");
+	FileLoader::ADDFILE("src/shader/inc/worley.glsl");
+
 	vector<glm::vec3> lightPos;
 	glm::vec3 lightPosForShad(0.01f, 7.0f, 0.0f);
 	glm::vec3 dirLight(0, -1, 0);
@@ -162,10 +172,15 @@ int main() {
 	camera.keys = &Key.keys;
 	ourModel.keys = &Key.keys;
 	persone.keys = &Key.keys;
+
 	RendererEngine renderer;
 	Terrian terrain = Terrian(32768/64, "heightmap6.png");
+	TextureGrass textureGrass("3Dgrass.png", &terrain, &Terrian::getHeightOfTerrian,256);
+	
+	Grass grass{&terrain,&Terrian::getHeightOfTerrian, &Terrian::getNormlofTerrian};
 	terrain.loadTextures("blendMap.png", "rTexture.png", "grass2.png", "bTexture.png", "grass.png");
 	
+
 
 	Model Modeltree;
 	Modeltree.loadModel("resources/objects/tree/Tree.obj");
@@ -210,7 +225,8 @@ int main() {
 	
 
 	renderer.t = &terrain;
-
+	renderer.texGrass = &textureGrass;
+	renderer.camera = &camera;
 	//create Shaders
 	// -----------------------
 	renderer.configureShareds();
@@ -232,21 +248,41 @@ int main() {
 	// --------------------
 	renderer.configurateWater(width, height, "dudvmap.png");
 	
+	renderer.getGrass().Use();
+	renderer.getGrass().SetInt("urandom01", 0);
+	renderer.getGrass().SetInt("numPrimitives", grass.numClusters);
+	
+	unsigned int randTex;
+	grass.genrandomTexture(&randTex);
+
 	//Frame texture	
 	//End Frame buffer;
-
 
 	light Light(std::begin(vertices),std::end(vertices), std::begin(indices),std::end(indices), lightPos);
 
 	//pengine->addCylinder(2, 5, 0, 30, 0, 1.0);
 	//pengine->addSphere(1.0,0,25,0,1.0);
 	
+
+	vector<glm::vec3> vegetation
+	{
+		glm::vec3(-1.5f, terrain.getHeightOfTerrian(-1.5f, -0.48f)+0.25, -0.48f),
+		glm::vec3(1.5f, terrain.getHeightOfTerrian(1.5f, 0.51f) + 0.25, 0.51f),
+		glm::vec3(0.0f, terrain.getHeightOfTerrian(0.0f, 0.7f) + 0.25, 0.7f),
+		glm::vec3(-0.3f,terrain.getHeightOfTerrian(-0.3f, -2.3f) + 0.25, -2.3f),
+		glm::vec3(0.5f, terrain.getHeightOfTerrian(0.5f, -0.6f) + 0.25, -0.6f)
+	};
+
+	
+	unsigned int ticFrame = 0;
 	auto terrianBody = pengine->addTerrian(&terrain);
 	lastFrame = glfwGetTime();
 	glm::mat4 projection = glm::perspective(glm::radians(camera.fov), (float)width / (float)height, 0.1f, 400.0f);
 	renderer.getProjection() = &projection;
 	while (!glfwWindowShouldClose(window))
 	{
+		ticFrame += 1;
+		ticFrame %= 65000;
 		glm::mat4 model = glm::mat4();
 		
 		GLfloat currentFrame = glfwGetTime();
@@ -310,9 +346,8 @@ int main() {
 		for (auto& a : positions) {
 			glm::vec4 answer = projection * view * glm::vec4(a, 1.0);
 			answer /= answer.w;
-			if (abs(answer.x) > 1.1 || abs(answer.y) > 1.1 || abs(answer.z) > 1)
-				continue;
-			else {
+			if (abs(answer.x) < 1.1 || abs(answer.y) < 1.1 || abs(answer.z) < 1) {
+
 				glm::mat4 matrix = glm::mat4(1);
 				matrix = glm::translate(matrix, a);
 				modelMatrices.push_back(matrix);
@@ -323,18 +358,28 @@ int main() {
 		
 		renderer.renderInShadow(lightPos.back(), lightPosForShad);
 		glEnable(GL_CLIP_DISTANCE0);
+
+
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		renderer.getGrass().Use();
 		
+
+		
+
 		float distance = 2 * (camera.cameraPos.y - renderer.getWater().getHeight());
 		camera.cameraPos.y -= distance;
 		camera.pitch = -camera.pitch;	
 		view = camera.LoocAt();
 
+		float trans = terrain.getSize()/2;
+		model = glm::translate(model, glm::vec3(-trans, 0, -trans));
 		
 		renderer.EnableReflectionWater();
-		renderer.renderTerrian(width, height, camera.cameraPos, model, view, projection, lightPos.back(), lightPos);
+		renderer.renderTerrian(width, height, camera.cameraPos,camera.cameraFront, model, view, projection, lightPos.back(), lightPos);
 		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
-		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size());
-		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos);
+		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size(),camera.cameraPos,cameraFront);
+		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos, camera.cameraPos,camera.cameraFront);
 		renderer.renderSkyBox(view, projection, currentFrame);
 		
 		camera.cameraPos.y += distance;
@@ -342,28 +387,44 @@ int main() {
 		view = camera.LoocAt();
 
 		renderer.EnableRefractionWater();
-		renderer.renderTerrian(width, height, camera.cameraPos, model, view, projection, lightPos.back(), lightPos);
+		renderer.renderTerrian(width, height, camera.cameraPos, camera.cameraFront, model, view, projection, lightPos.back(), lightPos);
 		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
-		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size());
-		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos);
+		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size(), camera.cameraPos, cameraFront);
+		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos, camera.cameraPos, camera.cameraFront);
 		renderer.renderSkyBox(view, projection, currentFrame);
 
 		
 
 		glDisable(GL_CLIP_DISTANCE0);
-		
+
+		glEnable(GL_DEPTH_TEST);
 		renderer.EnableHDR();
-		renderer.renderTerrian(width, height, camera.cameraPos,model, view, projection, lightPos.back(), lightPos);
+
+		renderer.renderTerrian(width, height, camera.cameraPos, camera.cameraFront, model, view, projection, lightPos.back(), lightPos);
 		Light.UseLight(view, projection, lightPos);
 		renderer.renderWater(view, deltaTime, camera);
 		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
-		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size());
-		renderer.renderModelAnim(&ourModel,glmatrix, view, deltaTime, lightPos);
-		renderer.renderSkyBox(view, projection, currentFrame);
+
+		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size(), camera.cameraPos, cameraFront);
+		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos, camera.cameraPos, camera.cameraFront);
+		renderer.renderTextureGrass(view, vegetation);
+		/*glBindTexture(GL_TEXTURE_2D, randTex);
+
+		renderer.getGrass().Use();
+		renderer.getGrass().SetMat4("viewProjectionMatrix", projection*view);
+		renderer.getGrass().SetVec3("eyePosition", camera.cameraPos);
+		renderer.getGrass().SetVec3("lookDirection", camera.cameraFront);
+		renderer.getGrass().SetInt("frameNumber", ticFrame);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, randTex);
+		grass.draw();*/
+		renderer.renderSkyBox(view, projection, currentFrame);		
 		renderer.DisableHDR();
 		
 		renderer.renderHDR(epsilon);
-		//renderer.renderReflection(epsilon);
+		
+		
 		TwDraw();
 
 		glfwSwapBuffers(window);

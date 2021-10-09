@@ -1,74 +1,27 @@
 #include "Shad.h"
 
-Shader::Shader(const GLchar * vertexPath, const GLchar * fragmentPath)
+Shader::Shader(const GLchar * vertexPath, const GLchar * fragmentPath, const GLchar* geometryPath)
 {
-	// 1. Получаем исходный код шейдера из filePath
-	std::string vertexCode;
-	std::string fragmentCode;
-	std::ifstream vShaderFile;
-	std::ifstream fShaderFile;
-	// Удостоверимся, что ifstream объекты могут выкидывать исключения
-	vShaderFile.exceptions(std::ifstream::badbit);
-	fShaderFile.exceptions(std::ifstream::badbit);
-	try
-	{
-		// Открываем файлы
-		vShaderFile.open(vertexPath);
-		fShaderFile.open(fragmentPath);
-		std::stringstream vShaderStream, fShaderStream;
-		// Считываем данные в потоки
-		vShaderStream << vShaderFile.rdbuf();
-		fShaderStream << fShaderFile.rdbuf();
-		// Закрываем файлы
-		vShaderFile.close();
-		fShaderFile.close();
-		// Преобразовываем потоки в массив GLchar
-		vertexCode = vShaderStream.str();
-		fragmentCode = fShaderStream.str();
-	}
-	catch (std::ifstream::failure e)
-	{
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-	}
-	const GLchar* vShaderCode = vertexCode.c_str();
-	const GLchar* fShaderCode = fragmentCode.c_str();
-	GLint success;
-	GLchar infoLog[512];
-	GLuint vertex, fragment;
-	vertex = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex, 1, &vShaderCode, NULL);
-	glCompileShaderIncludeARB(vertex, 1, incPaths, NULL);
-	// Если есть ошибки - вывести их
-	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-	};
-	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment, 1, &fShaderCode, NULL);
-	glCompileShaderIncludeARB(fragment, 1, incPaths, NULL);
-	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
-		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-	};
-	ID = glCreateProgram();
-	glAttachShader(ID, vertex);
-	glAttachShader(ID, fragment);
-	glLinkProgram(ID);
-	glGetProgramiv(ID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		glGetProgramInfoLog(ID, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILEDddddd\n" << infoLog << std::endl;
-	}
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
+	Init();
+	AddShader(vertexPath, GL_VERTEX_SHADER);
+	AddShader(fragmentPath, GL_FRAGMENT_SHADER);
+	if (geometryPath != nullptr)
+		AddShader(geometryPath, GL_GEOMETRY_SHADER);
+	Finelize();
 }
 
-Shader::Shader()
+Shader::Shader(const GLchar* vertexPath, const GLchar* fragmentPath, const GLchar* tessCsPath, const GLchar* tessEsPath, const GLchar* geometryPath) {
+	Init();
+	AddShader(vertexPath, GL_VERTEX_SHADER);
+	AddShader(fragmentPath, GL_FRAGMENT_SHADER);
+	if(geometryPath != nullptr)
+		AddShader(geometryPath, GL_GEOMETRY_SHADER);
+	AddShader(tessCsPath, GL_TESS_CONTROL_SHADER);
+	AddShader(tessEsPath, GL_TESS_EVALUATION_SHADER);
+	Finelize();
+}
+
+void Shader::Init()
 {
 	ID = glCreateProgram();
 
@@ -195,7 +148,7 @@ void Shader::SetInt(std::string* nameuniform, GLint num) {
 	glUniform1i(glGetUniformLocation(ID, name), num);
 }
 
-void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
+void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos, glm::vec3& cameraPos, glm::vec3& cameraDir)
 {
 
 	std::string Position = "pointLights[].position";
@@ -207,8 +160,8 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 	std::string Quadratic = "pointLights[].quadratic";
 		
 	////Фонарz
-		SetVec3("spotlight.position", 0,0,0);
-		SetVec3("spotlight.direction", 0,0,-1);
+		SetVec3("spotlight.position", cameraPos);
+		SetVec3("spotlight.direction", cameraDir );
 		SetFloat("spotlight.cutOff", glm::cos(glm::radians(12.5f)));
 		SetFloat("spotlight.outercutOff", glm::cos(glm::radians(17.5f)));
 		SetVec3("spotlight.ambient", 0.0f, 0.0f, 0.0f);
@@ -219,7 +172,7 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 		SetFloat("spotlight.quadratic", 0.00007f);
 		//////Тут больше не фонарик )))
 		////// Тут что то типо солнца, направленый свет без привязки к точке
-		SetVec3("dirLight.direction", glm::mat3(transpose(inverse(view)))*glm::vec3(0.0f, -1.0f, 0.0f));
+		SetVec3("dirLight.direction", glm::mat3(transpose(inverse(glm::mat3(1))))*glm::vec3(0.0f, -1.0f, 0.0f));
 		SetVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
 		SetVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f); // darken the light a bit to fit the scene
 		SetVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
@@ -234,7 +187,7 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 			Constant.insert(12, std::to_string(i));
 			Linear.insert(12, std::to_string(i));
 			Quadratic.insert(12, std::to_string(i));
-			SetVec3(&Position, glm::vec3(view*glm::vec4(lightPos[i],1.0f)));
+			SetVec3(&Position, glm::vec3(glm::vec4(lightPos[i],1.0f)));
 			SetVec3(&Ambient, 0.05f, 0.05f, 0.05f);
 			SetVec3(&Diffuse, .8f, .8f, .8f);
 			SetVec3(&Specular, 1.0f, 1.0f, 1.0f);
@@ -252,7 +205,10 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos)
 }
 void Shader::Use() { glUseProgram(ID); }
 
-void ADDFILE(const GLchar* path)
+
+
+
+void FileLoader::ADDFILE(const std::string path)
 {
 	std::string pathCode;
 	std::ifstream pathShaderFile;
@@ -269,11 +225,15 @@ void ADDFILE(const GLchar* path)
 		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
 	}
 	const GLchar* pathShaderCode = pathCode.c_str();
+	std::string temp = '/' + path;
 	
-	glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(path), path, strlen(pathShaderCode), pathShaderCode);
+	glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(temp.c_str()), temp.c_str(), strlen(pathShaderCode), pathShaderCode);
+	names.push_back(path);
 	
 };
-void DELETEFILE(const GLchar* path) {
-	glDeleteNamedStringARB(strlen(path), path);
+void FileLoader::DELETEFILE() {
+	for (auto name : names) {
+		glDeleteNamedStringARB(strlen(name.c_str()), name.c_str());
+	}
 };
 

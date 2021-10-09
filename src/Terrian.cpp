@@ -99,17 +99,23 @@ Terrian::Terrian(float sizeTerrian, const char* pathHeightMap) :SIZE(sizeTerrian
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexTerrarian), (void*)offsetof(VertexTerrarian, TexCoords));
 	glBindVertexArray(0);
+
 }
 
 float Terrian::getHeightOfTerrian(float x, float y) {
 
 	x += SIZE / 2;
 	y += SIZE / 2;
-	float terrianInY = y / scaleY+0.5;
-	float terrianInX = x / scaleX+0.5;
+	float terrianInY = (y / scaleY)+0.5;
+	float terrianInX = (x / scaleX)+0.5;
 
 	int gridX = floor(terrianInX)-1;
 	int gridY = floor(terrianInY)-1;
+	if (gridX < 0) gridX = 0;
+	if (gridY < 0) gridY = 0;
+	if (gridX > 254) gridX = 254;
+	if (gridY > 254) gridY = 254;
+
 
 	float xCoord = fmod(terrianInX, 1);
 	float yCoord = fmod(terrianInY, 1);
@@ -150,4 +156,14 @@ float Terrian::getHeightOfTerrian(float x, float y) {
 
 		return 0;
 	}
+}
+glm::vec3 Terrian::getNormlofTerrian(float x, float y)
+{
+	x += SIZE / 2;
+	y += SIZE / 2;
+	float terrianInY = y / scaleY + 0.5;
+	float terrianInX = x / scaleX + 0.5;
+	int gridX = floor(terrianInX) - 1;
+	int gridY = floor(terrianInY) - 1;
+	return getNormal(data,gridX, gridY);
 };

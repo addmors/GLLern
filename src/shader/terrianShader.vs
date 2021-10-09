@@ -34,8 +34,8 @@ void main()
     
     gl_ClipDistance[0] = dot(worldPosition, plane); 
 
-    vs_out.FragPos = vec3(view*model * vec4(position, 1.0));
-    vs_out.Normal = normalize( mat3(transpose(inverse(view*model))) * aNormal);
+    vs_out.FragPos = vec3(model * vec4(position, 1.0));
+    vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
     vs_out.TexCoords = aTexCoords;
     vec4 positionRelativeToCam = view*worldPosition; 
     vs_out.FragPosLightSpace = lightSpaceMatrix * vec4(vs_out.FragPos, 1.0);

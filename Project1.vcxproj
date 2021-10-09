@@ -188,9 +188,13 @@
     <None Include="src\shader\3.1.2.shadow_mapping.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.fs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
+    <None Include="src\shader\grassShader.fs" />
+    <None Include="src\shader\grassShader.gs" />
     <None Include="src\shader\grassShader.vs" />
     <None Include="src\shader\grassTess.CS" />
     <None Include="src\shader\grassTess.ES" />
+    <None Include="src\shader\inc\classicnoise2D.glsl" />
+    <None Include="src\shader\inc\classicnoise3D.glsl" />
     <None Include="src\shader\jastshad.vs" />
     <None Include="src\shader\lampshad.fs" />
     <None Include="src\shader\objvithcolor.fs" />
@@ -204,6 +208,8 @@
     <None Include="src\shader\skybox.vs" />
     <None Include="src\shader\terrianShader.fs" />
     <None Include="src\shader\terrianShader.vs" />
+    <None Include="src\shader\textureGrass.fs" />
+    <None Include="src\shader\textureGrass.vs" />
     <None Include="src\shader\WaterShader.fs" />
     <None Include="src\shader\WaterShader.vs" />
   </ItemGroup>

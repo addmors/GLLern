@@ -28,7 +28,7 @@ public:
 
 		btTransform startTransform;
 		startTransform.setIdentity();
-		startTransform.setOrigin(btVector3(0,100, 0));
+		startTransform.setOrigin(btVector3(0,2, 0));
 
 		btConvexShape* capsule = new btCapsuleShape(0.5, 0.5);
 

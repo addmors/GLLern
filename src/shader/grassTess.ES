@@ -1,8 +1,15 @@
-#version 410
-#endif
+#version 420
+#extension GL_ARB_shading_language_include : require
+
+#include</src/shader/inc/classicnoise2D.glsl>
+#include</src/shader/inc/classicnoise3D.glsl>
+#include</src/shader/inc/worley.glsl>
+#include</src/shader/inc/shared.glsl>
+
 
 layout(isolines, equal_spacing) in;
 
+in vec3 Normal_ES_in[];
 out vec3 normal;
 out vec3 binormal;
 out float stemThickness;
@@ -51,14 +58,14 @@ void main(void)
     float seSfn = sfn * shiveringEnabled;
     float randY = rand(gl_TessCoord.y);
     vec2 v1 = vec2(
-    cnoise2dab(vec2((randY + 27.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.0f, 0.5f),
-    cnoise2dab(vec2((randY + 31.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.5f, 1.0f));
+    cnoise2dab(vec2((randY + 27.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.0f, 0.1f),
+    cnoise2dab(vec2((randY + 31.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.1f, 0.2f));
     vec2 v2 = vec2(
-    cnoise2dab(vec2((randY + 99.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.5f, 1.0f),
-    cnoise2dab(vec2((randY + 51.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.0f, 0.6f));
+    cnoise2dab(vec2((randY + 99.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.1f, 0.2f),
+    cnoise2dab(vec2((randY + 51.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.0f, 0.2f));
     vec2 v3 = vec2(
-    cnoise2dab(vec2((randY + 46.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.75f, 1.3f),
-    cnoise2dab(vec2((randY + 76.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.75f, 1.3f));
+    cnoise2dab(vec2((randY + 46.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.35f, 0.8f),
+    cnoise2dab(vec2((randY + 76.0f + seSfn) * shiverDriftFreq, pIdxSfn), 0.35f, 0.8f));
     vec2 p0 = vec2(0.0f, 0.0f);
     vec2 p1 = mix(v1, rotate(shiverRotFreq, shiverPhase, shiverRadius, v1), shiveringEnabled);
     vec2 p2 = mix(v2, rotate(shiverRotFreq, shiverPhase, shiverRadius, v2), shiveringEnabled);
@@ -80,11 +87,20 @@ void main(void)
     float alpha = gl_TessCoord.y * 2.0f * M_PI;
     float cosAlpha = cos(alpha);
     float sinAlpha = sin(alpha);
+    vec3 B = vec3(0,0,1);
+    vec3 C = cross(Normal_ES_in[0],B); 
+    B = cross(C,Normal_ES_in[0]);
+    mat3 Orient = mat3(
+    B.x,Normal_ES_in[0].x, C.x,
+    B.y,Normal_ES_in[0].y, C.y,
+    B.z,Normal_ES_in[0].z, C.z
+    );
     mat3 circDistribution = mat3(
         cosAlpha, 0.0f, -sinAlpha,
         0.0f,     1.0f,      0.0f,
         sinAlpha, 0.0f, cosAlpha);
-    position = circDistribution * position;
+            
+    position = inverse(Orient) * circDistribution *Orient * position;
 
     // Normal to generatrix, rotated according to position.
     normal = normalize(circDistribution * vec3(
@@ -98,7 +114,6 @@ void main(void)
 
     // Translating to world frame
     position += gl_in[0].gl_Position.xyz;
-
     // Computing wind.
     // Warning! This introduces inaccuracy: we nonlinearly deform the curve, leaving normals
     // untouched. "Stronger" wind (when norm(windDirection) > 1.0f) may cause geometric artifacts.

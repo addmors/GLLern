@@ -10,7 +10,7 @@
 #include <vector>
 #include<utility>
 #include <string>
-
+#include"Grass\grass.h"
 
 unsigned int loadTexture(const char* path);
 static GLfloat vertices[] = {
@@ -128,15 +128,16 @@ class RendererEngine
 private:
 	std::vector<Model*> models; 
 	Shader shader{ "src/shader/3.1.2.shadow_mapping.vs", "src/shader/3.1.2.shadow_mapping.fs" };
-
 	Shader shaderTerrian{ "src/shader/terrianShader.vs", "src/shader/terrianShader.fs" };
-	
-	Shader simpleDepthShader{ "src/shader/3.1.2.shadow_mapping_depth.vs", "src/shader/3.1.2.shadow_mapping_depth.fs" };
+	Shader simpleDepthShader{ "src/shader/3.1.2.shadow_mapping_depth.vs", "src/shader/3.1.2.shadow_mapping_depth.fs"};
 	Shader screen{"src/shader/frameshader.vs", "src/shader/frameshader.fs"};
 	Shader skyboxShader{ "src/shader/skybox.vs", "src/shader/skybox.fs" };
-	Shader objclrShader{ "src/shader/shader3.vs", "src/shader/objvithcolor.fs" };
+	Shader objclrShader{ "src/shader/shader3.vs", "src/shader/objvithcolor.fs"};
 	Shader ShaderNoBone{ "src/shader/jastshad.vs", "src/shader/objvithcolor.fs" };
 	Shader WaterShader{ "src/shader/WaterShader.vs", "src/shader/WaterShader.fs" };
+	Shader GrassShader{ "src/shader/grassShader.vs", "src/shader/grassShader.fs" ,"src/shader/grassTess.CS" ,"src/shader/grassTess.ES" ,"src/shader/grassShader.gs" };
+	Shader TextureGrassShader{"src/shader/textureGrass.vs", "src/shader/textureGrass.fs"};
+
 	float rotation_sky = 0;
 	float ROTATION_STEP = 0.01f;
 	
@@ -177,8 +178,10 @@ private:
 public:
 	
 	Terrian* t;
-	Camera* _camera;
+	TextureGrass* texGrass;
+	Camera* camera;
 	std::vector<std::pair<std::string, glm::mat4>> bodiesMatrixTrans{};
+	Shader& getGrass() { return GrassShader; };
 
 	void configurateDepthBuf() {
 		glGenFramebuffers(1, &depthMapFBO);
@@ -199,7 +202,6 @@ public:
 		glReadBuffer(GL_NONE);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
-
 	void configurateWater(int width, int height, const char* pathDuDvMap) {
 		water.Init(width, height);
 		water.loadDuDv(pathDuDvMap);
@@ -277,13 +279,14 @@ public:
 		skyboxShader.Use();
 		skyboxShader.SetInt("skybox1", 0);
 		skyboxShader.SetInt("skybox2", 1);
-		
+			
 		WaterShader.Use();
 		WaterShader.SetInt("reflectionTexture", 0);
 		WaterShader.SetInt("refractionTexture", 1);
 		WaterShader.SetInt("dudvMap", 2);
 
-
+		TextureGrassShader.Use();
+		TextureGrassShader.SetInt("grass",0);
 
 	}
 	void configureSkyBox() {
@@ -323,6 +326,7 @@ public:
 		return water;
 	}
 	
+	void renderTextureGrass(glm::mat4 view, std::vector<glm::vec3>& pos);
 	
 	void EnableHDR() {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -374,7 +378,7 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	
-	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4 cameraLook, glm::mat4 projection, glm::vec3 lightPos, unsigned int texture) {
+	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& cameraLook, glm::mat4& projection, glm::vec3 lightPos, unsigned int texture) {
 		shader.Use();
 		shader.SetMat4("projection", projection);
 		shader.SetMat4("view", cameraLook);
@@ -419,7 +423,7 @@ public:
 		}
 	};
 	
-	void renderWater(glm::mat4 cameraLook, float deltaTime, Camera& camera) {
+	void renderWater(glm::mat4& cameraLook, float deltaTime, Camera& camera) {
 		WaterShader.Use();
 		WaterShader.SetMat4("projection", *projection);
 		WaterShader.SetMat4("view", cameraLook);
@@ -482,10 +486,10 @@ public:
 		glBindVertexArray(0);
 		glDepthFunc(GL_LESS); // set depth function back to default
 	}
-	void renderModelAnim(Model* model, glm::mat4& trans, glm::mat4 view, float deltaTime, std::vector<glm::vec3>& lightPos) {
+	void renderModelAnim(Model* model, glm::mat4& trans, glm::mat4& view, float deltaTime, std::vector<glm::vec3>& lightPos, glm::vec3& cameraPos, glm::vec3& cameraFront) {
 		objclrShader.Use();
 
-		objclrShader.Design(view, lightPos);
+		objclrShader.Design(view, lightPos, cameraPos, cameraFront);
 		objclrShader.SetMat4("projection", *projection);
 		objclrShader.SetMat4("view", view);
 		objclrShader.SetMat4("model", trans);
@@ -516,18 +520,17 @@ public:
 		glBufferData(GL_ARRAY_BUFFER, matrix.size() * sizeof(glm::mat4), &matrix[0], GL_DYNAMIC_DRAW);
 	};
 
-	void renderModel(Model* model, glm::mat4 view, std::vector<glm::vec3>& lightPos, int matrixSize) {
+	void renderModel(Model* model, glm::mat4& view, std::vector<glm::vec3>& lightPos, int matrixSize, glm::vec3& cameraPos,glm::vec3& cameraFront) {
 		
 
 		if (matrixSize == 0) return;
 		glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 		ShaderNoBone.Use();
-		ShaderNoBone.Design(view, lightPos);
+		ShaderNoBone.Design(view, lightPos, cameraPos, cameraFront);
 		ShaderNoBone.SetMat4("projection", *projection);
 		ShaderNoBone.SetMat4("view", view);
 		for (int i = 0; i < model->meshes.size(); i++) {
-				unsigned int VAO = model->meshes[i].VAO;
-				glBindVertexArray(VAO);
+				glBindVertexArray(model->meshes[i].VAO);
 				// set attribute pointers for matrix (4 times vec4)
 				glEnableVertexAttribArray(5);
 				glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
@@ -548,7 +551,7 @@ public:
 			glBindVertexArray(model->meshes[i].VAO);
 			glDrawElementsInstanced(
 				GL_TRIANGLES, model->meshes[i]._indices.size(), GL_UNSIGNED_INT, 0, matrixSize);
-			glBindVertexArray(model->meshes[i].VAO);
+			glBindVertexArray(0);
 		}
 	};
 
@@ -622,7 +625,7 @@ public:
 		glBindVertexArray(0);
 	}
 
-	void renderInShadow(glm::vec3 PosLight,glm::vec3 dirLight) {
+	void renderInShadow(glm::vec3& PosLight,glm::vec3& dirLight) {
 	
 		float near_plane = 0.1f, far_plane = 110.0f;
 		lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -680,7 +683,7 @@ public:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void renderTerrian(int width, int height, glm::vec3& cameraPos, glm::mat4 model, glm::mat4 cameraLook, glm::mat4 projection, glm::vec3 lightPos, std::vector<glm::vec3>& lightsPos);
+	void renderTerrian(int width, int height, glm::vec3& cameraPos, glm::vec3& cameraFront, glm::mat4& model, glm::mat4& cameraLook, glm::mat4& projection, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos);
 	void renderHDR(float epsilon, glm::mat4 model = glm::mat4(1.0f)) {
 		screen.Use();
 		screen.SetFloat("epsilon", epsilon);
@@ -719,6 +722,7 @@ public:
 	}
 
 	void destroy() {
+		FileLoader::DELETEFILE();
 		glDeleteVertexArrays(1, &quadVAO);
 		glDeleteBuffers(1, &quadVBO);
 		glDeleteVertexArrays(1, &planeVAO);

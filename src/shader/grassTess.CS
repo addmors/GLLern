@@ -2,6 +2,10 @@
 
 layout(vertices = 1) out;
 
+in vec3 Normal_CS_in[];
+out vec3 Normal_ES_in[];
+
+
 uniform vec3 eyePosition;
 uniform vec3 lookDirection;
 
@@ -16,11 +20,11 @@ int lod()
     {
         return 24;
     }
-    if (dist < 80.0f)
+    if (dist < 40.0f)
     {
         return 12;
     }
-    if (dist < 800.0f)
+    if (dist < 80.0f)
     {
         return 6;
     }
@@ -38,4 +42,5 @@ void main()
     float halfspaceCull =
         step(dot(eyePosition - gl_in[gl_InvocationID].gl_Position.xyz, lookDirection), 0);
     gl_TessLevelOuter[1] = lod() * halfspaceCull;
+    Normal_ES_in[gl_InvocationID] = Normal_CS_in[gl_InvocationID];
 }

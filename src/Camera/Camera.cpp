@@ -67,6 +67,7 @@ void Camera::do_movement()
 	cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
 	cameraPos.y += 1.8;
 }
+glm::mat4 faseLookAt() {}
 glm::mat4 Camera::LoocAt() {
 	
 	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
@@ -74,4 +75,9 @@ glm::mat4 Camera::LoocAt() {
 	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	this->cameraFront = glm::normalize(front);
 	return glm::lookAt(this->cameraPos, this->cameraPos + this->cameraFront, this->cameraUp);
+}
+
+glm::vec3 Camera::cameraRight()
+{
+	return glm::normalize(glm::cross(cameraFront, cameraUp));
 }

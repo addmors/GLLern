@@ -1,4 +1,8 @@
 #version 420 core
+#extension GL_ARB_shading_language_include : require
+
+#include </src/shader/inc/classicnoise2D.glsl>
+
 layout (location = 0) in vec3 position;
 layout (location = 2) in vec2 texCoord;
 layout (location = 1) in vec3 normal;

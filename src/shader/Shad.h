@@ -10,10 +10,19 @@
 #include <GL/glew.h> // Подключаем glew для того, чтобы получить все необходимые заголовочные файлы OpenGL
 
 
-static void ADDFILE(const GLchar* Path);
-static void DELETEFILE(const GLchar* path);
 static std::vector<const GLchar*> paths;
+
 static const char* incPaths[1] = { "/" };
+
+
+class FileLoader {
+public:
+	static void ADDFILE(std::string);
+	static void DELETEFILE();
+	static std::vector<std::string> names;
+};
+
+
 class Shader
 {
 public:
@@ -21,8 +30,9 @@ public:
 	// Идентификатор программы
 	std::vector<GLint> m_shaderObj;
 	// Конструктор считывает и собирает шейдер
-	Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
-	Shader();
+	Shader(const GLchar* vertexPath, const GLchar* fragmentPath, const GLchar* geometryPath = nullptr);
+	Shader(const GLchar*, const GLchar*, const GLchar*, const GLchar*, const GLchar* );
+	void Init();
 	void AddShader(const GLchar* Path, GLint Type);
 	void Finelize(); 
 	// Использование программы
@@ -39,5 +49,5 @@ public:
 	void SetFloat(std::string* nameuniform, GLfloat flt);
 	void SetMat4(std::string* nameuniform, glm::mat4 mat4);
 	void SetInt(std::string* nameuniform, GLint num);
-	void Design(glm::mat4 view, std::vector<glm::vec3> &lightPos);
+	void Design(glm::mat4 view, std::vector<glm::vec3>& lightPos, glm::vec3& cameraPos, glm::vec3& cameraDir);
 };

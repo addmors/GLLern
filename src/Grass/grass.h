@@ -1,21 +1,107 @@
 #pragma once
 #include "../shader/Shad.h"
+#include "../Loader.h"
+#include <functional>
 #include <random>
+#include <vector>
+using std::vector;
+class Terrian;
+
+struct VertexGrass {
+	glm::vec4 Position;
+	glm::vec3 Normal;
+};
+
+typedef float (Terrian::*FooMethodHeight)(float, float);
+typedef glm::vec3 (Terrian::* FooMethodNormal)(float, float);
+
+
+static float transparentVertices[] = {
+	// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+	0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+
+	0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+	1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+	1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+};
+
+class TextureGrass {
+public:
+
+	unsigned int averageDistans;
+	unsigned char* dataCoverage;
+	unsigned VAO, VBO;
+	unsigned int transparentTexture;
+	unsigned int instanceVBO;
+	unsigned int* data;
+	float step;
+	std::vector<glm::vec3> vegetation;
+
+	TextureGrass(const char* grassPath, Terrian* t, FooMethodHeight getheight, unsigned _averageDistans, float _step = 0.5) :averageDistans(_averageDistans), step(_step){
+
+		vegetation.resize(averageDistans * averageDistans * 4 / step / step);
+		unsigned k = 0;
+		for (float i = -static_cast<float>(averageDistans); i < static_cast<float>(averageDistans); i += step)
+
+			for (float j = -static_cast<float>(averageDistans); j < static_cast<float>(averageDistans); j += step) {
+				vegetation.at(k) = { i, (t->*getheight)(i, j) + 0.3, j };
+				k++;
+			}
+		
+		transparentTexture = loadTextureWithAlpha(grassPath);
+		
+		
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+		
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+
+
+		glGenBuffers(1, &instanceVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vegetation.size(), &vegetation[0], GL_STATIC_DRAW);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(0));
+		glVertexAttribDivisor(2, 1);
+
+		glBindVertexArray(0);
+	};
+	void draw(glm::mat4& projection, glm::mat4& view) {
+		glBindVertexArray(VAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, transparentTexture);
+		glDisable(GL_CULL_FACE);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, vegetation.size());
+		glEnable(GL_CULL_FACE);
+		glBindVertexArray(0);
+	}
+};
 
 class Grass
 {
 public:
-	const int numNodes = 14; // Количество узлов решётки вдоль одной стороны.
-	const GLfloat gridStep = 3.0f; // Шаг решётки.
+	const int numNodes = 100; // Количество узлов решётки вдоль одной стороны.
+	const GLfloat gridStep = 2.0f; // Шаг решётки.
 	// Максимальные смещения в горизонтальной плоскости:
-	const GLfloat xDispAmp = 5.0f;
-	const GLfloat zDispAmp = 5.0f;
+	const GLfloat xDispAmp = 2.0f;
+	const GLfloat zDispAmp = 2.0f;
 	const GLfloat yDispAmp = 0.3f; // Максимальное смещение по вертикали.
 	int numClusters = numNodes * numNodes; // Количество кустов.
-	GLfloat* vertices = new GLfloat[numClusters * 4]; // Буфер для генерируемых вершин.
-	GLuint vao; // https://www.opengl.org/wiki/Vertex_Specification#Vertex_Array_Object
+	VertexGrass* vertices = new VertexGrass[numClusters]; // Буфер для генерируемых вершин.
+	GLuint VAO; // https://www.opengl.org/wiki/Vertex_Specification#Vertex_Array_Object
 	GLuint posVbo; // https://www.opengl.org/wiki/Vertex_Specification#Vertex_Buffer_Object
-	Grass() {
+	
+	
+	Grass(Terrian* t, FooMethodHeight getheight, FooMethodNormal getNormal) {
 		std::random_device rd;
 		std::mt19937 mt(rd());
 		std::uniform_real_distribution<GLfloat> xDisp(-xDispAmp, xDispAmp);
@@ -24,25 +110,36 @@ public:
 		std::uniform_int_distribution<GLint> numStems(12, 64); // Количество стеблей.
 		for (int i = 0; i < numNodes; ++i) {
 			for (int j = 0; j < numNodes; ++j) {
-				const int idx = (i * numNodes + j) * 4;
-				vertices[idx] = (i - numNodes / 2) * gridStep + xDisp(mt);
-				vertices[idx + 1] = yDisp(mt);
-				vertices[idx + 2] = (j - numNodes / 2) * gridStep + zDisp(mt);
-				vertices[idx + 3] = numStems(mt);
+				const int idx = (i * numNodes + j);
+				vertices[idx].Position.x = (i - numNodes / 2) * gridStep + xDisp(mt);
+				vertices[idx].Position.z = (j - numNodes / 2) * gridStep + zDisp(mt);
+				vertices[idx].Position.y = (t->*getheight)(vertices[idx].Position.x, vertices[idx].Position.z);
+				vertices[idx].Position.w = numStems(mt);
+				vertices[idx].Normal = (t->*getNormal)(vertices[idx].Position.x, vertices[idx].Position.z);
 			}
 		}
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+
+		glGenVertexArrays(1, &VAO);
 		glGenBuffers(1, &posVbo);
-		glEnableVertexAttribArray(0);
+		
+		glBindVertexArray(VAO);
 		glBindBuffer(GL_ARRAY_BUFFER, posVbo);
-		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * numClusters * 4, vertices, GL_STATIC_DRAW);
-		glFinish();
+
+		glBufferData(GL_ARRAY_BUFFER, numClusters * sizeof(VertexGrass), &vertices[0], GL_DYNAMIC_DRAW);
+		// vertex positions
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(VertexGrass), (void*)offsetof(VertexGrass, Position));
+		// vertex normals
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexGrass), (void*)offsetof(VertexGrass, Normal));
+
+		glBindVertexArray(0);
+		
+		//glFinish();
 		delete[] vertices;
 	}
 	void draw() {
-		glBindVertexArray(vao);
+		glBindVertexArray(VAO);
 		glPatchParameteri(GL_PATCH_VERTICES, 1);
 		glDrawArrays(GL_PATCHES, 0, numClusters);
 		glBindVertexArray(0);

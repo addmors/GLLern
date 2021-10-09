@@ -115,7 +115,7 @@ void main()
     vec4 totalColor = rTextureClour+gTextureClour+bTextureClour+backGroundTextureColour;
     //vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
     
-    vec3 viewDir = normalize(-fs_in.FragPos);
+    vec3 viewDir = normalize(viewPos-fs_in.FragPos);
     vec3 normal = normalize(fs_in.Normal);
     
 	vec3 result = CalcDirLight(dirLight, normal, viewDir, totalColor.rgb);
@@ -171,7 +171,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, v
 
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 totalColor){
 	
-	vec3 lightDir = normalize((light.position - fragPos));
+	
+    vec3 lightDir = normalize((light.position - fragPos));
 	float theta = dot(lightDir, normalize(-light.direction));
 	//Интенсивность для плавного затемнения к кроям окужности (Инерполяция света)
 	float epsilon   = light.cutOff - light.outercutOff;
@@ -182,7 +183,6 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
 	//диффузное освещение
 	float diff = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = light.diffuse * diff * totalColor;
-	vec3 viewDir = normalize(-fragPos);
 	// Отраженный вектор от источника к фрагменту и нормалью 
 	vec3 reflectDir = reflect(-lightDir, normal);
 	//Сила блика 
@@ -190,6 +190,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec
 	//Блик на бликовую карту и цвет отблка
     vec3 specular = light.specular * spec * 0.2;
 	//затухание при дальности 
+
 	float distance = length(light.position-fragPos);
 	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));  
 	ambient  *= attenuation; 
