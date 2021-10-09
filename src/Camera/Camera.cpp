@@ -79,5 +79,5 @@ glm::mat4 Camera::LoocAt() {
 
 glm::vec3 Camera::cameraRight()
 {
-	return glm::normalize(glm::cross(cameraFront, cameraUp));
+	return glm::normalize(glm::cross(cameraFront, cameraUp));//123
 }
