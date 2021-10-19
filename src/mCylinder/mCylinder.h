@@ -89,7 +89,7 @@ public:
     }
 
     void Delete() {
-        (glDeleteVertexArrays(1, &cyrcleVAO));
+        glDeleteVertexArrays(1, &cyrcleVAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
     }

@@ -3,6 +3,8 @@
 #include <stb_image.h>
 #include <iostream>
 #include <vector>
+#include <random>
+
 
 // loads a cubemap texture from 6 individual texture faces
 // order:
@@ -155,4 +157,22 @@ static unsigned int loadTextureWithAlpha(char const* path)
 
 	return textureID;
 }
+static void genrandomTexture(unsigned int* randTexture) {
 
+	const GLuint randTexSize = 256;
+	GLfloat randTexData[randTexSize];
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(0.0f, 1.0f);
+	std::generate(randTexData, randTexData + randTexSize, [&]() {return dis(gen); });
+	// Create and tune random texture.
+	glGenTextures(1, randTexture);
+	glBindTexture(GL_TEXTURE_1D, *randTexture);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_R16F, randTexSize, 0, GL_RED, GL_FLOAT, randTexData);
+
+}

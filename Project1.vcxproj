@@ -135,6 +135,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AABB.cpp" />
+    <ClCompile Include="src\Query.cpp" />
     <ClCompile Include="src\Grass\grass.cpp" />
     <ClCompile Include="src\intermediat_buffer.cpp" />
     <ClCompile Include="src\Loader.h" />
@@ -160,6 +162,8 @@
     <ClCompile Include="src\Water\Water.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AABB.h" />
+    <ClInclude Include="src\Query.h" />
     <ClInclude Include="src\Grass\grass.h" />
     <ClInclude Include="src\intermediat_buffer.h" />
     <ClInclude Include="src\RendererEngine.h" />
@@ -198,6 +202,8 @@
     <None Include="src\shader\jastshad.vs" />
     <None Include="src\shader\lampshad.fs" />
     <None Include="src\shader\objvithcolor.fs" />
+    <None Include="src\shader\occluder.fs" />
+    <None Include="src\shader\occluder.vs" />
     <None Include="src\shader\shader.fs" />
     <None Include="src\shader\shader.vs" />
     <None Include="src\shader\shader3.vs" />

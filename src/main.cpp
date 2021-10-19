@@ -20,6 +20,10 @@
 #include <AntTweakBar.h>
 #include "Terrian.h"
 #include"Grass\grass.h"
+#include"AABB.h"
+
+unsigned int AABB::cubeVAO = 0;
+unsigned int AABB::cubeVBO = 0;
 
 glm::vec3 skaling = glm::vec3(0.1f, 0.1f, 0.1f);
 glm::vec3 cameraPos = glm::vec3(3.0f, 0.0f, 3.0f);
@@ -175,9 +179,8 @@ int main() {
 
 	RendererEngine renderer;
 	Terrian terrain = Terrian(32768/64, "heightmap6.png");
-	TextureGrass textureGrass("3Dgrass.png", &terrain, &Terrian::getHeightOfTerrian,256);
+	Cells cells = Cells("3Dgrass.png", &terrain, &Terrian::getHeightOfTerrian, &Terrian::getNormlofTerrian, &Terrian::getSize, 16);
 	
-	Grass grass{&terrain,&Terrian::getHeightOfTerrian, &Terrian::getNormlofTerrian};
 	terrain.loadTextures("blendMap.png", "rTexture.png", "grass2.png", "bTexture.png", "grass.png");
 	
 
@@ -225,7 +228,7 @@ int main() {
 	
 
 	renderer.t = &terrain;
-	renderer.texGrass = &textureGrass;
+	renderer.cell = &cells;
 	renderer.camera = &camera;
 	//create Shaders
 	// -----------------------
@@ -248,12 +251,8 @@ int main() {
 	// --------------------
 	renderer.configurateWater(width, height, "dudvmap.png");
 	
-	renderer.getGrass().Use();
-	renderer.getGrass().SetInt("urandom01", 0);
-	renderer.getGrass().SetInt("numPrimitives", grass.numClusters);
+
 	
-	unsigned int randTex;
-	grass.genrandomTexture(&randTex);
 
 	//Frame texture	
 	//End Frame buffer;
@@ -262,16 +261,6 @@ int main() {
 
 	//pengine->addCylinder(2, 5, 0, 30, 0, 1.0);
 	//pengine->addSphere(1.0,0,25,0,1.0);
-	
-
-	vector<glm::vec3> vegetation
-	{
-		glm::vec3(-1.5f, terrain.getHeightOfTerrian(-1.5f, -0.48f)+0.25, -0.48f),
-		glm::vec3(1.5f, terrain.getHeightOfTerrian(1.5f, 0.51f) + 0.25, 0.51f),
-		glm::vec3(0.0f, terrain.getHeightOfTerrian(0.0f, 0.7f) + 0.25, 0.7f),
-		glm::vec3(-0.3f,terrain.getHeightOfTerrian(-0.3f, -2.3f) + 0.25, -2.3f),
-		glm::vec3(0.5f, terrain.getHeightOfTerrian(0.5f, -0.6f) + 0.25, -0.6f)
-	};
 
 	
 	unsigned int ticFrame = 0;
@@ -362,7 +351,6 @@ int main() {
 
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		renderer.getGrass().Use();
 		
 
 		
@@ -376,6 +364,9 @@ int main() {
 		model = glm::translate(model, glm::vec3(-trans, 0, -trans));
 		
 		renderer.EnableReflectionWater();
+
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.renderTerrian(width, height, camera.cameraPos,camera.cameraFront, model, view, projection, lightPos.back(), lightPos);
 		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
 		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size(),camera.cameraPos,cameraFront);
@@ -387,6 +378,9 @@ int main() {
 		view = camera.LoocAt();
 
 		renderer.EnableRefractionWater();
+
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.renderTerrian(width, height, camera.cameraPos, camera.cameraFront, model, view, projection, lightPos.back(), lightPos);
 		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
 		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size(), camera.cameraPos, cameraFront);
@@ -398,16 +392,19 @@ int main() {
 		glDisable(GL_CLIP_DISTANCE0);
 
 		glEnable(GL_DEPTH_TEST);
-		renderer.EnableHDR();
 
+		renderer.EnableHDR();
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		renderer.renderTextureGrass(view, currentFrame);
 		renderer.renderTerrian(width, height, camera.cameraPos, camera.cameraFront, model, view, projection, lightPos.back(), lightPos);
 		Light.UseLight(view, projection, lightPos);
 		renderer.renderWater(view, deltaTime, camera);
 		renderer.renderScene(width, height, camera.cameraPos, view, projection, lightPos.back(), woodTexture);
-
 		renderer.renderModel(&Modeltree, view, lightPos, modelMatrices.size(), camera.cameraPos, cameraFront);
 		renderer.renderModelAnim(&ourModel, glmatrix, view, deltaTime, lightPos, camera.cameraPos, camera.cameraFront);
-		renderer.renderTextureGrass(view, vegetation);
+		
 		/*glBindTexture(GL_TEXTURE_2D, randTex);
 
 		renderer.getGrass().Use();
@@ -421,9 +418,9 @@ int main() {
 		grass.draw();*/
 		renderer.renderSkyBox(view, projection, currentFrame);		
 		renderer.DisableHDR();
-		
 		renderer.renderHDR(epsilon);
-		
+
+
 		
 		TwDraw();
 
@@ -435,6 +432,9 @@ int main() {
 	renderer.destroy();
 	persone.destroy();
 	for (auto& a : ourModel.meshes) {
+		a.Delete();
+	}
+	for (auto& a : Modeltree.meshes) {
 		a.Delete();
 	}
 	TwTerminate();

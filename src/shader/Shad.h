@@ -46,6 +46,7 @@ public:
 	void SetVec3(std::string* nameuniform, GLfloat x, GLfloat y, GLfloat z);
 	void SetVec3(std::string* nameuniform, glm::vec3 vec);
 	void SetVec4(const GLchar* nameuniform, glm::vec4 vec);
+	void SetVec4(const GLchar* nameuniform, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
 	void SetFloat(std::string* nameuniform, GLfloat flt);
 	void SetMat4(std::string* nameuniform, glm::mat4 mat4);
 	void SetInt(std::string* nameuniform, GLint num);

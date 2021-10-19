@@ -37,5 +37,5 @@ void Player::update(float delta) {
     }
 
     camera->objPos = glm::vec3(pos.x(), pos.y(), pos.z());
-    
+    camera->do_movement();
 }

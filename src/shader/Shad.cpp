@@ -112,6 +112,10 @@ void Shader::SetVec4(const GLchar* nameuniform, glm::vec4 vec) {
 	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
 	glUniform4f(Vec3Loc, vec.x, vec.y, vec.z,vec.w);
 }
+void Shader::SetVec4(const GLchar* nameuniform, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
+	glUniform4f(Vec3Loc, x, y, z, w);
+}
 void Shader::SetFloat(const GLchar* nameuniform, GLfloat flt) {
 	GLint FloatLoc = glGetUniformLocation(ID, nameuniform);
 	glUniform1f(FloatLoc, flt);

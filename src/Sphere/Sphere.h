@@ -61,7 +61,7 @@ public:
     const float* getInterleavedVertices() const     { return interleavedVertices.data(); }
 
     void Delete() {
-        (glDeleteVertexArrays(1, &sphereVAO));
+        glDeleteVertexArrays(1, &sphereVAO);
         glDeleteBuffers(1, &VBO);
         glDeleteBuffers(1, &EBO);
     }

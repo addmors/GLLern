@@ -50,7 +50,12 @@ private:
 	unsigned int blendMap, rTexture, gTexture, bTexture, backGround;
 	int VERTEX_COUNT_X, VERTEX_COUNT_Y;
 public:
-	~Terrian() { stbi_image_free(data); };
+	~Terrian() { 
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VBO);
+		glDeleteBuffers(1, &EBO);
+		stbi_image_free(data); 
+	};
 	void loadTextures(const char* blendMap, const char* rTexture, const char* gTexture, const char* bTexture, const char* backGround) {
 		this->blendMap = loadTextureRGB(blendMap);
 		this->rTexture = loadTexture(rTexture);
