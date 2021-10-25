@@ -1,13 +1,14 @@
 #include "Player.h"
 
 
-void Player::update(float delta) {
+btTransform Player::update(float delta) {
     charCon->setGravity(delta * 2048);
-    btTransform t;
-    t = charCon->getGhostObject()->getWorldTransform();
+    btTransform t = charCon->getGhostObject()->getWorldTransform();
     btVector3 pos = t.getOrigin();
     btQuaternion  quat = t.getRotation();
     
+    camera->do_movement();
+
     glm::vec3 dir(0, 0, 0);
     if (charCon->onGround()) 
     {
@@ -36,6 +37,5 @@ void Player::update(float delta) {
             charCon->setGravity(delta * 2048);
     }
 
-    camera->objPos = glm::vec3(pos.x(), pos.y(), pos.z());
-    camera->do_movement();
+    return t;
 }

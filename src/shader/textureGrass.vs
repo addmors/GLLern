@@ -24,13 +24,21 @@ float rand(const in float seed) {
 void main()
 {
     
+    vec3 B;
+    if(normal.x > 0) B = vec3(1,0,0); else B = vec3(-1,0,0);
+     
+    vec3 C = normalize(cross(normal,B)); 
+    
+    B = normalize(cross(normal,C));
+    
+    mat3 Orient = mat3(B,normal,C);
+
 
     TexCoords = aTexCoords;
     alphaScale = 16/ ( 1 + distance(cameraPos, offset));
-    vec3 B = cross(normal, right);
-    gl_Position = projection *view*vec4(aPos+offset, 1.0);
+    gl_Position = projection *view*vec4(Orient*aPos+offset, 1.0);
     
-    if ( aPos.y > 0.0 )
+   if ( aPos.y > 0.0 )
     {   
         float t =  time+texture(urandom01, mod((offset.x-offset.z)/(offset.z+offset.z),1.0)).r*100;
         float angle1 = t + 0.5077 * aPos.x - 0.421 * aPos.z;

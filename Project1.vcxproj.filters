@@ -167,6 +167,9 @@
     <ClInclude Include="src\AABB.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\logger.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shader\shader.fs" />
@@ -198,5 +201,7 @@
     <None Include="src\shader\textureGrass.fs" />
     <None Include="src\shader\occluder.vs" />
     <None Include="src\shader\occluder.fs" />
+    <None Include="src\shader\occluderWater.vs" />
+    <None Include="src\shader\occluderWater.fs" />
   </ItemGroup>
 </Project>

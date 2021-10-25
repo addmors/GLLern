@@ -51,6 +51,7 @@ in vec3 FragPos;
 in vec2 TexCoord;
 in mat3 TBN;
 uniform Material material;
+uniform vec3 viewPos;
 // Прототип фонарного света;
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 //Прототип направленного света 
@@ -65,7 +66,8 @@ void main()
 	normal = normalize(normal * 2.0 - 1.0);   
 	normal = normalize(TBN * normal);    
 	//vec3 normal = Normal;
-	vec3 viewDir = normalize(-FragPos);
+	vec3 viewDir = normalize(viewPos- FragPos);
+
 	vec3 result = CalcDirLight(dirLight, normal, viewDir);
 	for(int i = 0; i < NR_POINT_LIGHTS; i++)		
 		result += CalcPointLight(pointLights[i], normal, FragPos, viewDir); 

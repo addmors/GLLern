@@ -1,4 +1,6 @@
 #include "RendererEngine.h"
+#include "logger.h"
+
 void RendererEngine::configurateDepthBuf() {
 	glGenFramebuffers(1, &depthMapFBO);
 	// create depth texture
@@ -107,7 +109,12 @@ void RendererEngine::configureShareds() {
 
 	OccluderShader.Use();
 	OccluderShader.SetVec4("vColor", 1, 0, 0, 1);
+
+	OccluderWaterShader.Use();
+	OccluderWaterShader.SetVec4("vColor", 1, 0, 0, 1);
 }
+
+
 void RendererEngine::configureSkyBox() {
 	glGenVertexArrays(1, &skyboxVAO);
 	glGenBuffers(1, &skyboxVBO);
@@ -147,13 +154,15 @@ Water& RendererEngine::getWater() {
 
 
 
-void RendererEngine::renderTerrian(int width, int height, glm::vec3& cameraPos, glm::vec3& cameraFront, glm::mat4& model, glm::mat4& cameraLook, glm::mat4& projection, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos) {
+void RendererEngine::renderTerrian(int width, int height, glm::vec3& cameraPos, glm::vec3& cameraFront, glm::mat4& projection, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos) {
 	
-	
+	glm::mat4 model = glm::mat4();
+	float trans = t->getSize() / 2;
+	model = glm::translate(model, glm::vec3(-trans, 0, -trans));
 	shaderTerrian.Use();
-	shaderTerrian.Design(cameraLook, lightsPos, cameraPos, cameraFront);
+	shaderTerrian.Design(camera->view, lightsPos, cameraPos, cameraFront);
 	shaderTerrian.SetMat4("projection", *this->projection);
-	shaderTerrian.SetMat4("view", cameraLook);
+	shaderTerrian.SetMat4("view", camera->view);
 	// set light uniforms
 	shaderTerrian.SetVec3("viewPos", cameraPos);
 	shaderTerrian.SetVec3("lightPos", lightPos);
@@ -165,41 +174,47 @@ void RendererEngine::renderTerrian(int width, int height, glm::vec3& cameraPos, 
 	t->Draw();
 };
 
-void RendererEngine::renderTextureGrass(glm::mat4 view, float time) {
+void RendererEngine::renderTextureGrass(float time) {
 	glDisable(GL_CULL_FACE);
-	vector<bool> WhoDraw(cell->cellAABBs.size(), false);
+	vector<bool> WhoDraw(cell->cellAABBs.size(), true);
+	/*
+		glColorMask(false, false, false, false);
+		glDepthMask(GL_FALSE);
+		{
+			LOG_DURATION("draw querry");
+			for (int i = 0; i < cell->cellAABBs.size(); i++) {
 
-	glColorMask(false, false, false, false);
-	glDepthMask(GL_FALSE);
-	query.start();
-	for (int i = 0; i < cell->cellAABBs.size(); i++) {
-	
-		OccluderShader.Use();
-		OccluderShader.SetMat4("view", view);
-		OccluderShader.SetMat4("projection", *projection);
-		glm::mat4 model = glm::mat4(1);
-		model = glm::translate(model, cell->cellAABBs.at(i).getPos());
-		model = glm::scale(model, cell->cellAABBs.at(i).getScale());
-		OccluderShader.SetMat4("model", model);
-		AABB::draw();
-		if (query.Test() > 10) WhoDraw.at(i) = true;
-	}
-	query.end();
+				OccluderShader.Use();
+				OccluderShader.SetMat4("view", view);
+				OccluderShader.SetMat4("projection", *projection);
+				glm::mat4 model = glm::mat4(1);
+				model = glm::translate(model, cell->cellAABBs.at(i).getPos());
+				model = glm::scale(model, cell->cellAABBs.at(i).getScale());
+				OccluderShader.SetMat4("model", model);
+				query.start();
+				AABB::draw();
+				query.end();
+				if (query.Test() > 10) WhoDraw.at(i) = true;
+			}
+		}
 	glColorMask(true, true, true, true);
 	glDepthMask(GL_TRUE);
-	TextureGrassShader.Use();
-	TextureGrassShader.SetFloat("time", time);
-	TextureGrassShader.SetMat4("view", view);
-	TextureGrassShader.SetMat4("projection", *projection);
-	TextureGrassShader.SetVec3("cameraPos", camera->cameraPos);
-	TextureGrassShader.SetVec3("up", camera->cameraUp);
-	TextureGrassShader.SetVec3("right", camera->cameraRight());
-
-	for (int i = 0; i < WhoDraw.size(); i++)
+	*/
 	{
-			if(WhoDraw.at(i) == true)
-			cell->cellGrasses.at(i).draw(*projection,view);
-	}	
+		LOG_DURATION("draw textures");
+		TextureGrassShader.Use();
+		TextureGrassShader.SetFloat("time", time);
+		TextureGrassShader.SetMat4("view", camera->view);
+		TextureGrassShader.SetMat4("projection", *projection);
+		TextureGrassShader.SetVec3("cameraPos", camera->cameraPos);
+		TextureGrassShader.SetVec3("up", camera->cameraUp);
+		TextureGrassShader.SetVec3("right", camera->cameraRight());
+
+		for (int i = 0; i < WhoDraw.size(); i++)
+		{
+				cell->cellGrasses.at(i).draw(*projection, camera->view);
+		}
+	}
 	glEnable(GL_CULL_FACE);
 };
 
@@ -253,10 +268,10 @@ void RendererEngine::DisableHDR() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& cameraLook, glm::mat4& projection, glm::vec3 lightPos, unsigned int texture) {
+void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos, unsigned int texture) {
 	shader.Use();
 	shader.SetMat4("projection", projection);
-	shader.SetMat4("view", cameraLook);
+	shader.SetMat4("view", camera->view);
 	// set light uniforms
 	shader.SetVec3("viewPos", cameraPos);
 	shader.SetVec3("lightPos", lightPos);
@@ -298,12 +313,37 @@ void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, gl
 	}
 };
 
-void RendererEngine::renderWater(glm::mat4& cameraLook, float deltaTime, Camera& camera) {
+
+bool RendererEngine::checkWaterVision() {
+	glColorMask(false, false, false, false);
+	glDepthMask(GL_FALSE);
+	{
+		LOG_DURATION("draw querry");
+			OccluderWaterShader.Use();
+			OccluderWaterShader.SetMat4("view", camera->view);
+			OccluderWaterShader.SetMat4("projection", *projection);
+			glm::mat4 model = glm::mat4(1);
+			model = glm::translate(model, glm::vec3(-40, water.getHeight(), -40));
+			model = glm::scale(model, glm::vec3(60, 1, 60));
+			OccluderWaterShader.SetMat4("model", model);
+			query.start();
+			glDisable(GL_CULL_FACE);
+			water.drawWater();
+			glEnable(GL_CULL_FACE);
+			query.end();
+	}
+	glColorMask(true, true, true, true);
+	glDepthMask(GL_TRUE);
+	return query.Test() > 30;
+
+}
+void RendererEngine::renderWater(float deltaTime) {
+	
 	WaterShader.Use();
 	WaterShader.SetMat4("projection", *projection);
-	WaterShader.SetMat4("view", cameraLook);
+	WaterShader.SetMat4("view", camera->view);
 	water.addMoveFactor(deltaTime);
-	WaterShader.SetVec3("cameraPosition", camera.cameraPos);
+	WaterShader.SetVec3("cameraPosition", camera->cameraPos);
 	WaterShader.SetFloat("moveFactor", water.getMoveFactor());
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-40, water.getHeight(), -40));
@@ -315,13 +355,13 @@ void RendererEngine::renderWater(glm::mat4& cameraLook, float deltaTime, Camera&
 	water.drawWater();
 	glEnable(GL_CULL_FACE);
 };
-void RendererEngine::renderSkyBox(glm::mat4& view, glm::mat4& projection, float currFrame) {
+void RendererEngine::renderSkyBox(float currFrame) {
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 	skyboxShader.Use();
 	rotation_sky += ROTATION_STEP;
-	glm::mat4 my_view = glm::rotate(glm::mat4(glm::mat3(view)), glm::radians(rotation_sky), glm::vec3(0.0, 1.0, 0.0));
+	glm::mat4 my_view = glm::rotate(glm::mat4(glm::mat3(camera->view)), glm::radians(rotation_sky), glm::vec3(0.0, 1.0, 0.0));
 	skyboxShader.SetMat4("view", my_view);
-	skyboxShader.SetMat4("projection", projection);
+	skyboxShader.SetMat4("projection", *projection);
 	// skybox cube
 	time += currFrame / 1000;
 	time %= 24000;
@@ -361,12 +401,13 @@ void RendererEngine::renderSkyBox(glm::mat4& view, glm::mat4& projection, float 
 	glBindVertexArray(0);
 	glDepthFunc(GL_LESS); // set depth function back to default
 }
-void RendererEngine::renderModelAnim(Model* model, glm::mat4& trans, glm::mat4& view, float deltaTime, std::vector<glm::vec3>& lightPos, glm::vec3& cameraPos, glm::vec3& cameraFront) {
+void RendererEngine::renderModelAnim(Model* model, glm::mat4& trans, float deltaTime, std::vector<glm::vec3>& lightPos, glm::vec3& cameraPos, glm::vec3& cameraFront) {
 	objclrShader.Use();
 
-	objclrShader.Design(view, lightPos, cameraPos, cameraFront);
+	objclrShader.Design(camera->view, lightPos, cameraPos, cameraFront);
+	objclrShader.SetVec3("viewPos", cameraPos);
 	objclrShader.SetMat4("projection", *projection);
-	objclrShader.SetMat4("view", view);
+	objclrShader.SetMat4("view", camera->view);
 	objclrShader.SetMat4("model", trans);
 
 	if (!model->anim)    //If the object is rigged...
@@ -388,22 +429,12 @@ void RendererEngine::renderModelAnim(Model* model, glm::mat4& trans, glm::mat4& 
 	}
 
 };
-void RendererEngine::prepareModelInstanse(vector<glm::mat4>matrix) {
+void RendererEngine::prepareModelInstanse(vector<glm::mat4>matrix, Model* model) {
 	if (matrix.size() == 0) return;
 	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 
-	glBufferData(GL_ARRAY_BUFFER, matrix.size() * sizeof(glm::mat4), &matrix[0], GL_DYNAMIC_DRAW);
-};
+	glBufferData(GL_ARRAY_BUFFER, matrix.size() * sizeof(glm::mat4), &matrix[0], GL_STATIC_DRAW);
 
-void RendererEngine::renderModel(Model* model, glm::mat4& view, std::vector<glm::vec3>& lightPos, int matrixSize, glm::vec3& cameraPos, glm::vec3& cameraFront) {
-
-
-	if (matrixSize == 0) return;
-	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
-	ShaderNoBone.Use();
-	ShaderNoBone.Design(view, lightPos, cameraPos, cameraFront);
-	ShaderNoBone.SetMat4("projection", *projection);
-	ShaderNoBone.SetMat4("view", view);
 	for (int i = 0; i < model->meshes.size(); i++) {
 		glBindVertexArray(model->meshes[i].VAO);
 		// set attribute pointers for matrix (4 times vec4)
@@ -422,12 +453,29 @@ void RendererEngine::renderModel(Model* model, glm::mat4& view, std::vector<glm:
 		glVertexAttribDivisor(7, 1);
 		glVertexAttribDivisor(8, 1);
 
+	}
+	glBindVertexArray(0);
+
+};
+
+void RendererEngine::renderModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize, glm::vec3& cameraPos, glm::vec3& cameraFront) {
+
+
+	if (matrixSize == 0) return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
+	ShaderNoBone.Use();
+	ShaderNoBone.Design(camera->view, lightPos, cameraPos, cameraFront);
+	objclrShader.SetVec3("viewPos", cameraPos);
+	ShaderNoBone.SetMat4("projection", *projection);
+	ShaderNoBone.SetMat4("view", camera->view);
+	for (int i = 0; i < model->meshes.size(); i++) {
 		model->meshes[i].bindTexture(ShaderNoBone);
 		glBindVertexArray(model->meshes[i].VAO);
 		glDrawElementsInstanced(
 			GL_TRIANGLES, model->meshes[i]._indices.size(), GL_UNSIGNED_INT, 0, matrixSize);
-		glBindVertexArray(0);
 	}
+	glBindVertexArray(0);
 };
 
 void RendererEngine::drawCube() {

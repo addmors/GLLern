@@ -67,7 +67,7 @@ TextureGrass::TextureGrass(const char* grassPath, Terrian* t, FooMethodHeight ge
 
 		for (float j = -static_cast<float>(averageDistans); j < static_cast<float>(averageDistans); j += step) {
 			float height = (t->*getheight)(i + pos.x, j + pos.y);
-			vegetation.at(k) = { i+pos.x, height+0.3, j+pos.y};
+			vegetation.at(k) = { i+pos.x, height, j+pos.y};
 			vegetation.at(k + 1) = (t->*getNormal)(i+pos.x, j+pos.y);
 			if (height > maxHeight) maxHeight = height;
 			if (height < minHeight) minHeight = height;

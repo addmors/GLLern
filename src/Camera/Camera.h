@@ -28,12 +28,13 @@ public:
 	glm::vec3 front;
 	GLfloat lengthtoobj;
 	std::vector<bool>* keys;
+	glm::mat4 view;
 
 	Camera(glm::vec3 Pos, glm::vec3 Front, glm::vec3 Up, GLfloat fov);
 	void mouse_callback(double xpos, double ypos);
 	void scroll_callback(double xoffset, double yoffset);
 	glm::vec3 cameraRight();
-	glm::mat4 LoocAt();
+	void LoocAt();
 	void do_movement();
 };
 

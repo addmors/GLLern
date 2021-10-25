@@ -148,4 +148,7 @@ public:
 
 	float getHeightOfTerrian(float, float);
 	glm::vec3 getNormlofTerrian(float, float);
+	glm::vec3 getNormlofTerrian(unsigned char* , float, float);
+
+	glm::vec3 getTangentofTerrian(float, float);
 };

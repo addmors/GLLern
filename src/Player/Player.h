@@ -30,7 +30,7 @@ public:
 		startTransform.setIdentity();
 		startTransform.setOrigin(btVector3(0,2, 0));
 
-		btConvexShape* capsule = new btCapsuleShape(0.5, 0.5);
+		
 
 		m_ghostObject = new btPairCachingGhostObject();
 		m_ghostObject->setWorldTransform(startTransform);
@@ -55,8 +55,8 @@ public:
 		if (m_ghostObject != nullptr) delete m_ghostObject;
 		if (charCon != nullptr) delete charCon;
 	};
-	void update(float delta);
-	
+	btTransform update(float delta);
+	btConvexShape* capsule = new btCapsuleShape(0.5, 0.5);
 	Camera* camera = nullptr;
 	string name = "def_name";
 	bool ongroud = 0, iscollidet  = 0;

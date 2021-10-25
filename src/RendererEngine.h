@@ -8,7 +8,6 @@
 #include "Model\Model.h"
 #include "Water\Water.h"
 #include"Grass\grass.h"
-
 #include "Query.h"
 #include <vector>
 #include<utility>
@@ -139,7 +138,7 @@ private:
 	Shader WaterShader{ "src/shader/WaterShader.vs", "src/shader/WaterShader.fs" };
 	Shader TextureGrassShader{"src/shader/textureGrass.vs", "src/shader/textureGrass.fs"};
 	Shader OccluderShader{"src/shader/occluder.vs","src/shader/occluder.fs"};
-
+	Shader OccluderWaterShader{ "src/shader/occluderWater.vs","src/shader/occluderWater.fs" };
 	float rotation_sky = 0;
 	float ROTATION_STEP = 0.01f;
 	
@@ -191,6 +190,7 @@ public:
 	void configurateHDR(int width, int height);
 	void configureShareds();
 	void configureSkyBox();
+	bool checkWaterVision();
 	
 	glm::mat4*& getProjection();
 	Water& getWater();
@@ -203,21 +203,21 @@ public:
 	void IdleFrameBuffer();
 	void DisableHDR();
 	
-	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& cameraLook, glm::mat4& projection, glm::vec3 lightPos, unsigned int texture);
-	void renderTextureGrass(glm::mat4 view, float time);
-	void renderWater(glm::mat4& cameraLook, float deltaTime, Camera& camera);
-	void renderSkyBox(glm::mat4& view, glm::mat4& projection, float currFrame);
-	void renderModelAnim(Model* model, glm::mat4& trans, glm::mat4& view, float deltaTime,
+	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos, unsigned int texture);
+	void renderTextureGrass(float time);
+	void renderWater(float deltaTime);
+	void renderSkyBox(float currFrame);
+	void renderModelAnim(Model* model, glm::mat4& trans, float deltaTime,
 		std::vector<glm::vec3>& lightPos, glm::vec3& cameraPos, glm::vec3& cameraFront);
-	void prepareModelInstanse(vector<glm::mat4>matrix);
-	void renderModel(Model* model, glm::mat4& view, std::vector<glm::vec3>& lightPos, int matrixSize,
+	void prepareModelInstanse(vector<glm::mat4>matrix, Model*);
+	void renderModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize,
 		glm::vec3& cameraPos,glm::vec3& cameraFront);
 
 	void drawCube();
 
 	void renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight);
 
-	void renderTerrian(int width, int height, glm::vec3& cameraPos, glm::vec3& cameraFront, glm::mat4& model, glm::mat4& cameraLook, glm::mat4& projection, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos);
+	void renderTerrian(int width, int height, glm::vec3& cameraPos, glm::vec3& cameraFront, glm::mat4& projection, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos);
 	void renderHDR(float epsilon, glm::mat4 model = glm::mat4(1.0f));
 	void renderReflection(float epsilon, glm::mat4 model = glm::mat4(1.0f));
 	void renderRefraction(float epsilon, glm::mat4 model = glm::mat4(1.0f));

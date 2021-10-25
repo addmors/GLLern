@@ -36,16 +36,16 @@ void main()
     
     gl_ClipDistance[0] = dot(worldPosition, plane); 
     
-	vec3 T = normalize(mat3(transpose(inverse(view*model*BMatrix))) * aTangent);	
-    vec3 N = normalize(mat3(transpose(inverse(view*model*BMatrix))) * aNormal);
+	vec3 T = normalize(mat3(transpose(inverse(model*BMatrix))) * aTangent);	
+    vec3 N = normalize(mat3(transpose(inverse(model*BMatrix))) * aNormal);
 	T = normalize(T - dot(T, N) * N);
 	vec3 B = cross(N, T);
 
 	TBN = mat3(T, B, N);
 	
 	we = vec4(s_vWeights[0] ,s_vWeights[1], s_vWeights[2], s_vWeights[3]);	  
-	Normal = normalize( mat3(transpose(inverse(view*model*BMatrix))) * aNormal);
+	Normal = normalize( mat3(transpose(inverse(model*BMatrix))) * aNormal);
     TexCoord = vec2(texCoord.x, texCoord.y); 
     gl_Position = projection * view *worldPosition;
-	FragPos = vec3(view * worldPosition);
+	FragPos = vec3(worldPosition);
 }

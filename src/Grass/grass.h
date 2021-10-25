@@ -20,29 +20,29 @@ struct VertexGrass {
 
 static float transparentVertices[] = {
 	// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-	-0.5f,  0.5f,    0.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,    0.0f,  0.0f,  1.0f,
-	 0.5f, -0.5f,    0.0f,  1.0f,  1.0f,
+	-0.5f,  1.0f,   0.0f,  0.0f,  0.0f,
+	-0.5f,  0.0f,   0.0f,  0.0f,  1.0f,
+	 0.5f,  0.0f,   0.0f,  1.0f,  1.0f,
+				   
+	-0.5f,  1.0f,   0.0f,  0.0f,  0.0f,
+	 0.5f,  0.0f,   0.0f,  1.0f,  1.0f,
+	 0.5f,  1.0f,   0.0f,  1.0f,  0.0f,
 
-	-0.5f,  0.5f,    0.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,    0.0f,  1.0f,  1.0f,
-	 0.5f,  0.5f,    0.0f,  1.0f,  0.0f,
+	 0.25f, 1.0f, -0.43f,  0.0f,  0.0f,
+	 0.25f, 0.0f, -0.43f,  0.0f,  1.0f,
+	-0.25f, 0.0f,  0.43f,  1.0f,  1.0f,
 
-	 0.25f,  0.5f, -0.43f,  0.0f,  0.0f,
-	 0.25f, -0.5f, -0.43f,  0.0f,  1.0f,
-	-0.25f, -0.5f,  0.43f,  1.0f,  1.0f,
+	 0.25f, 1.0f, -0.43f,  0.0f,  0.0f,
+	-0.25f, 0.0f,  0.43f,  1.0f,  1.0f,
+	-0.25f, 1.0f,  0.43f,  1.0f,  0.0f,
 
-	 0.25f,  0.5f, -0.43f,  0.0f,  0.0f,
-	-0.25f, -0.5f,  0.43f,  1.0f,  1.0f,
-	-0.25f,  0.5f,  0.43f,  1.0f,  0.0f,
-
-	 0.25f,  0.5f,  0.43f,  0.0f,  0.0f,
-	 0.25f, -0.5f,  0.43f,  0.0f,  1.0f,
-	-0.25f, -0.5f, -0.43f,  1.0f,  1.0f,
-
-	 0.25f,  0.5f,  0.43f,  0.0f,  0.0f,
-	-0.25f, -0.5f, -0.43f,  1.0f,  1.0f,
-	-0.25f,  0.5f, -0.43f,  1.0f,  0.0f
+	 0.25f, 1.0f,  0.43f,  0.0f,  0.0f,
+	 0.25f, 0.0f,  0.43f,  0.0f,  1.0f,
+	-0.25f, 0.0f, -0.43f,  1.0f,  1.0f,
+						  
+	 0.25f, 1.0f,  0.43f,  0.0f,  0.0f,
+	-0.25f, 0.0f, -0.43f,  1.0f,  1.0f,
+	-0.25f, 1.0f, -0.43f,  1.0f,  0.0f
 };
 
 class TextureGrass {
@@ -63,7 +63,7 @@ public:
 	void Delete();
 	TextureGrass() = default;
 	TextureGrass(const char* grassPath, Terrian* t, 
-				FooMethodHeight getheight, FooMethodNormal getNormal, glm::vec2 _pos,  unsigned _averageDistans, float _step = 4);
+				FooMethodHeight getheight, FooMethodNormal getNormal, glm::vec2 _pos,  unsigned _averageDistans, float _step = 0.5);
 
 	void draw(glm::mat4& projection, glm::mat4& view);
 	
