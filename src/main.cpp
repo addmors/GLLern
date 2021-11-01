@@ -8,19 +8,11 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Precompile.h"
-#include"shader/Shad.h"
 #include "RendererEngine.h"
 #include "light/light.h"
-#include"Camera/Camera.h"
-#include"Model/Model.h"
-#include"Loader.h"
 #include "Player\Player.h"
 #include "pEngine\pEngine.h"
-#include "Grass\grass.h"
 #include <AntTweakBar.h>
-#include "Terrian.h"
-#include"Grass\grass.h"
-#include"AABB.h"
 
 unsigned int AABB::cubeVAO = 0;
 unsigned int AABB::cubeVBO = 0;
@@ -39,6 +31,8 @@ float epsilon = 2.4;
 
 TwType TW_TYPE_OGLDEV_VECTOR3F;
 TwType TW_TYPE_OGLDEV_ATTENUATION;
+
+RendererEngine* rendererPtr  = nullptr;
 
 Camera camera(cameraPos, cameraFront, cameraUp, fov);
 glm::mat4 projection;
@@ -164,7 +158,10 @@ int main() {
 	Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
 	//Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
 	
-	unsigned int woodTexture = loadTexture("Cyrcle.png");
+	unsigned int fireTexture = loadTextureWithAlpha("Cyrcle.png");
+	unsigned int firenormalTexture = loadTextureRGB("normalCyrcle.png", false);
+	unsigned int firespecularTexture = loadTextureWithAlpha("specularCyrcle.png");
+
 	unsigned int grassTexture = loadTexture("grass.png");
 
 	ourModel.loadModel("resources/objects/Black Dragon NEW/ganfaul_m_aure.dae");
@@ -180,13 +177,14 @@ int main() {
 	ourModel.keys = &Key.keys;
 	//persone.keys = &Key.keys;
 
-	RendererEngine renderer;
 	Terrian terrain = Terrian(32768/64, "heightmap6.png");
-	Cells cells = Cells("3Dgrass.png", &terrain, &Terrian::getHeightOfTerrian, &Terrian::getNormlofTerrian, &Terrian::getSize, 4);
+	Cells cells = Cells("3Dgrass.png", &terrain, &Terrian::getHeightOfTerrian, &Terrian::getNormlofTerrian, &Terrian::getSize, 16);
 	
 	terrain.loadTextures("blendMap.png", "rTexture.png", "grass2.png", "bTexture.png", "grass.png");
 	
 
+	RendererEngine renderer(&terrain, &camera, &cells, width, height);
+	rendererPtr = &renderer;
 
 	Model Modeltree;
 	Modeltree.loadModel("resources/objects/tree/conifer_macedonian_pine.fbx");
@@ -229,35 +227,6 @@ int main() {
 		pengine->addCylinder(2, 5, x, y, z, 0);
 	}
 	
-
-	
-
-	renderer.t = &terrain;
-	renderer.cell = &cells;
-	renderer.camera = &camera;
-	//create Shaders
-	// -----------------------
-	renderer.configureShareds();
-
-	// configure depth map FBO
-	// -----------------------
-	renderer.configurateDepthBuf();
-
-	// skybox configuration
-	// --------------------
-	renderer.configureSkyBox();
-
-	// shader configuration
-	// --------------------
-	renderer.configurateHDR(width, height);
-	
-
-	// water configuration
-	// --------------------
-	renderer.configurateWater(width, height, "dudvmap.png");
-	
-
-	
 	std::vector<glm::mat4> modelMatrices;
 	for (auto& a : positions) {
 			glm::mat4 matrix = glm::mat4(1);
@@ -268,18 +237,11 @@ int main() {
 	};
 	renderer.prepareModelInstanse(modelMatrices, &Modeltree);
 
-
-
-
 	//Frame texture	
 	//End Frame buffer;
 
 	light Light(std::begin(vertices),std::end(vertices), std::begin(indices),std::end(indices), lightPos);
 
-	//pengine->addCylinder(2, 5, 0, 30, 0, 1.0);
-	//pengine->addSphere(1.0,0,25,0,1.0);
-
-	
 	unsigned int ticFrame = 0;
 	auto terrianBody = pengine->addTerrian(&terrain);
 	lastFrame = glfwGetTime();
@@ -298,6 +260,7 @@ int main() {
 		lastFrame = currentFrame;
 		camera.deltaTime = deltaTime;
 
+		pengine->step(deltaTime);
 
 
 
@@ -321,25 +284,20 @@ int main() {
 		}*/
 		//lightPosForShad = { position.x(), position.y(), position.z() };
 
-		//lightPos.back() = lightPosForShad - dirLight * 70.0f;
+		lightPos.back() = lightPosForShad - dirLight * 70.0f;
 
 		btTransform t;
-		renderer.bodiesMatrixTrans.resize(pengine->getBody().size());
-		auto s = renderer.bodiesMatrixTrans.begin();
-		for (auto [a, b, c] : pengine->getBody()) {
-			if (a->getInvMass() != 0) {
-				if (a->getCollisionShape()->getShapeType() == SPHERE_SHAPE_PROXYTYPE) {
-					*(s) = std::make_pair("sphere", std::move(pengine->getmatSphere(a.get())));
-				}
-				else if (a->getCollisionShape()->getShapeType() == CYLINDER_SHAPE_PROXYTYPE) {
-					*(s) = std::make_pair("cylinder", std::move(pengine->getmatCylinder(a.get())));
-				}
-				else *(s) = std::make_pair("unknownobj", glm::mat4());
-			}
-			s++;
-		}
+		std::map<std::string, std::vector<glm::mat4>::iterator> gen = {
+				{"cylinder", renderer.getCylinder().getInstanse().begin()},
+				{"sphere", renderer.getSphere().getInstanse().begin()},
+				{"box", renderer.getBox().getInstanse().begin()}
 
-		pengine->step(deltaTime);
+		};
+
+		auto gener = pengine.get()->genMatrices(gen);
+		renderer.getCylinder().getInstanse().resize(gener.at(0));
+		renderer.getSphere().getInstanse().resize(gener.at(1));
+		renderer.getBox().getInstanse().resize(gener.at(2));
 		//glm::mat4 glmatrix = getInbtTransform(personeTransform);
 		//glmatrix = glm::rotate(glmatrix, glm::radians(90.0f - camera.yaw), glm::vec3(0.0, 1.0, 0.0));
 		//glmatrix = glm::translate(glmatrix, glm::vec3(0, -0.6, 0));
@@ -354,6 +312,7 @@ int main() {
 
 		camera.do_movement();
 		camera.LoocAt();
+		renderer.setViewProjection();
 
 
 
@@ -368,8 +327,8 @@ int main() {
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		renderer.renderTextureGrass(currentFrame);
-		renderer.renderTerrian(width, height, camera.cameraPos, camera.cameraFront, projection, lightPos.back(), lightPos);
+		//renderer.renderTextureGrass(currentFrame);
+		renderer.renderTerrian(width, height,lightPos.back(), lightPos);
 		
 
 		//Water
@@ -382,6 +341,7 @@ int main() {
 			camera.cameraPos.y -= distance;
 			camera.pitch = -camera.pitch;
 			camera.LoocAt();
+			renderer.setViewProjection();
 			glViewport(0, 0, width, height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			renderer.renderTerrian(width, height, camera.cameraPos, camera.cameraFront, projection, lightPos.back(), lightPos);
@@ -393,7 +353,7 @@ int main() {
 			camera.cameraPos.y += distance;
 			camera.pitch = -camera.pitch;
 			camera.LoocAt();
-
+			renderer.setViewProjection();
 			renderer.EnableRefractionWater();
 
 			glViewport(0, 0, width, height);
@@ -414,17 +374,15 @@ int main() {
 		renderer.EnableHDR();
 		Light.UseLight(camera.view, projection, lightPos);
 		//if(waterVision) renderer.renderWater(deltaTime);
-		renderer.renderScene(width, height, camera.cameraPos, projection, lightPos.back(), woodTexture);
-		renderer.renderModel(&Modeltree, lightPos, modelMatrices.size(), camera.cameraPos, camera.cameraFront);
+		renderer.renderScene(width, height, camera.cameraPos, projection, lightPos.back(), lightPos,
+								fireTexture, firenormalTexture, firespecularTexture);
+		renderer.renderModel(&Modeltree, lightPos, modelMatrices.size());
 		//renderer.renderModelAnim(&ourModel, glmatrix, deltaTime, lightPos, camera.cameraPos, camera.cameraFront);
 		renderer.renderSkyBox(currentFrame);		
 		renderer.DisableHDR();
 		renderer.renderHDR(epsilon);
 
-
-		
 		TwDraw();
-
 		glfwSwapBuffers(window);
 		
 	}
@@ -449,6 +407,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
 	// Когда пользователь нажимает ESC, мы устанавливаем свойство WindowShouldClose в true, 
 	// и приложение после этого закроется
+	if (key == -1) return;
 	int ATBKey = OgldevKeyToATBKey(key);
 	cout << "action = " <<action << "srsr";
 	if (ATBKey != TW_KEY_LAST && (action == GLFW_REPEAT || action == GLFW_PRESS)) {
@@ -468,7 +427,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
  		auto sphere = pengine->addSphere(1,camera.cameraPos.x+camera.cameraFront.x, camera.cameraPos.y+camera.cameraFront.y, camera.cameraPos.z+camera.cameraFront.z,1);
+		rendererPtr->getSphere().AddInstanse();
 		sphere->setLinearVelocity(btVector3(camera.cameraFront.x*20, camera.cameraFront.y*20, camera.cameraFront.z*20));
+	}
+	if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+		auto cylinder = pengine->addCylinder(2,2, camera.cameraPos.x + camera.cameraFront.x, camera.cameraPos.y + camera.cameraFront.y, camera.cameraPos.z + camera.cameraFront.z, 1);
+		rendererPtr->getCylinder().AddInstanse();
+		cylinder->setLinearVelocity(btVector3(camera.cameraFront.x * 20, camera.cameraFront.y * 20, camera.cameraFront.z * 20));
+	}
+
+	if (key == GLFW_KEY_B && action == GLFW_PRESS) {
+		auto box = pengine->addBox(2,4,4, camera.cameraPos.x + camera.cameraFront.x, camera.cameraPos.y + camera.cameraFront.y, camera.cameraPos.z + camera.cameraFront.z, 10);
+		rendererPtr->getBox().AddInstanse();
+		box->setLinearVelocity(btVector3(camera.cameraFront.x * 20, camera.cameraFront.y * 20, camera.cameraFront.z * 20));
 	}
 
 	key_callback_for_movement(key, action);

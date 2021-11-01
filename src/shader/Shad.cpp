@@ -166,11 +166,11 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos, glm::vec3&
 	////Фонарz
 		SetVec3("spotlight.position", cameraPos);
 		SetVec3("spotlight.direction", cameraDir );
-		SetFloat("spotlight.cutOff", glm::cos(glm::radians(2.5f)));
-		SetFloat("spotlight.outercutOff", glm::cos(glm::radians(7.5f)));
+		SetFloat("spotlight.cutOff", glm::cos(glm::radians(5.0f)));
+		SetFloat("spotlight.outercutOff", glm::cos(glm::radians(10.0f)));
 		SetVec3("spotlight.ambient", 0.2f, 0.2f, 0.2f);
-		SetVec3("spotlight.diffuse", 2.0f, 2.0f, 2.0f); // darken the light a bit to fit the scene
-		SetVec3("spotlight.specular", 1.0f, 1.0f, 1.0f);
+		SetVec3("spotlight.diffuse", 10.0f, 10.0f, 10.0f); // darken the light a bit to fit the scene
+		SetVec3("spotlight.specular", 10.0f, 10.0f, 10.0f);
 		SetFloat("spotlight.constant", 1.0f);
 		SetFloat("spotlight.linear", 0.014f);
 		SetFloat("spotlight.quadratic", 0.00007f);
@@ -232,6 +232,7 @@ void FileLoader::ADDFILE(const std::string path)
 	std::string temp = '/' + path;
 	
 	glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(temp.c_str()), temp.c_str(), strlen(pathShaderCode), pathShaderCode);
+	int t = 0;
 	names.push_back(path);
 	
 };

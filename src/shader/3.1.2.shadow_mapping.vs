@@ -1,7 +1,14 @@
 #version 420 core
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
+layout (location = 1) in vec2 aTexCoords;
+layout (location = 2) in vec3 aNormal;
+
+layout (std140, binding = 0) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
+
 
 out vec2 TexCoords;
 
@@ -13,8 +20,6 @@ out VS_OUT {
     float visibility;
 } vs_out;
 
-uniform mat4 projection;
-uniform mat4 view;
 uniform mat4 model;
 uniform mat4 lightSpaceMatrix;
 

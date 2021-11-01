@@ -135,6 +135,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Rect.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\PrimShape.cpp" />
     <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\Query.cpp" />
     <ClCompile Include="src\Grass\grass.cpp" />
@@ -162,6 +166,10 @@
     <ClCompile Include="src\Water\Water.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Rect.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="src\PrimShape.h" />
     <ClInclude Include="src\AABB.h" />
     <ClInclude Include="src\logger.h" />
     <ClInclude Include="src\Query.h" />
@@ -193,6 +201,8 @@
     <None Include="src\shader\3.1.2.shadow_mapping.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.fs" />
     <None Include="src\shader\3.1.2.shadow_mapping_depth.vs" />
+    <None Include="src\shader\8.1.deferred_shading.fs" />
+    <None Include="src\shader\8.1.g_buffer.fs" />
     <None Include="src\shader\grassShader.fs" />
     <None Include="src\shader\grassShader.gs" />
     <None Include="src\shader\grassShader.vs" />
@@ -213,6 +223,9 @@
     <None Include="src\shader\frameshader.fs" />
     <None Include="src\shader\frameshader.vs" />
     <None Include="src\shader\3.1.2.shadow_mapping.fs" />
+    <None Include="src\shader\ShaderDrawNormal.fs" />
+    <None Include="src\shader\ShaderDrawNormal.gs" />
+    <None Include="src\shader\ShaderDrawNormal.vs" />
     <None Include="src\shader\skybox.fs" />
     <None Include="src\shader\skybox.vs" />
     <None Include="src\shader\terrianShader.fs" />

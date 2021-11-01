@@ -9,6 +9,13 @@ layout (location = 4) in vec3 aBitangent;
 layout (location = 5) in vec4 s_vWeights;
 layout (location = 6) in ivec4 s_vIDs;
 
+layout (std140, binding = 0) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
+
+
 
 out vec2 TexCoord;
 out vec3 FragPos; 
@@ -16,8 +23,6 @@ out vec3 Normal;
 out mat3 TBN;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
 uniform vec3 lightPos;
 uniform vec4 plane;
 

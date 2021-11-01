@@ -1,5 +1,29 @@
 #include "RendererEngine.h"
-#include "logger.h"
+#include "Precompile.h"
+
+RendererEngine::RendererEngine(Terrian* _terrain, Camera* _camera, Cells* _cell, int width, int height): t(_terrain), camera(_camera), cell(_cell), width_(width), height_(height)
+{
+	//create Shaders
+// -----------------------
+	configureShareds();
+
+	// configure depth map FBO
+	// -----------------------
+	configurateDepthBuf();
+
+	// skybox configuration
+	// --------------------
+	configureSkyBox();
+
+	// shader configuration
+	// --------------------
+	configurateHDR(width_, height_);
+
+
+	// water configuration
+	// --------------------
+	configurateWater(width_, height_, "dudvmap.png");
+}
 
 void RendererEngine::configurateDepthBuf() {
 	glGenFramebuffers(1, &depthMapFBO);
@@ -20,14 +44,13 @@ void RendererEngine::configurateDepthBuf() {
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 void RendererEngine::configurateWater(int width, int height, const char* pathDuDvMap) {
 	water.Init(width, height);
 	water.loadDuDv(pathDuDvMap);
 }
 
 void RendererEngine::configurateHDR(int width, int height) {
-	width_ = width;
-	height_ = height;
 	glGenVertexArrays(1, &quadVAO);
 	glGenBuffers(1, &quadVBO);
 	glBindVertexArray(quadVAO);
@@ -70,7 +93,17 @@ void RendererEngine::configurateHDR(int width, int height) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
 };
+
+
+
 void RendererEngine::configureShareds() {
+
+	glGenBuffers(1, &uboMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, uboMatrices, 0, 2 * sizeof(glm::mat4));
 
 	glGenBuffers(1, &bufferTree);
 	//standartShared
@@ -154,17 +187,15 @@ Water& RendererEngine::getWater() {
 
 
 
-void RendererEngine::renderTerrian(int width, int height, glm::vec3& cameraPos, glm::vec3& cameraFront, glm::mat4& projection, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos) {
+void RendererEngine::renderTerrian(int width, int height, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos) {
 	
 	glm::mat4 model = glm::mat4();
 	float trans = t->getSize() / 2;
 	model = glm::translate(model, glm::vec3(-trans, 0, -trans));
 	shaderTerrian.Use();
-	shaderTerrian.Design(camera->view, lightsPos, cameraPos, cameraFront);
-	shaderTerrian.SetMat4("projection", *this->projection);
-	shaderTerrian.SetMat4("view", camera->view);
+	shaderTerrian.Design(camera->view, lightsPos, camera->cameraPos, camera->cameraFront);
 	// set light uniforms
-	shaderTerrian.SetVec3("viewPos", cameraPos);
+	shaderTerrian.SetVec3("viewPos", camera->cameraPos);
 	shaderTerrian.SetVec3("lightPos", lightPos);
 	shaderTerrian.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 	shaderTerrian.SetMat4("model", model);
@@ -204,8 +235,6 @@ void RendererEngine::renderTextureGrass(float time) {
 		LOG_DURATION("draw textures");
 		TextureGrassShader.Use();
 		TextureGrassShader.SetFloat("time", time);
-		TextureGrassShader.SetMat4("view", camera->view);
-		TextureGrassShader.SetMat4("projection", *projection);
 		TextureGrassShader.SetVec3("cameraPos", camera->cameraPos);
 		TextureGrassShader.SetVec3("up", camera->cameraUp);
 		TextureGrassShader.SetVec3("right", camera->cameraRight());
@@ -268,10 +297,10 @@ void RendererEngine::DisableHDR() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos, unsigned int texture) {
+void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos,
+	vector<glm::vec3>  lightPoses,
+	unsigned int texture, unsigned int normal, unsigned int specular) {
 	shader.Use();
-	shader.SetMat4("projection", projection);
-	shader.SetMat4("view", camera->view);
 	// set light uniforms
 	shader.SetVec3("viewPos", cameraPos);
 	shader.SetVec3("lightPos", lightPos);
@@ -286,31 +315,51 @@ void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, gl
 	model = glm::translate(model, glm::vec3(0.2f, 1.5f, 0.5));
 	model = glm::scale(model, glm::vec3(0.5f));
 	shader.SetMat4("model", model);
-	drawCube();
+	rect1.draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.5f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	shader.SetMat4("model", model);
-	drawCube();
+	rect1.draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0f, 0.5f, 2.0));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	shader.SetMat4("model", model);
-	drawCube();
-	for (auto [name, value] : bodiesMatrixTrans) {
+	rect1.draw();
+	glm::mat4 value = glm::mat4(1);
+	shader.SetMat4("model", value);
+	sphere1.draw();
 
-		if (name == "sphere") {
-			shader.SetMat4("model", value);
-			sphere1.draw();
-		}
+	value = glm::translate(value, glm::vec3(5,0,0));
+	shader.SetMat4("model", value);
+	cylinder1.draw();
 
-		if (name == "cylinder") {
-			shader.SetMat4("model", value);
-			cylinder1.draw();
-		}
+	
+	value = glm::translate(value, glm::vec3(5, 0, 0));
+	shader.SetMat4("model", value);
+	rect1.draw();
 
-	}
+	ShaderNoBone.Use();
+	ShaderNoBone.Design(camera->view, lightPoses, cameraPos, camera->cameraFront);
+	ShaderNoBone.SetVec3("viewPos", cameraPos);
+	ShaderNoBone.SetInt("material.texture_diffuse1", 0);
+	ShaderNoBone.SetInt("material.texture_normal1", 1);
+	ShaderNoBone.SetInt("material.texture_specular1", 2);
+	
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normal);
+	
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, specular);
+	
+	sphere1.drawInstance();
+	cylinder1.drawInstance();
+	rect1.drawInstance();
+
 };
 
 
@@ -320,8 +369,6 @@ bool RendererEngine::checkWaterVision() {
 	{
 		LOG_DURATION("draw querry");
 			OccluderWaterShader.Use();
-			OccluderWaterShader.SetMat4("view", camera->view);
-			OccluderWaterShader.SetMat4("projection", *projection);
 			glm::mat4 model = glm::mat4(1);
 			model = glm::translate(model, glm::vec3(-40, water.getHeight(), -40));
 			model = glm::scale(model, glm::vec3(60, 1, 60));
@@ -337,11 +384,16 @@ bool RendererEngine::checkWaterVision() {
 	return query.Test() > 30;
 
 }
+void RendererEngine::setViewProjection()
+{
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(*projection));
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(camera->view));
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
 void RendererEngine::renderWater(float deltaTime) {
 	
 	WaterShader.Use();
-	WaterShader.SetMat4("projection", *projection);
-	WaterShader.SetMat4("view", camera->view);
 	water.addMoveFactor(deltaTime);
 	WaterShader.SetVec3("cameraPosition", camera->cameraPos);
 	WaterShader.SetFloat("moveFactor", water.getMoveFactor());
@@ -406,8 +458,6 @@ void RendererEngine::renderModelAnim(Model* model, glm::mat4& trans, float delta
 
 	objclrShader.Design(camera->view, lightPos, cameraPos, cameraFront);
 	objclrShader.SetVec3("viewPos", cameraPos);
-	objclrShader.SetMat4("projection", *projection);
-	objclrShader.SetMat4("view", camera->view);
 	objclrShader.SetMat4("model", trans);
 
 	if (!model->anim)    //If the object is rigged...
@@ -434,7 +484,7 @@ void RendererEngine::prepareModelInstanse(vector<glm::mat4>matrix, Model* model)
 	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 
 	glBufferData(GL_ARRAY_BUFFER, matrix.size() * sizeof(glm::mat4), &matrix[0], GL_STATIC_DRAW);
-
+	
 	for (int i = 0; i < model->meshes.size(); i++) {
 		glBindVertexArray(model->meshes[i].VAO);
 		// set attribute pointers for matrix (4 times vec4)
@@ -454,99 +504,40 @@ void RendererEngine::prepareModelInstanse(vector<glm::mat4>matrix, Model* model)
 		glVertexAttribDivisor(8, 1);
 
 	}
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-};
+}
 
-void RendererEngine::renderModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize, glm::vec3& cameraPos, glm::vec3& cameraFront) {
+
+
+void RendererEngine::renderModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize) {
 
 
 	if (matrixSize == 0) return;
 
 	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 	ShaderNoBone.Use();
-	ShaderNoBone.Design(camera->view, lightPos, cameraPos, cameraFront);
-	objclrShader.SetVec3("viewPos", cameraPos);
-	ShaderNoBone.SetMat4("projection", *projection);
-	ShaderNoBone.SetMat4("view", camera->view);
+	ShaderNoBone.Design(camera->view, lightPos, camera->cameraPos, camera->cameraFront);
+	ShaderNoBone.SetVec3("viewPos", camera->cameraPos);
+
 	for (int i = 0; i < model->meshes.size(); i++) {
 		model->meshes[i].bindTexture(ShaderNoBone);
 		glBindVertexArray(model->meshes[i].VAO);
 		glDrawElementsInstanced(
 			GL_TRIANGLES, model->meshes[i]._indices.size(), GL_UNSIGNED_INT, 0, matrixSize);
 	}
+	/*NormalDrawShader.Use();
+	for (int i = 0; i < model->meshes.size(); i++) {
+		glBindVertexArray(model->meshes[i].VAO);
+		glDrawElementsInstanced(
+			GL_TRIANGLES, model->meshes[i]._indices.size(), GL_UNSIGNED_INT, 0, matrixSize);
+	}*/
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 };
 
-void RendererEngine::drawCube() {
-	// initialize (if necessary)
-	if (cubeVAO == 0)
-	{
-		float vertices[] = {
-			// back face
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-			// front face
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-			// left face
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-			// right face
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-			// bottom face
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-			// top face
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-		};
-		glGenVertexArrays(1, &cubeVAO);
-		glGenBuffers(1, &cubeVBO);
-		// fill buffer
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		// link vertex attributes
-		glBindVertexArray(cubeVAO);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	}
-	// render Cube
-	glBindVertexArray(cubeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
-}
+
 
 void RendererEngine::renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight) {
 
@@ -563,7 +554,7 @@ void RendererEngine::renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glCullFace(GL_BACK);
+	glCullFace(GL_FRONT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glm::mat4 model = glm::mat4(1.0f);
 	auto [scaleX, scaleZ] = t->getScaleTerrian();
@@ -578,30 +569,18 @@ void RendererEngine::renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight) {
 	model = glm::translate(model, glm::vec3(0.2f, 1.5f, 0.5));
 	model = glm::scale(model, glm::vec3(0.5f));
 	simpleDepthShader.SetMat4("model", model);
-	drawCube();
+	rect1.draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.5f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	simpleDepthShader.SetMat4("model", model);
-	drawCube();
+	rect1.draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0f, 0.5f, 2.0));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	simpleDepthShader.SetMat4("model", model);
-	drawCube();
-	for (auto [name, value] : bodiesMatrixTrans) {
-
-		if (name == "sphere") {
-			simpleDepthShader.SetMat4("model", value);
-			sphere1.draw();
-		}
-
-		if (name == "cylinder") {
-			simpleDepthShader.SetMat4("model", value);
-			cylinder1.draw();
-		}
-	}
+	rect1.draw();
 	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -643,19 +622,16 @@ void RendererEngine::renderRefraction(float epsilon, glm::mat4 model) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+
 void RendererEngine::destroy() {
 	FileLoader::DELETEFILE();
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &quadVBO);
 	glDeleteVertexArrays(1, &planeVAO);
 	glDeleteBuffers(1, &planeVBO);
-	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteBuffers(1, &cubeVBO);
 	glDeleteVertexArrays(1, &skyboxVAO);
 	glDeleteBuffers(1, &skyboxVBO);
 	water.WaterDestroy();
-	sphere1.Delete();
-	cylinder1.Delete();
 	for (auto& a :cell->cellGrasses) {
 		a.Delete();
 	};

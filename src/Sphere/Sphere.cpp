@@ -25,31 +25,10 @@ const int MIN_STACK_COUNT  = 2;
 ///////////////////////////////////////////////////////////////////////////////
 // ctor
 ///////////////////////////////////////////////////////////////////////////////
-Sphere::Sphere(float radius, int sectors, int stacks, bool smooth) : interleavedStride(32)
+Sphere::Sphere(float radius, int sectors, int stacks, bool smooth)
 {
     set(radius, sectors, stacks, smooth);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, (vertices.size() + normals.size() + texCoords.size()) * sizeof(float), nullptr, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), &vertices.at(0));
-    glBufferSubData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), normals.size() * sizeof(float), &normals.at(0));
-    glBufferSubData(GL_ARRAY_BUFFER, (vertices.size() + normals.size()) * sizeof(float), texCoords.size() * sizeof(float), &texCoords.at(0));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-    glGenVertexArrays(1, &sphereVAO);
-    glBindVertexArray(sphereVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(vertices.size() * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)((vertices.size() + normals.size()) * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glBindVertexArray(0);
+    Init();
 }
 
 
@@ -72,6 +51,7 @@ void Sphere::set(float radius, int sectors, int stacks, bool smooth)
         buildVerticesSmooth();
     else
         buildVerticesFlat();
+    buildTangent();
 }
 
 void Sphere::setRadius(float radius)
@@ -129,12 +109,6 @@ void Sphere::printSelf() const
 // draw a sphere in VertexArray mode
 // OpenGL RC must be set before calling it
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::draw() 
-{
-    glBindVertexArray(sphereVAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-}
 
 
 
@@ -206,17 +180,6 @@ void Sphere::updateRadius()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// dealloc vectors
-///////////////////////////////////////////////////////////////////////////////
-void Sphere::clearArrays()
-{
-    std::vector<float>().swap(vertices);
-    std::vector<float>().swap(normals);
-    std::vector<float>().swap(texCoords);
-    std::vector<unsigned int>().swap(indices);
-    std::vector<unsigned int>().swap(lineIndices);
-}
 
 
 
@@ -237,6 +200,7 @@ void Sphere::buildVerticesSmooth()
 
     float x, y, z, xy;                              // vertex position
     float nx, ny, nz, lengthInv = 1.0f / radius;    // normal
+    float tx, ty, tz, xtan, ytan;            //tangent
     float s, t;                                     // texCoord
 
     float sectorStep = 2 * PI / sectorCount;
@@ -258,6 +222,8 @@ void Sphere::buildVerticesSmooth()
             // vertex position
             x = xy * cosf(sectorAngle);             // r * cos(u) * cos(v)
             y = xy * sinf(sectorAngle);             // r * cos(u) * sin(v)
+            xtan = z * cosf(sectorAngle);        // r * sin(u) * cos(v)
+            ytan = z * sinf(sectorAngle);        // r * sin(u) * sin(v)
             addVertex(x, y, z);
 
             // normalized vertex normal
@@ -266,6 +232,18 @@ void Sphere::buildVerticesSmooth()
             nz = z * lengthInv;
             addNormal(nx, ny, nz);
 
+
+            /*tx = xtan * lengthInv;
+            ty = ytan * lengthInv;
+            tz = z * lengthInv;
+
+            addTangent(tx, ty, tz);
+            glm::vec3 tangent = { tx,ty,tz };
+            glm::vec3 normal = { nx,ny,nz };
+
+            glm::vec3 b = glm::normalize(glm::cross(normal, tangent));
+            addBitangent(b.x, b.y, b.z);
+            */
             // vertex tex coord between [0, 1]
             s = (float)j / sectorCount;
             t = (float)i / stackCount;
@@ -283,20 +261,16 @@ void Sphere::buildVerticesSmooth()
     {
         k1 = i * (sectorCount + 1);     // beginning of current stack
         k2 = k1 + sectorCount + 1;      // beginning of next stack
-
-        for(int j = 0; j < sectorCount; ++j, ++k1, ++k2)
+        
+        
+        for(int j = 0; j < sectorCount; ++j, k1++, k2++)
         {
             // 2 triangles per sector excluding 1st and last stacks
-            if(i != 0)
-            {
                 addIndices(k1, k2, k1+1);   // k1---k2---k1+1
-            }
-
-            if(i != (stackCount-1))
-            {
-                addIndices(k1+1, k2, k2+1); // k1+1---k2---k2+1
-            }
-
+            
+            
+                addIndices(k2, k2+1, k1+1);
+        
             // vertical lines for all stacks
             lineIndices.push_back(k1);
             lineIndices.push_back(k2);
@@ -306,7 +280,10 @@ void Sphere::buildVerticesSmooth()
                 lineIndices.push_back(k1 + 1);
             }
         }
+        
     }
+
+    
 
     // generate interleaved vertex array as well
     buildInterleavedVertices();
@@ -486,112 +463,3 @@ void Sphere::buildVerticesFlat()
 // generate interleaved vertices: V/N/T
 // stride must be 32 bytes
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::buildInterleavedVertices()
-{
-    std::vector<float>().swap(interleavedVertices);
-
-    std::size_t i, j;
-    std::size_t count = vertices.size();
-    for(i = 0, j = 0; i < count; i += 3, j += 2)
-    {
-        interleavedVertices.push_back(vertices[i]);
-        interleavedVertices.push_back(vertices[i+1]);
-        interleavedVertices.push_back(vertices[i+2]);
-
-        interleavedVertices.push_back(normals[i]);
-        interleavedVertices.push_back(normals[i+1]);
-        interleavedVertices.push_back(normals[i+2]);
-
-        interleavedVertices.push_back(texCoords[j]);
-        interleavedVertices.push_back(texCoords[j+1]);
-    }
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add single vertex to array
-///////////////////////////////////////////////////////////////////////////////
-void Sphere::addVertex(float x, float y, float z)
-{
-    vertices.push_back(x);
-    vertices.push_back(y);
-    vertices.push_back(z);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add single normal to array
-///////////////////////////////////////////////////////////////////////////////
-void Sphere::addNormal(float nx, float ny, float nz)
-{
-    normals.push_back(nx);
-    normals.push_back(ny);
-    normals.push_back(nz);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add single texture coord to array
-///////////////////////////////////////////////////////////////////////////////
-void Sphere::addTexCoord(float s, float t)
-{
-    texCoords.push_back(s);
-    texCoords.push_back(t);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add 3 indices to array
-///////////////////////////////////////////////////////////////////////////////
-void Sphere::addIndices(unsigned int i1, unsigned int i2, unsigned int i3)
-{
-    indices.push_back(i1);
-    indices.push_back(i2);
-    indices.push_back(i3);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// return face normal of a triangle v1-v2-v3
-// if a triangle has no surface (normal length = 0), then return a zero vector
-///////////////////////////////////////////////////////////////////////////////
-std::vector<float> Sphere::computeFaceNormal(float x1, float y1, float z1,  // v1
-                                             float x2, float y2, float z2,  // v2
-                                             float x3, float y3, float z3)  // v3
-{
-    const float EPSILON = 0.000001f;
-
-    std::vector<float> normal(3, 0.0f);     // default return value (0,0,0)
-    float nx, ny, nz;
-
-    // find 2 edge vectors: v1-v2, v1-v3
-    float ex1 = x2 - x1;
-    float ey1 = y2 - y1;
-    float ez1 = z2 - z1;
-    float ex2 = x3 - x1;
-    float ey2 = y3 - y1;
-    float ez2 = z3 - z1;
-
-    // cross product: e1 x e2
-    nx = ey1 * ez2 - ez1 * ey2;
-    ny = ez1 * ex2 - ex1 * ez2;
-    nz = ex1 * ey2 - ey1 * ex2;
-
-    // normalize only if the length is > 0
-    float length = sqrtf(nx * nx + ny * ny + nz * nz);
-    if(length > EPSILON)
-    {
-        // normalize
-        float lengthInv = 1.0f / length;
-        normal[0] = nx * lengthInv;
-        normal[1] = ny * lengthInv;
-        normal[2] = nz * lengthInv;
-    }
-
-    return normal;
-}

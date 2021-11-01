@@ -1,9 +1,12 @@
 #version 420
 layout (location = 0) in vec3 inPosition;
- 
-uniform mat4 projection;
+
+layout (std140, binding = 0) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
 uniform mat4 model;
-uniform mat4 view;
 
 void main()
 {

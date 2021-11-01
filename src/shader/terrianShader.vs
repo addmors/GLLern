@@ -14,9 +14,15 @@ out VS_OUT {
     float visibilityToPlane;
 } vs_out;
 
-uniform mat4 projection;
-uniform mat4 view;
+layout (std140, binding = 0) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
+
+
 uniform mat4 model;
+
 uniform vec4 plane;
 uniform mat4 lightSpaceMatrix;
 

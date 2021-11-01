@@ -1,11 +1,15 @@
 #version 420 core
 layout (location = 0) in vec2 position;
 
+layout (std140, binding = 0) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
+
 out vec4 ClipSpace;
 out vec2 texCoord;
 out vec3 toCameraVector;
-uniform mat4 projection;
-uniform mat4 view;
 uniform mat4 model;
 
 uniform vec3 cameraPosition;

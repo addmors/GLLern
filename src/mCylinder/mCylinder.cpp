@@ -32,31 +32,15 @@ const int MIN_STACK_COUNT  = 1;
 // ctor
 ///////////////////////////////////////////////////////////////////////////////
 Cylinder::Cylinder(float baseRadius, float topRadius, float height, int sectors,
-    int stacks, bool smooth) : interleavedStride(32) , color_({1.0,1.0,1.0})
+    int stacks, bool smooth)
 {
     set(baseRadius, topRadius, height, sectors, stacks, smooth);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, (vertices.size()+normals.size()+texCoords.size()) * sizeof(float),nullptr, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), &vertices.at(0));
-    glBufferSubData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), normals.size()*sizeof(float), &normals.at(0));
-    glBufferSubData(GL_ARRAY_BUFFER, (vertices.size()+normals.size()) * sizeof(float), texCoords.size() * sizeof(float), &texCoords.at(0));
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
-    glGenVertexArrays(1, &cyrcleVAO);
-    glBindVertexArray(cyrcleVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(vertices.size() * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)((vertices.size() + normals.size()) * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glBindVertexArray(0);
+    Init();
+    glm::vec3 norm= { normals.at(0),normals.at(1),normals.at(2) };
+    glm::vec3 tan = { tangent.at(0),tangent.at(1),tangent.at(2) };
+    glm::vec3 bitan = { bitangent.at(0),bitangent.at(1),bitangent.at(2) };
+    glm::mat3 tbn = { bitan,norm,tan};
+    glm::vec3 normtest = tbn*glm::normalize(glm::vec3 ( 0.2, 1.0, 0.2));
 
 }
 
@@ -86,6 +70,7 @@ void Cylinder::set(float baseRadius, float topRadius, float height, int sectors,
         buildVerticesSmooth();
     else
         buildVerticesFlat();
+    buildTangent();
 }
 
 void Cylinder::setBaseRadius(float radius)
@@ -152,17 +137,6 @@ void Cylinder::printSelf() const
 }
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-// draw a cylinder in VertexArray mode
-// OpenGL RC must be set before calling it
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::draw()
-{
-    glBindVertexArray(cyrcleVAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
- }
 
 
 
@@ -268,21 +242,6 @@ void Cylinder::drawWithLines(const float lineColor[4]) const
     //// draw lines with VA
     //drawLines(lineColor);
 }
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// dealloc vectors
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::clearArrays()
-{
-    std::vector<float>().swap(vertices);
-    std::vector<float>().swap(normals);
-    std::vector<float>().swap(texCoords);
-    std::vector<unsigned int>().swap(indices);
-    std::vector<unsigned int>().swap(lineIndices);
-}
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -572,35 +531,6 @@ void Cylinder::buildVerticesFlat()
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// generate interleaved vertices: V/N/T
-// stride must be 32 bytes
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::buildInterleavedVertices()
-{
-    std::vector<float>().swap(interleavedVertices);
-
-    std::size_t i, j;
-    std::size_t count = vertices.size();
-    for(i = 0, j = 0; i < count; i += 3, j += 2)
-    {
-        //interleavedVertices.push_back(vertices[i]);
-        //interleavedVertices.push_back(vertices[i+1]);
-        //interleavedVertices.push_back(vertices[i+2]);
-        interleavedVertices.insert(interleavedVertices.end(), &vertices[i], &vertices[i] + 3);
-
-        //interleavedVertices.push_back(normals[i]);
-        //interleavedVertices.push_back(normals[i+1]);
-        //interleavedVertices.push_back(normals[i+2]);
-        interleavedVertices.insert(interleavedVertices.end(), &normals[i], &normals[i] + 3);
-
-        //interleavedVertices.push_back(texCoords[j]);
-        //interleavedVertices.push_back(texCoords[j+1]);
-        interleavedVertices.insert(interleavedVertices.end(), &texCoords[j], &texCoords[j] + 2);
-    }
-}
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // generate 3D vertices of a unit circle on XY plance
@@ -619,53 +549,6 @@ void Cylinder::buildUnitCircleVertices()
         unitCircleVertices.push_back(sin(sectorAngle)); // y
         unitCircleVertices.push_back(0);                // z
     }
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add single vertex to array
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::addVertex(float x, float y, float z)
-{
-    vertices.push_back(x);
-    vertices.push_back(y);
-    vertices.push_back(z);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add single normal to array
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::addNormal(float nx, float ny, float nz)
-{
-    normals.push_back(nx);
-    normals.push_back(ny);
-    normals.push_back(nz);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add single texture coord to array
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::addTexCoord(float s, float t)
-{
-    texCoords.push_back(s);
-    texCoords.push_back(t);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// add 3 indices to array
-///////////////////////////////////////////////////////////////////////////////
-void Cylinder::addIndices(unsigned int i1, unsigned int i2, unsigned int i3)
-{
-    indices.push_back(i1);
-    indices.push_back(i2);
-    indices.push_back(i3);
 }
 
 
@@ -704,46 +587,4 @@ std::vector<float> Cylinder::getSideNormals()
     }
 
     return normals;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// return face normal of a triangle v1-v2-v3
-// if a triangle has no surface (normal length = 0), then return a zero vector
-///////////////////////////////////////////////////////////////////////////////
-std::vector<float> Cylinder::computeFaceNormal(float x1, float y1, float z1,  // v1
-                                               float x2, float y2, float z2,  // v2
-                                               float x3, float y3, float z3)  // v3
-{
-    const float EPSILON = 0.000001f;
-
-    std::vector<float> normal(3, 0.0f);     // default return value (0,0,0)
-    float nx, ny, nz;
-
-    // find 2 edge vectors: v1-v2, v1-v3
-    float ex1 = x2 - x1;
-    float ey1 = y2 - y1;
-    float ez1 = z2 - z1;
-    float ex2 = x3 - x1;
-    float ey2 = y3 - y1;
-    float ez2 = z3 - z1;
-
-    // cross product: e1 x e2
-    nx = ey1 * ez2 - ez1 * ey2;
-    ny = ez1 * ex2 - ex1 * ez2;
-    nz = ex1 * ey2 - ey1 * ex2;
-
-    // normalize only if the length is > 0
-    float length = sqrtf(nx * nx + ny * ny + nz * nz);
-    if(length > EPSILON)
-    {
-        // normalize
-        float lengthInv = 1.0f / length;
-        normal[0] = nx * lengthInv;
-        normal[1] = ny * lengthInv;
-        normal[2] = nz * lengthInv;
-    }
-
-    return normal;
 }

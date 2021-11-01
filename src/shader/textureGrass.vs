@@ -4,13 +4,16 @@ layout (location = 1) in vec2 aTexCoords;
 layout (location = 2) in vec3 offset;
 layout(location = 3) in vec3 normal;
 
+layout (std140, binding = 0) uniform Matrices
+{
+    mat4 projection;
+    mat4 view;
+};
 
 out vec2 TexCoords;
 out float alphaScale;
 
 uniform float time;
-uniform mat4 view;
-uniform mat4 projection;
 uniform vec3 cameraPos;
 uniform sampler1D urandom01;
 uniform vec3 up;
