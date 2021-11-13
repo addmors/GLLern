@@ -1,4 +1,4 @@
-#version 420
+#version 450
 layout (location = 0) in vec3 inPosition;
 
 layout (std140, binding = 0) uniform Matrices

@@ -5,10 +5,13 @@
 #include "Model\Model.h"
 #include "Water\Water.h"
 #include"Grass\grass.h"
+#include "light\light.h"
+#include "gBuffer.h"
 #include "Query.h"
 #include <vector>
 #include<utility>
 #include <string>
+#include<iterator>
 
 
 class RendererEngine
@@ -18,16 +21,17 @@ private:
 	Terrian* t;
 	Camera* camera;
 	Cells* cell;
+	PointsLight pointsLight;
+	light Light{std::begin(vertices), std::end(vertices), std::begin(indices), std::end(indices)};
 	int width_;
 	int height_;
 	Query query;
 	Sphere sphere1{ 1.0f, 36, 18, 1 };
+	Sphere sphereLite{ 1.0f, 18, 9, 1 };
 	Cylinder cylinder1{ 1, 1, 1, 36, 3, 1 };
 	Rect rect1{};
+	GBuffer gBuffer{};
 	Water water{};
-	vector<glm::mat4> SpheresInstanse;
-	vector<glm::mat4> CylindersInstanse;
-	vector<glm::mat4> BoxesInstanse;
 	std::vector<Model*> models; 
 
 
@@ -43,10 +47,10 @@ private:
 	Shader OccluderShader{"src/shader/occluder.vs","src/shader/occluder.fs"};
 	Shader OccluderWaterShader{ "src/shader/occluderWater.vs","src/shader/occluderWater.fs" };
 	Shader NormalDrawShader{ "src/shader/ShaderDrawNormal.vs","src/shader/ShaderDrawNormal.fs" ,"src/shader/ShaderDrawNormal.gs" };
-	Shader shaderLightingPass{ "src/shader/frameshader.vs", "src/shader/8.1.deferred_shading.fs" };
-	Shader shaderGeometryPass{ "src/shader/justshad.vs", "src/shader/8.1.g_buffer.fs" };
-	float rotation_sky = 0;
-	float ROTATION_STEP = 0.01f;
+	Shader shaderGeometryPass{ "src/shader/jastshad.vs", "src/shader/8.1.g_buffer.fs" };
+	Shader shaderLightingPass{ "src/shader/shader.vs", "src/shader/8.1.deferred_shading.fs" };
+	Shader shaderNullPass{ "src/shader/shader.vs", "src/shader/null_shader.fs" };
+	Shader lightShader{ "src/shader/shader.vs", "src/shader/lampshad.fs" };
 	
 	unsigned int planeVAO;
 	unsigned int planeVBO;
@@ -73,7 +77,6 @@ private:
 	unsigned int cubemapTexture;
 	unsigned int cubemapTexture2;
 
-	unsigned int gBuffer;
 	unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	unsigned int rboDepth;
 
@@ -91,7 +94,6 @@ public:
 	
 
 	RendererEngine(Terrian* _terrain, Camera* _camera, Cells* _cell, int width, int height);
-	void configureGBuffer();
 	void configurateDepthBuf();
 	void configurateWater(int width, int height, const char* pathDuDvMap);
 
@@ -113,6 +115,14 @@ public:
 	void IdleFrameBuffer();
 	void DisableHDR();
 
+	void EnableGBuffer();
+	void renderInGBuffer(unsigned int texture, unsigned int normal, unsigned int specular, Model* model, int matrixSize);
+	void PointLightPass(PointLight&);
+	void DsPointLightWithSelenticPass();
+	void DsFinalPass();
+	void SelenticPass(PointLight&);
+	void MoveLight(float, float);
+	void RenderLight();
 	
 	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos, vector<glm::vec3>,
 					unsigned int texture, unsigned int normal, unsigned int specular);
@@ -130,9 +140,11 @@ public:
 
 	void renderTerrian(int width, int height, glm::vec3& lightPos, std::vector<glm::vec3>& lightsPos);
 	void renderHDR(float epsilon, glm::mat4 model = glm::mat4(1.0f));
+	void renderGBufferPosition(float, glm::mat4 model = glm::mat4(1.0f));
 	void renderReflection(float epsilon, glm::mat4 model = glm::mat4(1.0f));
 	void renderRefraction(float epsilon, glm::mat4 model = glm::mat4(1.0f));
-	
+
+	void drawInstanceModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize);
 	Rect& getBox() { return rect1; };
 	Cylinder& getCylinder() { return cylinder1; };
 	Sphere& getSphere() { return sphere1; };

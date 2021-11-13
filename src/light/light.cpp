@@ -1,7 +1,7 @@
 #include "light.h"
 
 light::light(GLfloat* vertices_start, GLfloat* vertices_end,
-		GLuint* indices_start, GLuint* indices_end, std::vector<glm::vec3> &pos) {
+		GLuint* indices_start, GLuint* indices_end) {
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -18,24 +18,28 @@ light::light(GLfloat* vertices_start, GLfloat* vertices_end,
 	glBindVertexArray(0);
 }
 
-void light::UseLight(glm::mat4 view, glm::mat4 projection, std::vector<glm::vec3> &lightPos)
-{	
-	glDisable(GL_CULL_FACE);
-	glm::mat4 model = glm::mat4();
-	lightShader.Use();
-	lightShader.SetMat4("view", view);
-	lightShader.SetMat4("projection", projection);
-	lightShader.SetVec3("color", color_);
 
-	for (GLuint i = 0; i < lightPos.size(); i++) {
-		glBindVertexArray(lightVAO);
-		model = glm::mat4();
-		model = glm::translate(model, lightPos[i]);
-		model = glm::scale(model, glm::vec3(0.2f));
-		//model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-		lightShader.SetMat4("model", model);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-	}
-	glEnable(GL_CULL_FACE);
+void light::Draw()
+{	
+	glBindVertexArray(lightVAO);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
 }
+//
+//glDisable(GL_CULL_FACE);
+//glEnable(GL_DEPTH_TEST);
+//glm::mat4 model = glm::mat4();
+//lightShader.Use();
+//lightShader.SetVec3("color", color_);
+//
+//for (GLuint i = 0; i < lightPos.size(); i++) {
+//	glBindVertexArray(lightVAO);
+//	model = glm::mat4();
+//	model = glm::translate(model, lightPos[i]);
+//	model = glm::scale(model, glm::vec3(0.2f));
+//	//model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+//
+//}
+//glDisable(GL_DEPTH_TEST);
+//glEnable(GL_CULL_FACE);

@@ -113,3 +113,7 @@ static float skyboxVertices[] = {
 static struct{
 	std::vector<bool> keys  = std::vector<bool>( 1024, false);
 } Key;
+
+
+static float rotation_sky = 0;
+static float ROTATION_STEP = 0.01f;

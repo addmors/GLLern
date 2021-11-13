@@ -42,9 +42,13 @@ public:
 	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, glm::vec3 center);
 
 	void Delete() {
-			glDeleteVertexArrays(1, &VAO);
-			glDeleteBuffers(1, &VBO);
-			glDeleteBuffers(1, &EBO);
+		for (auto texture : _textures) {
+			if (texture.id != 0)
+				glDeleteTextures(1, &texture.id);
+		};
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VBO);
+		glDeleteBuffers(1, &EBO);
 		};
 
 	void DrawSelf();

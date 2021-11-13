@@ -1,4 +1,4 @@
-#version 420 core
+#version 450 core
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 texCoord;
@@ -37,5 +37,5 @@ void main()
 	Normal = normalize( mat3(transpose(inverse(instanceMatrix))) * aNormal);
     TexCoord = vec2(texCoord.x, texCoord.y); 
     gl_Position = projection * view * worldPosition;
-	FragPos = vec3(worldPosition);
+	FragPos = worldPosition.xyz;	
 }

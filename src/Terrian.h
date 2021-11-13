@@ -50,7 +50,18 @@ private:
 	unsigned int blendMap, rTexture, gTexture, bTexture, backGround;
 	int VERTEX_COUNT_X, VERTEX_COUNT_Y;
 public:
-	~Terrian() { 
+	~Terrian() {
+		if(blendMap != 0)
+			glDeleteTextures(1, &blendMap);
+		if(rTexture != 0)
+		glDeleteTextures(1, &rTexture);
+		if(gTexture != 0)
+			glDeleteTextures(1, &gTexture);
+		if(bTexture != 0)
+			glDeleteTextures(1, &bTexture);
+		if(backGround != 0)
+			glDeleteTextures(1, &backGround);
+
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(1, &VBO);
 		glDeleteBuffers(1, &EBO);

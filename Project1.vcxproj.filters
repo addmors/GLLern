@@ -93,7 +93,13 @@
     <ClCompile Include="src\PrimShape.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rect.cpp">
+    <ClCompile Include="src\Rect\Rect.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gBuffer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="src\texture.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
@@ -179,7 +185,16 @@
     <ClInclude Include="src\PrimShape.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rect.h">
+    <ClInclude Include="src\Rect\Rect.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gBuffer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\texture.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
@@ -220,5 +235,6 @@
     <None Include="src\shader\ShaderDrawNormal.gs" />
     <None Include="src\shader\8.1.g_buffer.fs" />
     <None Include="src\shader\8.1.deferred_shading.fs" />
+    <None Include="src\shader\null_shader.fs" />
   </ItemGroup>
 </Project>

@@ -39,6 +39,9 @@ public:
 	void Use();
 	void SetVec3(const GLchar* nameuniform, GLfloat x, GLfloat y, GLfloat z);
 	void SetVec3(const GLchar* nameuniform, glm::vec3 vec);
+	void SetVec2(const GLchar* nameuniform, GLfloat x, GLfloat y);
+	void SetVec2(const GLchar* nameuniform, glm::vec2 vec);
+
 	void SetFloat(const GLchar* nameuniform, GLfloat flt);
 	void SetMat4(const GLchar* nameuniform, glm::mat4 mat4);
 	void SetInt(const GLchar* nameuniform, GLint num);

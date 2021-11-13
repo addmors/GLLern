@@ -1,4 +1,4 @@
-#version 420 core
+#version 450 core
 //Направленный свет.
 struct DirLight {
     vec3 direction;

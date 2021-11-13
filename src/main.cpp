@@ -119,15 +119,7 @@ int main() {
 	TwInit(TW_OPENGL_CORE, NULL);
 
 	// Create a tweak bar
-	bar = TwNewBar("TweakBar");
-	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' "); // Message added to the help bar.
-	TwDefine(" TweakBar size='200 400' color='96 216 224' "); // change default tweak bar size and color
 
-	TwStructMember Vector3fMembers[] = {
-	{ "x", TW_TYPE_FLOAT, offsetof(glm::vec3, x), "" },
-	{ "y", TW_TYPE_FLOAT, offsetof(glm::vec3, y), "" },
-	{ "z", TW_TYPE_FLOAT, offsetof(glm::vec3, z), "" }
-	};
 
 
 	FileLoader::ADDFILE("src/shader/inc/classicnoise2D.glsl");
@@ -143,6 +135,17 @@ int main() {
 	lightPos.push_back(glm::vec3(-4.0f, 4.0f, 4.0f));
 	lightPos.push_back(glm::vec3(4.0f, 4.0f, -4.0f));
 	lightPos.push_back(glm::vec3(-4.0f, 4.0f, -4.0f));
+	float positionsLight = 0;
+
+	bar = TwNewBar("TweakBar");
+	TwDefine(" GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.' "); // Message added to the help bar.
+	TwDefine(" TweakBar size='200 400' color='96 216 224' "); // change default tweak bar size and color
+
+	TwStructMember Vector3fMembers[] = {
+	{ "x", TW_TYPE_FLOAT, offsetof(glm::vec3, x), "" },
+	{ "y", TW_TYPE_FLOAT, offsetof(glm::vec3, y), "" },
+	{ "z", TW_TYPE_FLOAT, offsetof(glm::vec3, z), "" }
+	};
 
 	TW_TYPE_OGLDEV_VECTOR3F = TwDefineStruct("Vector3f", Vector3fMembers, 3, sizeof(glm::vec3), NULL, NULL);
 
@@ -152,10 +155,11 @@ int main() {
 	TwAddVarRW(bar, "DirectionLght", TW_TYPE_DIR3F, (void*)&dirLight, "axisx=x  axisy=y axisz=z");
 	TwAddVarRW(bar, "Epsilon", TW_TYPE_FLOAT, &epsilon, "min=0 max=5 step=0.1");
 
+	TwAddVarRW(bar, "Y_pos_lights", TW_TYPE_FLOAT, &positionsLight, "min=-30 max=20 step=0.5");
 	TwAddButton(bar, "AutoRotate", cameraMoveCB, NULL, " label='CameraMove' ");
 	
 	
-	Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
+	//Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
 	//Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
 	
 	unsigned int fireTexture = loadTextureWithAlpha("Cyrcle.png");
@@ -230,7 +234,7 @@ int main() {
 	std::vector<glm::mat4> modelMatrices;
 	for (auto& a : positions) {
 			glm::mat4 matrix = glm::mat4(1);
-			matrix = glm::translate(matrix, a + glm::vec3(0,0,0));
+			matrix = glm::translate(matrix, a);
 			matrix = glm::rotate(matrix, glm::radians(-90.0f), glm::vec3(1, 0, 0));
 			matrix = glm::scale(matrix, glm::vec3(0.01, 0.01, 0.01));
 			modelMatrices.push_back(matrix);
@@ -239,9 +243,6 @@ int main() {
 
 	//Frame texture	
 	//End Frame buffer;
-
-	light Light(std::begin(vertices),std::end(vertices), std::begin(indices),std::end(indices), lightPos);
-
 	unsigned int ticFrame = 0;
 	auto terrianBody = pengine->addTerrian(&terrain);
 	lastFrame = glfwGetTime();
@@ -283,9 +284,6 @@ int main() {
 			persone.charCon->getGhostObject()->setWorldTransform(matPos);
 		}*/
 		//lightPosForShad = { position.x(), position.y(), position.z() };
-
-		lightPos.back() = lightPosForShad - dirLight * 70.0f;
-
 		btTransform t;
 		std::map<std::string, std::vector<glm::mat4>::iterator> gen = {
 				{"cylinder", renderer.getCylinder().getInstanse().begin()},
@@ -313,22 +311,23 @@ int main() {
 		camera.do_movement();
 		camera.LoocAt();
 		renderer.setViewProjection();
-
-
-
-		renderer.renderInShadow(lightPos.back(), lightPosForShad);
-
+		/*{
+			LOG_DURATION("RENDER 20 SPoT")
+				for (int i = 0; i < 100; i++)
+					renderer.renderInShadow(lightPos.back(), lightPosForShad);
+		}*/
 
 
 
 		glEnable(GL_DEPTH_TEST);
 
-		renderer.EnableHDR();
+		//renderer.EnableHDR();
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//renderer.renderTextureGrass(currentFrame);
-		renderer.renderTerrian(width, height,lightPos.back(), lightPos);
+
+		//renderer.renderTerrian(width, height,lightPos.back(), lightPos);
 		
 
 		//Water
@@ -371,23 +370,32 @@ int main() {
 		}
 		//EndWater*/
 
-		renderer.EnableHDR();
-		Light.UseLight(camera.view, projection, lightPos);
+		//renderer.EnableHDR();
 		//if(waterVision) renderer.renderWater(deltaTime);
-		renderer.renderScene(width, height, camera.cameraPos, projection, lightPos.back(), lightPos,
-								fireTexture, firenormalTexture, firespecularTexture);
-		renderer.renderModel(&Modeltree, lightPos, modelMatrices.size());
+		//renderer.renderScene(width, height, camera.cameraPos, projection, lightPos.back(), lightPos,
+								//fireTexture, firenormalTexture, firespecularTexture);
+		//renderer.renderModel(&Modeltree, lightPos, modelMatrices.size());
 		//renderer.renderModelAnim(&ourModel, glmatrix, deltaTime, lightPos, camera.cameraPos, camera.cameraFront);
-		renderer.renderSkyBox(currentFrame);		
-		renderer.DisableHDR();
-		renderer.renderHDR(epsilon);
+		//renderer.renderSkyBox(currentFrame);		
 
+
+		//renderer.DisableHDR();
+		renderer.MoveLight(currentFrame, positionsLight);
+		renderer.EnableGBuffer();
+		renderer.renderInGBuffer(fireTexture, firenormalTexture, firespecularTexture, &Modeltree, modelMatrices.size());
+		//renderer.DisableGBuffer();
+
+		renderer.DsPointLightWithSelenticPass();
+		renderer.DsFinalPass();
+		renderer.RenderLight();
+
+		//renderer.renderHDR(epsilon);
+		//renderer.renderGBufferPosition(epsilon);
 		TwDraw();
 		glfwSwapBuffers(window);
 		
 	}
 
-	Light.Delete();
 	renderer.destroy();
 	//persone.destroy();
 	for (auto& a : ourModel.meshes) {
@@ -396,6 +404,10 @@ int main() {
 	for (auto& a : Modeltree.meshes) {
 		a.Delete();
 	}
+	glDeleteTextures(1, &fireTexture);
+	glDeleteTextures(1, &firenormalTexture);
+	glDeleteTextures(1, &firespecularTexture);
+
 	TwTerminate();
 	glfwTerminate();
 	return 0;

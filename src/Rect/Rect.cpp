@@ -1,5 +1,5 @@
 #include "Rect.h"
-#include "Precompile.h"
+#include "../Precompile.h"
 void Rect::Init()
 {
 	  vertices = {

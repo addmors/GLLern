@@ -108,6 +108,17 @@ void Shader::SetVec3(const GLchar* nameuniform,glm::vec3 vec) {
 	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
 	glUniform3f(Vec3Loc, vec.x, vec.y, vec.z);
 }
+void Shader::SetVec2(const GLchar* nameuniform, GLfloat x, GLfloat y)
+{
+	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
+	glUniform2f(Vec3Loc, x, y);
+}
+void Shader::SetVec2(const GLchar* nameuniform, glm::vec2 vec)
+{
+	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
+	glUniform2f(Vec3Loc, vec.x, vec.y);
+}
+
 void Shader::SetVec4(const GLchar* nameuniform, glm::vec4 vec) {
 	GLint Vec3Loc = glGetUniformLocation(ID, nameuniform);
 	glUniform4f(Vec3Loc, vec.x, vec.y, vec.z,vec.w);
@@ -191,7 +202,7 @@ void Shader::Design(glm::mat4 view, std::vector<glm::vec3> &lightPos, glm::vec3&
 			Constant.insert(12, std::to_string(i));
 			Linear.insert(12, std::to_string(i));
 			Quadratic.insert(12, std::to_string(i));
-			SetVec3(&Position, glm::vec3(glm::vec4(lightPos[i],1.0f)));
+			SetVec3(&Position, lightPos[i]);
 			SetVec3(&Ambient, 0.05f, 0.05f, 0.05f);
 			SetVec3(&Diffuse, .8f, .8f, .8f);
 			SetVec3(&Specular, 1.0f, 1.0f, 1.0f);

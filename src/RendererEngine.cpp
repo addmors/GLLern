@@ -23,6 +23,66 @@ RendererEngine::RendererEngine(Terrian* _terrain, Camera* _camera, Cells* _cell,
 	// water configuration
 	// --------------------
 	configurateWater(width_, height_, "dudvmap.png");
+
+	if (!gBuffer.Init(width_, height_)) throw runtime_error("error for create gBuffer");
+
+	pointsLight.AddPoint({
+		glm::vec3(0.0f, -7.0f, 0.0f),
+		{0.05f, 0.05f, 0.05f},
+		{1.5,0.0,1.5},
+		{0.5f, 0.5f, 0.5f},
+		1.0f, 0.07, 0.032 });
+	pointsLight.AddPoint({
+		glm::vec3(0.0f, -7.0f, 0.0f),
+		{0.05f, 0.05f, 0.05f},
+		{0.0,1.5,1.5},
+		{0.5f, 0.5f, 0.5f},
+		1.0f, 0.07, 0.032 });
+	pointsLight.AddPoint({
+		glm::vec3(0.0f, -7.0f, 0.0f),
+		{0.05f, 0.05f, 0.05f},
+		{1.5,1.5,0.0},
+		{0.2f, 0.2f, 0.2f},
+		1.0f, 0.07, 0.032 });
+	pointsLight.AddPoint({
+		glm::vec3(0.0f, -7.0f, 0.0f),
+		{0.05f, 0.05f, 0.05f},
+		{1.5,0.0,1.5},
+		{0.5f, 0.5f, 0.5f},
+		1.0f, 0.07, 0.032 });
+	pointsLight.AddPoint({
+		glm::vec3(0.0f, -7.0f, 0.0f),
+		{0.05f, 0.05f, 0.05f},
+		{0.0,1.5,1.5},
+		{0.5f, 0.5f, 0.5f},
+		1.0f, 0.07, 0.032 });
+	pointsLight.AddPoint({
+		glm::vec3(0.0f, -7.0f, 0.0f),
+		{0.05f, 0.05f, 0.05f},
+		{1.5,1.5,0.0},
+		{0.2f, 0.2f, 0.2f},
+		1.0f, 0.07, 0.032 });
+	//pointsLight.AddPoint(
+	//	{glm::vec3(-4.0f, 0.0f, 4.0f), 
+	//	{0.05f, 0.05f, 0.05f},
+	//	{0.8,0.8,0.8},
+	//	{1.0f, 1.0f, 1.0f},
+	//	1.0f, 0.07, 0.032 });
+
+	//pointsLight.AddPoint(
+	//	{glm::vec3(4.0f, 0.0f, -4.0f), 
+	//	{0.05f, 0.05f, 0.05f},
+	//	{0.8,0.8,0.8},
+	//	{1.0f, 1.0f, 1.0f},
+	//	1.0f, 0.07, 0.032 });
+
+	//pointsLight.AddPoint(
+	//	{glm::vec3(-4.0f, 0.0f, -4.0f), 
+	//	{0.5f, 0.5f, 0.5f},
+	//	{0.8,0.8,0.8},
+	//	{1.0f, 1.0f, 1.0f},
+	//	1.0f, 0.07, 0.032 });
+
 }
 
 void RendererEngine::configurateDepthBuf() {
@@ -145,6 +205,13 @@ void RendererEngine::configureShareds() {
 
 	OccluderWaterShader.Use();
 	OccluderWaterShader.SetVec4("vColor", 1, 0, 0, 1);
+
+	shaderLightingPass.Use();
+	shaderLightingPass.SetVec2("gScreenSize",width_, height_);
+	shaderLightingPass.SetInt("gPosition", 0);
+	shaderLightingPass.SetInt("gNormal", 1);
+	shaderLightingPass.SetInt("gAlbedoSpec",2);
+
 }
 
 
@@ -177,6 +244,7 @@ void RendererEngine::configureSkyBox() {
 	};
 	cubemapTexture2 = loadCubemap(facesNight);
 }
+
 
 glm::mat4*& RendererEngine::getProjection() {
 	return projection;
@@ -231,8 +299,8 @@ void RendererEngine::renderTextureGrass(float time) {
 	glColorMask(true, true, true, true);
 	glDepthMask(GL_TRUE);
 	*/
-	{
-		LOG_DURATION("draw textures");
+	//{
+		//LOG_DURATION("draw textures");
 		TextureGrassShader.Use();
 		TextureGrassShader.SetFloat("time", time);
 		TextureGrassShader.SetVec3("cameraPos", camera->cameraPos);
@@ -243,7 +311,7 @@ void RendererEngine::renderTextureGrass(float time) {
 		{
 				cell->cellGrasses.at(i).draw(*projection, camera->view);
 		}
-	}
+	//}
 	glEnable(GL_CULL_FACE);
 };
 
@@ -296,6 +364,160 @@ void RendererEngine::DisableHDR() {
 	glBlitFramebuffer(0, 0, width_, height_, 0, 0, width_, height_, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+void RendererEngine::EnableGBuffer()
+{
+	
+	//gBuffer.StartFrame();
+}
+
+void RendererEngine::renderInGBuffer(unsigned int texture, unsigned int normal, unsigned int specular, Model* model, int matrixSize)
+{
+	//Enable GeomPass
+	gBuffer.StartFrame();
+	gBuffer.BindForGeomPass();
+
+	glDepthMask(GL_TRUE);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	shaderGeometryPass.Use();
+
+	shaderGeometryPass.SetInt("material.texture_diffuse1", 0);
+	shaderGeometryPass.SetInt("material.texture_normal1", 1);
+	shaderGeometryPass.SetInt("material.texture_specular1", 2);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, normal);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, specular);
+
+	sphere1.drawInstance();
+	cylinder1.drawInstance();
+	rect1.drawInstance();
+	if (matrixSize == 0) return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
+	for (int i = 0; i < model->meshes.size(); i++) {
+		model->meshes[i].bindTexture(shaderGeometryPass);
+		glBindVertexArray(model->meshes[i].VAO);
+		glDrawElementsInstanced(
+			GL_TRIANGLES, model->meshes[i]._indices.size(), GL_UNSIGNED_INT, 0, matrixSize);
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	glDepthMask(GL_FALSE);
+}
+
+
+
+
+
+
+void RendererEngine::DsPointLightWithSelenticPass()
+{
+	auto& points = pointsLight.getPointsLight();
+	glEnable(GL_STENCIL_TEST);
+	for (auto& point : points) {
+		SelenticPass(point);
+		PointLightPass(point);
+	}
+	glDisable(GL_STENCIL_TEST);
+}
+
+void RendererEngine::DsFinalPass()
+{
+	gBuffer.BindForFinalPass();
+}
+
+
+void RendererEngine::PointLightPass(PointLight& Point)
+{
+	shaderLightingPass.Use();
+	shaderLightingPass.SetVec3("viewPos", camera->cameraPos);
+
+	gBuffer.BindForLightPass();
+	
+	glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_ONE, GL_ONE);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+
+	Point.AddPointInShader(&shaderLightingPass);
+	glm::mat4 model = glm::mat4();
+	model = glm::translate(model, Point.getPosition());
+	model = glm::scale(model, { Point.getRadius(),Point.getRadius(), Point.getRadius() });
+	shaderLightingPass.SetMat4("model", model);
+	sphereLite.draw();
+	glCullFace(GL_BACK);
+	glDisable(GL_BLEND);
+}
+
+void RendererEngine::SelenticPass(PointLight& Point)
+{
+	shaderNullPass.Use();
+	gBuffer.BindForStencilPass();
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glClear(GL_STENCIL_BUFFER_BIT);
+
+	glStencilFunc(GL_ALWAYS, 0, 0);
+
+	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR, GL_KEEP);
+	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR, GL_KEEP);
+
+	glm::mat4 model = glm::mat4();
+	model = glm::translate(model, Point.getPosition());
+	model = glm::scale(model, { Point.getRadius(),Point.getRadius(), Point.getRadius() });
+	shaderNullPass.SetMat4("model", model);
+	sphereLite.draw();
+}
+
+void RendererEngine::MoveLight(float currTime, float positions)
+{
+	GLfloat radius = 30.0f;
+	auto& points = pointsLight.getPointsLight();
+	int i = 0;
+	for (auto& point : points) {
+		
+	point.getPosition() = point.getMainPosition() + 
+		glm::vec3(sin(currTime * 0.5 + 2*i*AI_MATH_PI/points.size()) * radius,
+		0.0,
+		cos(currTime*0.5 +2*i*AI_MATH_PI/points.size()) * radius)+
+		glm::vec3(15,positions,15);
+	i++;
+	};
+}
+
+void RendererEngine::RenderLight()
+{
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+	glm::mat4 model = glm::mat4();
+	lightShader.Use();
+
+	auto points = pointsLight.getPointsLight();
+	for (auto& point : points) {
+		model = glm::mat4();
+		model = glm::translate(model, point.getPosition());
+		model = glm::scale(model, glm::vec3(0.2f));
+		lightShader.SetVec3("color", point.getDiffuse());
+		lightShader.SetMat4("model", model);
+		Light.Draw();
+	}
+glDisable(GL_DEPTH_TEST);
+glEnable(GL_CULL_FACE);
+}
+
+
 
 void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos,
 	vector<glm::vec3>  lightPoses,
@@ -352,7 +574,6 @@ void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, gl
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, normal);
-	
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, specular);
 	
@@ -586,6 +807,7 @@ void RendererEngine::renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight) {
 }
 
 void RendererEngine::renderHDR(float epsilon, glm::mat4 model) {
+	glDisable(GL_DEPTH_TEST);
 	screen.Use();
 	screen.SetFloat("epsilon", epsilon);
 	screen.SetMat4("model", model);
@@ -596,6 +818,43 @@ void RendererEngine::renderHDR(float epsilon, glm::mat4 model) {
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+void RendererEngine::renderGBufferPosition(float epsilon, glm::mat4 model)
+{
+	screen.Use();
+	screen.SetFloat("epsilon", epsilon);
+	model = glm::scale(model, { 0.25,0.25,1 });
+	model = glm::translate(model, { -1,1,1 });
+
+	screen.SetMat4("model", model);
+	glBindVertexArray(quadVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.getPositionsTexture());
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	model = glm::translate(model, { 2,0,0 });
+	screen.SetMat4("model", model);
+	glBindVertexArray(quadVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.getAlbedoTexture());
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	model = glm::translate(model, { 0,-2,0 });
+	screen.SetMat4("model", model);
+	glBindVertexArray(quadVAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.getNormalTexture());
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+}
+
 void RendererEngine::renderReflection(float epsilon, glm::mat4 model) {
 	screen.Use();
 	screen.SetFloat("epsilon", epsilon);
@@ -622,9 +881,15 @@ void RendererEngine::renderRefraction(float epsilon, glm::mat4 model) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void RendererEngine::drawInstanceModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize)
+{
+
+}
+
 
 void RendererEngine::destroy() {
 	FileLoader::DELETEFILE();
+	Light.Delete();
 	glDeleteVertexArrays(1, &quadVAO);
 	glDeleteBuffers(1, &quadVBO);
 	glDeleteVertexArrays(1, &planeVAO);

@@ -6,7 +6,7 @@
 #include "PrimShape.h"
 #include "Sphere\Sphere.h"
 #include "mCylinder\mCylinder.h"
-#include "Rect.h"
+#include "Rect\Rect.h"
 
 //Utilites;
 #include "logger.h"
