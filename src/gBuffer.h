@@ -24,7 +24,8 @@ public:
 
     bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
     
-    void ActiveTexture();
+    void CopyMSAA();
+    void CopyDepth();
     void StartFrame();
     void BindForGeomPass();
     void BindForStencilPass();
@@ -43,6 +44,7 @@ private:
     GLuint m_textures[GBUFFER_NUM_TEXTURES];
     GLuint m_texturesMS[GBUFFER_NUM_TEXTURES];
     GLuint m_depthTexture;
+    GLuint m_depthTextureInter;
     GLuint m_finalTexture;
     GLuint intermediateFBO;
 };

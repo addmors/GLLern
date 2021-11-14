@@ -27,7 +27,7 @@ private:
 	int height_;
 	Query query;
 	Sphere sphere1{ 1.0f, 36, 18, 1 };
-	Sphere sphereLite{ 1.0f, 18, 9, 1 };
+	Sphere sphereLite{ 1.0f, 36, 18, 1 };
 	Cylinder cylinder1{ 1, 1, 1, 36, 3, 1 };
 	Rect rect1{};
 	GBuffer gBuffer{};
@@ -117,10 +117,10 @@ public:
 
 	void EnableGBuffer();
 	void renderInGBuffer(unsigned int texture, unsigned int normal, unsigned int specular, Model* model, int matrixSize);
-	void PointLightPass(PointLight&);
+	void PointLightPass(PointLight&, glm::mat4&);
 	void DsPointLightWithSelenticPass();
 	void DsFinalPass();
-	void SelenticPass(PointLight&);
+	void SelenticPass(PointLight&, glm::mat4&);
 	void MoveLight(float, float);
 	void RenderLight();
 	

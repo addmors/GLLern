@@ -10,13 +10,15 @@
 #include "Precompile.h"
 #include "RendererEngine.h"
 #include "light/light.h"
+#include "logger.h"
 #include "Player\Player.h"
 #include "pEngine\pEngine.h"
 #include <AntTweakBar.h>
 
 unsigned int AABB::cubeVAO = 0;
 unsigned int AABB::cubeVBO = 0;
-
+map<string, float>  LogDuration::Walues;
+TwBar* LogDuration::bar = nullptr;
 glm::vec3 skaling = glm::vec3(0.1f, 0.1f, 0.1f);
 glm::vec3 cameraPos = glm::vec3(3.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(-1.0f, -0.0f, -0.0f);
@@ -107,7 +109,7 @@ int main() {
 	glfwSetKeyCallback(window, key_callback);// функции по нажатию.
 	glfwSetCursorPosCallback(window, mouse_callback); //Функции по движению мыши
 	glfwSetMouseButtonCallback(window, mouseKey);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // Активация курсора скрыть указатель 
 	
 	
@@ -119,7 +121,7 @@ int main() {
 	TwInit(TW_OPENGL_CORE, NULL);
 
 	// Create a tweak bar
-
+	
 
 
 	FileLoader::ADDFILE("src/shader/inc/classicnoise2D.glsl");
@@ -158,6 +160,7 @@ int main() {
 	TwAddVarRW(bar, "Y_pos_lights", TW_TYPE_FLOAT, &positionsLight, "min=-30 max=20 step=0.5");
 	TwAddButton(bar, "AutoRotate", cameraMoveCB, NULL, " label='CameraMove' ");
 	
+	LogDuration::Init();
 	
 	//Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
 	//Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
@@ -380,14 +383,27 @@ int main() {
 
 
 		//renderer.DisableHDR();
-		renderer.MoveLight(currentFrame, positionsLight);
-		renderer.EnableGBuffer();
-		renderer.renderInGBuffer(fireTexture, firenormalTexture, firespecularTexture, &Modeltree, modelMatrices.size());
-		//renderer.DisableGBuffer();
 
-		renderer.DsPointLightWithSelenticPass();
-		renderer.DsFinalPass();
-		renderer.RenderLight();
+		renderer.MoveLight(currentFrame, positionsLight);
+
+		renderer.EnableGBuffer();
+		{
+			LOG_DURATION("GBuffer Pass");
+			renderer.renderInGBuffer(fireTexture, firenormalTexture, firespecularTexture, &Modeltree, modelMatrices.size());
+		}
+		//renderer.DisableGBuffer();
+		{
+			LOG_DURATION("Point Pass");
+			renderer.DsPointLightWithSelenticPass(); 
+		}
+		{
+			LOG_DURATION("Final Pass")
+			renderer.DsFinalPass();
+		}
+		{
+		LOG_DURATION("LIGHT POINT PASS")
+			renderer.RenderLight();
+		}
 
 		//renderer.renderHDR(epsilon);
 		//renderer.renderGBufferPosition(epsilon);

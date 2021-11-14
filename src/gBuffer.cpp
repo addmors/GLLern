@@ -68,8 +68,8 @@ bool GBuffer::Init(unsigned int WindowWidth, unsigned int WindowHeight)
 
     glGenRenderbuffers(1, &m_depthTexture);
     glBindRenderbuffer(GL_RENDERBUFFER, m_depthTexture);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthTexture);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, WindowWidth, WindowHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthTexture);
 
     // finally check if framebuffer is complete
 
@@ -79,6 +79,8 @@ bool GBuffer::Init(unsigned int WindowWidth, unsigned int WindowHeight)
         printf("FB error, status: 0x%x\n", Status);
         return false;
     }
+
+
 
     // restore default FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -100,11 +102,17 @@ bool GBuffer::Init(unsigned int WindowWidth, unsigned int WindowHeight)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_textures[2], 0);
-    
+
+
     glGenTextures(1, &m_finalTexture);
     glBindTexture(GL_TEXTURE_2D, m_finalTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WindowWidth, WindowHeight, 0, GL_RGB, GL_FLOAT, NULL);
     glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_finalTexture, 0);
+
+    glGenRenderbuffers(1, &m_depthTextureInter);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_depthTextureInter);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, WindowWidth, WindowHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthTextureInter);
 
     Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
@@ -141,18 +149,14 @@ void GBuffer::StartFrame()
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void GBuffer::CopyMSAA(){
 
-void GBuffer::BindForLightPass()
-{
-
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // буфер глубины по-умолчанию
     glBlitFramebuffer(
         0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST
     );
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
     glReadBuffer(GL_COLOR_ATTACHMENT0);
     glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
@@ -170,6 +174,21 @@ void GBuffer::BindForLightPass()
 
 
 
+    glDrawBuffer(GL_COLOR_ATTACHMENT3);
+}
+
+void GBuffer::CopyDepth() {
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, intermediateFBO);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // буфер глубины по-умолчанию
+    glBlitFramebuffer(
+        0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST
+    );
+};
+void GBuffer::BindForLightPass()
+{
+
+    
     glDrawBuffer(GL_COLOR_ATTACHMENT3);
     for (unsigned int i = 0; i < ARRAY_SIZE_IN_ELEMENTS(m_textures); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
