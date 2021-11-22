@@ -43,6 +43,8 @@ public:
 	glm::mat4 getmatSphere(btRigidBody* sphere);
 	glm::mat4 getmatCylinder(btRigidBody* cylinder);
 	glm::mat4 getmatBox(btRigidBody* box);
+	std::pair < glm::vec3, glm::vec3 > getAABB(btRigidBody* body);
+	
 	std::vector<size_t> genMatrices(std::map<std::string, std::vector<glm::mat4>::iterator>& Instance);
 
 private:

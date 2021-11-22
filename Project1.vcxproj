@@ -135,6 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Entity\Entity.cpp" />
     <ClCompile Include="src\gBuffer.cpp" />
     <ClCompile Include="src\Rect\Rect.cpp" />
     <ClCompile Include="src\PrimShape.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="src\texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Entity\Entity.h" />
     <ClInclude Include="src\gBuffer.h" />
     <ClInclude Include="src\Rect\Rect.h" />
     <ClInclude Include="src\PrimShape.h" />

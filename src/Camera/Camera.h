@@ -19,6 +19,7 @@ public:
 	glm::vec3 objPos;
 	glm::vec3 cameraFront;
 	glm::vec3 cameraUp;
+	glm::vec3 cameraRight_;
 	GLfloat fov;
 	GLfloat yaw;
 	GLfloat pitch;

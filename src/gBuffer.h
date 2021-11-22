@@ -15,6 +15,7 @@ public:
         GBUFFER_TEXTURE_TYPE_POSITION,
         GBUFFER_TEXTURE_TYPE_NORMAL,
         GBUFFER_TEXTURE_TYPE_DIFFUSE,
+        GBUFFER_TEXTURE_TYPE_FINAL,
         GBUFFER_NUM_TEXTURES
     };
 
@@ -34,6 +35,7 @@ public:
     GLuint getPositionsTexture();
     GLuint getNormalTexture();
     GLuint getAlbedoTexture();
+    GLuint getFinalTexture();
 
 
 

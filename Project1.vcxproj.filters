@@ -102,6 +102,9 @@
     <ClCompile Include="src\texture.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\Entity\Entity.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\Shad.h">
@@ -195,6 +198,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="src\texture.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Entity\Entity.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

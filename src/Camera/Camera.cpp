@@ -57,9 +57,15 @@ void Camera::do_movement()
 	if (keys->at(83))
 		cameraPos -= cameraSpeed * cameraFront;
 	if (keys->at(65))
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	{
+		cameraRight_ = glm::normalize(glm::cross(cameraFront, cameraUp));
+		cameraPos -= cameraRight_ * cameraSpeed;
+	}
 	if (keys->at(68))
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	{
+		cameraRight_ = glm::normalize(glm::cross(cameraFront, cameraUp));
+		cameraPos += cameraRight_ * cameraSpeed;
+	}
 	if (keys->at(81))
 		cameraPos += cameraSpeed * cameraUp;
 	if(keys->at(69))
@@ -81,5 +87,5 @@ void Camera::LoocAt() {
 
 glm::vec3 Camera::cameraRight()
 {
-	return glm::normalize(glm::cross(cameraFront, cameraUp));
+	return cameraRight_;
 }

@@ -71,11 +71,9 @@ glm::mat4 pEngine::getmatBox(btRigidBody* box)
 {
 	if (box->getCollisionShape()->getShapeType() != BOX_SHAPE_PROXYTYPE)
 		return glm::mat4();
-
 	btVector3 exten = ((btBoxShape*)box->getCollisionShape())->getHalfExtentsWithoutMargin();
 	btTransform t;
 	box->getMotionState()->getWorldTransform(t);
-
 	float mat[16];
 	t.getOpenGLMatrix(mat);
 	glm::mat4 glmatrix(mat[0], mat[1], mat[2], mat[3],
@@ -85,6 +83,14 @@ glm::mat4 pEngine::getmatBox(btRigidBody* box)
 	//glmatrix = glm::rotate(glmatrix, glm::radians(static_cast<GLfloat>(90)), glm::vec3(1.0, 0.0, 0.0));
 	glmatrix = glm::scale(glmatrix, glm::vec3(exten.x(), exten.y(), exten.z()));
 	return glmatrix;
+}
+
+std::pair<glm::vec3, glm::vec3> pEngine::getAABB(btRigidBody* body)
+{
+	btVector3 min, max; 
+	body->getAabb(min, max);
+
+	return { {min.x(), min.y(), min.z()} ,{max.x(), max.y(), max.z()} };
 }
 
 std::vector<size_t> pEngine::genMatrices(std::map<std::string, std::vector<glm::mat4>::iterator>& Instance)

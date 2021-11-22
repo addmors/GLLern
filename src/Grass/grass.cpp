@@ -17,7 +17,7 @@ Cells::Cells(const char* grassPath, Terrian* t, FooMethodHeight getHeight, FooMe
 	size((t->*getSize)()),
 	sizeCell(size / _countInLine)
 {
-	AABB::InitVAOVBO();
+	AABBcell::InitVAOVBO();
 	float count = _countInLine * _countInLine;
 	cellGrasses.resize(count);
 	cellAABBs.resize(count);
@@ -34,7 +34,7 @@ Cells::Cells(const char* grassPath, Terrian* t, FooMethodHeight getHeight, FooMe
 
 			auto& tempcellGrasses = cellGrasses.at(i + j * _countInLine);
 
-			cellAABBs.at(i + j * _countInLine) = AABB(
+			cellAABBs.at(i + j * _countInLine) = AABBcell(
 				{
 					sizeCell,
 					tempcellGrasses.maxHeight - tempcellGrasses.minHeight,

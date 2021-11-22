@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Precompile.h"
+#include "Entity\Entity.h"
 #include "RendererEngine.h"
 #include "light/light.h"
 #include "logger.h"
@@ -15,8 +16,8 @@
 #include "pEngine\pEngine.h"
 #include <AntTweakBar.h>
 
-unsigned int AABB::cubeVAO = 0;
-unsigned int AABB::cubeVBO = 0;
+unsigned int AABBcell::cubeVAO = 0;
+unsigned int AABBcell::cubeVBO = 0;
 map<string, float>  LogDuration::Walues;
 TwBar* LogDuration::bar = nullptr;
 glm::vec3 skaling = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -157,7 +158,7 @@ int main() {
 	TwAddVarRW(bar, "DirectionLght", TW_TYPE_DIR3F, (void*)&dirLight, "axisx=x  axisy=y axisz=z");
 	TwAddVarRW(bar, "Epsilon", TW_TYPE_FLOAT, &epsilon, "min=0 max=5 step=0.1");
 
-	TwAddVarRW(bar, "Y_pos_lights", TW_TYPE_FLOAT, &positionsLight, "min=-30 max=20 step=0.5");
+	TwAddVarRW(bar, "Y_pos_lights", TW_TYPE_FLOAT, &positionsLight, "min=-50 max=20 step=0.5");
 	TwAddButton(bar, "AutoRotate", cameraMoveCB, NULL, " label='CameraMove' ");
 	
 	LogDuration::Init();
@@ -265,9 +266,6 @@ int main() {
 		camera.deltaTime = deltaTime;
 
 		pengine->step(deltaTime);
-
-
-
 
 
 		projection = glm::perspective(glm::radians(camera.fov), (float)width / (float)height, 0.1f, 400.0f);
@@ -396,16 +394,17 @@ int main() {
 			LOG_DURATION("Point Pass");
 			renderer.DsPointLightWithSelenticPass(); 
 		}
+		
+		{
+			LOG_DURATION("LIGHT POINT PASS")
+				renderer.RenderLight();
+		}
 		{
 			LOG_DURATION("Final Pass")
 			renderer.DsFinalPass();
 		}
-		{
-		LOG_DURATION("LIGHT POINT PASS")
-			renderer.RenderLight();
-		}
-
-		//renderer.renderHDR(epsilon);
+		
+		renderer.renderHDR(epsilon);
 		//renderer.renderGBufferPosition(epsilon);
 		TwDraw();
 		glfwSwapBuffers(window);

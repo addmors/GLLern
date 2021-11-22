@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Sphere.cpp
+// mSphere.cpp
 // ==========
-// Sphere for OpenGL with (radius, sectors, stacks)
+// mSphere for OpenGL with (radius, sectors, stacks)
 // The min number of sectors is 3 and the min number of stacks are 2.
 //
 //  AUTHOR: Song Ho Ahn (song.ahn@gmail.com)
@@ -25,7 +25,7 @@ const int MIN_STACK_COUNT  = 2;
 ///////////////////////////////////////////////////////////////////////////////
 // ctor
 ///////////////////////////////////////////////////////////////////////////////
-Sphere::Sphere(float radius, int sectors, int stacks, bool smooth)
+mSphere::mSphere(float radius, int sectors, int stacks, bool smooth)
 {
     set(radius, sectors, stacks, smooth);
     Init();
@@ -36,7 +36,7 @@ Sphere::Sphere(float radius, int sectors, int stacks, bool smooth)
 ///////////////////////////////////////////////////////////////////////////////
 // setters
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::set(float radius, int sectors, int stacks, bool smooth)
+void mSphere::set(float radius, int sectors, int stacks, bool smooth)
 {
     this->radius = radius;
     this->sectorCount = sectors;
@@ -54,25 +54,25 @@ void Sphere::set(float radius, int sectors, int stacks, bool smooth)
     buildTangent();
 }
 
-void Sphere::setRadius(float radius)
+void mSphere::setRadius(float radius)
 {
     if(radius != this->radius)
         set(radius, sectorCount, stackCount, smooth);
 }
 
-void Sphere::setSectorCount(int sectors)
+void mSphere::setSectorCount(int sectors)
 {
     if(sectors != this->sectorCount)
         set(radius, sectors, stackCount, smooth);
 }
 
-void Sphere::setStackCount(int stacks)
+void mSphere::setStackCount(int stacks)
 {
     if(stacks != this->stackCount)
         set(radius, sectorCount, stacks, smooth);
 }
 
-void Sphere::setSmooth(bool smooth)
+void mSphere::setSmooth(bool smooth)
 {
     if(this->smooth == smooth)
         return;
@@ -89,9 +89,9 @@ void Sphere::setSmooth(bool smooth)
 ///////////////////////////////////////////////////////////////////////////////
 // print itself
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::printSelf() const
+void mSphere::printSelf() const
 {
-    std::cout << "===== Sphere =====\n"
+    std::cout << "===== mSphere =====\n"
               << "        Radius: " << radius << "\n"
               << "  Sector Count: " << sectorCount << "\n"
               << "   Stack Count: " << stackCount << "\n"
@@ -106,42 +106,20 @@ void Sphere::printSelf() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// draw a sphere in VertexArray mode
+// draw a mSphere in VertexArray mode
 // OpenGL RC must be set before calling it
 ///////////////////////////////////////////////////////////////////////////////
 
 
 
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
-// draw lines only
+// draw a mSphere surfaces and lines on top of it
 // the caller must set the line width before call this
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::drawLines(const float lineColor[4]) const
-{
-    // set line colour
-    glColor4fv(lineColor);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE,   lineColor);
-
-    // draw lines with VA
-    glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(3, GL_FLOAT, 0, vertices.data());
-
-    glDrawElements(GL_LINES, (unsigned int)lineIndices.size(), GL_UNSIGNED_INT, lineIndices.data());
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_TEXTURE_2D);
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// draw a sphere surfaces and lines on top of it
-// the caller must set the line width before call this
-///////////////////////////////////////////////////////////////////////////////
-//void Sphere::drawWithLines(const float lineColor[4]) const
+//void mSphere::drawWithLines(const float lineColor[4]) const
 //{
 //    glEnable(GL_POLYGON_OFFSET_FILL);
 //    glPolygonOffset(1.0, 1.0f); // move polygon backward
@@ -158,7 +136,7 @@ void Sphere::drawLines(const float lineColor[4]) const
 ///////////////////////////////////////////////////////////////////////////////
 // update vertex positions only
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::updateRadius()
+void mSphere::updateRadius()
 {
     float scale = sqrtf(radius * radius / (vertices[0] * vertices[0] + vertices[1] * vertices[1] + vertices[2] * vertices[2]));
 
@@ -184,14 +162,14 @@ void Sphere::updateRadius()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// build vertices of sphere with smooth shading using parametric equation
+// build vertices of mSphere with smooth shading using parametric equation
 // x = r * cos(u) * cos(v)
 // y = r * cos(u) * sin(v)
 // z = r * sin(u)
 // where u: stack(latitude) angle (-90 <= u <= 90)
 //       v: sector(longitude) angle (0 <= v <= 360)
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::buildVerticesSmooth()
+void mSphere::buildVerticesSmooth()
 {
     const float PI = acos(-1);
 
@@ -295,7 +273,7 @@ void Sphere::buildVerticesSmooth()
 // generate vertices with flat shading
 // each triangle is independent (no shared vertices)
 ///////////////////////////////////////////////////////////////////////////////
-void Sphere::buildVerticesFlat()
+void mSphere::buildVerticesFlat()
 {
     const float PI = acos(-1);
 

@@ -13,11 +13,11 @@
 #define GEOMETRY_SPHERE_H
 #include "../PrimShape.h"
 
-class Sphere :public PrimShape
+class mSphere :public PrimShape
 {
 public:
     // ctor/dtor
-    Sphere(float radius=1.0f, int sectorCount=36, int stackCount=18, bool smooth=true);
+    mSphere(float radius=1.0f, int sectorCount=36, int stackCount=18, bool smooth=true);
     
     // getters/setters
     float getRadius() const                 { return radius; }

@@ -57,8 +57,8 @@ protected:
 
     void clearArrays();
 
-    virtual void buildVerticesSmooth() = 0;
-    virtual void buildVerticesFlat() = 0;
+    virtual void buildVerticesSmooth() {};
+    virtual void buildVerticesFlat() {};
     void buildTangent();
 
     void buildInterleavedVertices();

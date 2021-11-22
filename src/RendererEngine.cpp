@@ -25,25 +25,20 @@ RendererEngine::RendererEngine(Terrian* _terrain, Camera* _camera, Cells* _cell,
 	configurateWater(width_, height_, "dudvmap.png");
 
 	if (!gBuffer.Init(width_, height_)) throw runtime_error("error for create gBuffer");
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < 900; i++) {
 		pointsLight.AddPoint({
 			glm::vec3(0.0f, -7.0f, 0.0f),
 			{0.00f, 0.00f, 0.00f},
-			{1.0,0.0,1.0},
-			{0.5f, 0.5f, 0.5f},
-			1.0f, 0.07, 0.032 });
-		pointsLight.AddPoint({
-			glm::vec3(0.0f, -7.0f, 0.0f),
-			{0.00f, 0.05f, 0.00f},
-			{0.0,1.0,1.0},
-			{0.5f, 0.5f, 0.5f},
-			1.0f, 0.07, 0.032 });
-		pointsLight.AddPoint({
-			glm::vec3(0.0f, -7.0f, 0.0f),
-			{0.00f, 0.00f, 0.00f},
-			{1.0,1.0,0.0},
+			{0.5,0.5,0.5},
 			{0.2f, 0.2f, 0.2f},
-			1.0f, 0.07, 0.032 });
+			1.0f, 0.7, 0.32 });
+		pointsLight.AddPoint({
+			glm::vec3(0.0f, -7.0f, 0.0f),
+			{0.00f, 0.00f, 0.00f},
+			{1.0,1.0,1.0},
+			{0.2f, 0.2f, 0.2f},
+			1.0f, 0.7, 0.32 });
+
 	}
 
 	//pointsLight.AddPoint(
@@ -381,9 +376,9 @@ void RendererEngine::renderInGBuffer(unsigned int texture, unsigned int normal, 
 	sphere1.drawInstance();
 	cylinder1.drawInstance();
 	rect1.drawInstance();
-	/*if (matrixSize == 0) return;
+	if (matrixSize == 0) return;
 
-	glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
+	/*glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 	for (int i = 0; i < model->meshes.size(); i++) {
 		model->meshes[i].bindTexture(shaderGeometryPass);
 		glBindVertexArray(model->meshes[i].VAO);
@@ -407,13 +402,60 @@ void RendererEngine::DsPointLightWithSelenticPass()
 		auto& points = pointsLight.getPointsLight();
 		
 		glEnable(GL_STENCIL_TEST);
+
+		shaderNullPass.Use();
+		gBuffer.BindForStencilPass();
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glClear(GL_STENCIL_BUFFER_BIT);
+
+		glStencilFunc(GL_ALWAYS, 0, 0);
+
+		glStencilOpSeparate(GL_BACK, GL_KEEP, GL_INCR_WRAP, GL_KEEP);
+		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 		for (auto& point : points) {
+			glm::mat4 model = glm::mat4();
+			model = glm::translate(model, point.getPosition());
+			model = glm::scale(model, { point.getRadius(),point.getRadius(), point.getRadius() });
+			shaderNullPass.SetMat4("model", model);
+			sphereLite.draw();
+		}
+		
+		
+		shaderLightingPass.Use();
+		shaderLightingPass.SetVec3("viewPos", camera->cameraPos);
+
+		gBuffer.BindForLightPass();
+		glStencilFunc(GL_NOTEQUAL, 0, 0xFF);
+
+		glDisable(GL_DEPTH_TEST);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+		for (auto& point : points) {
+			glm::mat4 model = glm::mat4();
+			model = glm::translate(model, point.getPosition());
+			model = glm::scale(model, { point.getRadius(),point.getRadius(), point.getRadius() });
+
+			point.AddPointInShader(&shaderLightingPass);
+			shaderLightingPass.SetMat4("model", model);
+			sphereLite.draw();
+		}
+		glCullFace(GL_BACK);
+		glDisable(GL_BLEND);
+
+		/*for (auto& point : points) {
 			glm::mat4 model = glm::mat4();
 			model = glm::translate(model, point.getPosition());
 			model = glm::scale(model, { point.getRadius(),point.getRadius(), point.getRadius() });
 			SelenticPass(point, model);
 			PointLightPass(point, model);
-		}
+		}*/
 		glDisable(GL_STENCIL_TEST);
 	
 }
@@ -480,8 +522,37 @@ void RendererEngine::MoveLight(float currTime, float positions)
 		glm::vec3(sin(currTime * 0.5 + 2*i*AI_MATH_PI/points.size()) * radius,
 		0.0,
 		cos(currTime*0.5 +2*i*AI_MATH_PI/points.size()) * radius)+
-		glm::vec3(15,positions ,15);
+		glm::vec3(15,positions ,15) + glm::vec3(15, sin(currTime*8+ 8*i * AI_MATH_PI / points.size()), 15);
 	i++;
+
+	if (i%9 == 0) {
+		point.getPosition() += glm::vec3(0, 5, 0);
+	}
+	if (i % 9 == 1) {
+		point.getPosition() += glm::vec3(0, 10, 0);
+	}
+	if (i % 9 == 2) {
+		point.getPosition() += glm::vec3(0, 15, 0);
+	}
+	if (i % 9 == 3) {
+		point.getPosition() += glm::vec3(0, 20, 0);
+	}
+	if (i % 9 == 4) {
+		point.getPosition() += glm::vec3(0, 25, 0);
+	}
+	if (i % 9 == 5) {
+		point.getPosition() += glm::vec3(0, 30, 0);
+	}
+	if (i % 9 == 6) {
+		point.getPosition() += glm::vec3(0, 35, 0);
+	}
+	if (i%9  == 7) {
+		point.getPosition() += glm::vec3(0, 40, 0);
+	}
+	if (i%9 == 8) {
+		point.getPosition() += glm::vec3(0, 45, 0);
+	}
+
 	};
 }
 
@@ -795,19 +866,23 @@ void RendererEngine::renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight) {
 }
 
 void RendererEngine::renderHDR(float epsilon, glm::mat4 model) {
+	gBuffer.BindForFinalPass();
+	//gBuffer.CopyDepth();
 	glDisable(GL_DEPTH_TEST);
 	screen.Use();
 	screen.SetFloat("epsilon", epsilon);
 	screen.SetMat4("model", model);
 	glBindVertexArray(quadVAO);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, screenTexture);
+	glBindTexture(GL_TEXTURE_2D, gBuffer.getFinalTexture());
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 void RendererEngine::renderGBufferPosition(float epsilon, glm::mat4 model)
 {
+	glDisable(GL_DEPTH_TEST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	screen.Use();
 	screen.SetFloat("epsilon", epsilon);
 	model = glm::scale(model, { 0.25,0.25,1 });
@@ -834,7 +909,7 @@ void RendererEngine::renderGBufferPosition(float epsilon, glm::mat4 model)
 	screen.SetMat4("model", model);
 	glBindVertexArray(quadVAO);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gBuffer.getNormalTexture());
+	glBindTexture(GL_TEXTURE_2D, gBuffer.getFinalTexture());
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);

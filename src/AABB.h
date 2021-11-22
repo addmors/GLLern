@@ -46,7 +46,7 @@ static GLfloat RectVertices[] = {
 	 -1.0f,  1.0f,  1.0f
 };
 
-class AABB
+class AABBcell
 {
 private:
     glm::vec3 _scale, _pos;
@@ -69,8 +69,8 @@ public:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
-	AABB(glm::vec3 scale, glm::vec3 pos) : _scale(scale), _pos(pos){};
-	AABB() = default;
+	AABBcell(glm::vec3 scale, glm::vec3 pos) : _scale(scale), _pos(pos){};
+	AABBcell() = default;
 	static void draw() {
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);

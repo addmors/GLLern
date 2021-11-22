@@ -79,10 +79,10 @@ public:
 	float sizeCell;
 	const char* pathTextures;
 	std::vector<TextureGrass> cellGrasses;
-	std::vector<AABB> cellAABBs;
+	std::vector<AABBcell> cellAABBs;
 	Cells(const char* grassPath, Terrian* t, FooMethodHeight getHeight, FooMethodNormal getNormal, FooMethodSize getSize, float countLine);
 	~Cells() {
-		AABB::destroy();
+		AABBcell::destroy();
 	};
 };
 

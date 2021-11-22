@@ -26,8 +26,8 @@ private:
 	int width_;
 	int height_;
 	Query query;
-	Sphere sphere1{ 1.0f, 36, 18, 1 };
-	Sphere sphereLite{ 1.0f, 36, 18, 1 };
+	mSphere sphere1{ 1.0f, 36, 18, 1 };
+	mSphere sphereLite{ 1.0f, 36, 18, 1 };
 	Cylinder cylinder1{ 1, 1, 1, 36, 3, 1 };
 	Rect rect1{};
 	GBuffer gBuffer{};
@@ -147,7 +147,7 @@ public:
 	void drawInstanceModel(Model* model, std::vector<glm::vec3>& lightPos, int matrixSize);
 	Rect& getBox() { return rect1; };
 	Cylinder& getCylinder() { return cylinder1; };
-	Sphere& getSphere() { return sphere1; };
+	mSphere& getSphere() { return sphere1; };
 
 	void destroy();
 };

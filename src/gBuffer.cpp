@@ -107,6 +107,8 @@ bool GBuffer::Init(unsigned int WindowWidth, unsigned int WindowHeight)
     glGenTextures(1, &m_finalTexture);
     glBindTexture(GL_TEXTURE_2D, m_finalTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WindowWidth, WindowHeight, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_finalTexture, 0);
 
     glGenRenderbuffers(1, &m_depthTextureInter);
@@ -127,7 +129,7 @@ bool GBuffer::Init(unsigned int WindowWidth, unsigned int WindowHeight)
 
 void GBuffer::BindForGeomPass()
 {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
     GLenum DrawBuffers[] = { GL_COLOR_ATTACHMENT0,
                              GL_COLOR_ATTACHMENT1,
                              GL_COLOR_ATTACHMENT2 };
@@ -151,26 +153,26 @@ void GBuffer::StartFrame()
 
 void GBuffer::CopyMSAA(){
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
-    glBlitFramebuffer(
-        0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST
-    );
+    //glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+    //glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+    //glBlitFramebuffer(
+    //    0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST
+    //);
 
-    glReadBuffer(GL_COLOR_ATTACHMENT0);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    //glReadBuffer(GL_COLOR_ATTACHMENT0);
+    //glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-    glReadBuffer(GL_COLOR_ATTACHMENT1);
-    glDrawBuffer(GL_COLOR_ATTACHMENT1);
+    //glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    //glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    //glReadBuffer(GL_COLOR_ATTACHMENT1);
+    //glDrawBuffer(GL_COLOR_ATTACHMENT1);
 
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    //glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-    glReadBuffer(GL_COLOR_ATTACHMENT2);
-    glDrawBuffer(GL_COLOR_ATTACHMENT2);
+    //glReadBuffer(GL_COLOR_ATTACHMENT2);
+    //glDrawBuffer(GL_COLOR_ATTACHMENT2);
 
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    //glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 
 
@@ -200,13 +202,7 @@ void GBuffer::BindForLightPass()
 
 void GBuffer::BindForFinalPass()
 {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, intermediateFBO);
-
-
-    glReadBuffer(GL_COLOR_ATTACHMENT3);
-    glBlitFramebuffer(0, 0, width, height, 0, 0, width,
-        height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    
 
 
     glDepthMask(GL_FALSE);
@@ -229,4 +225,9 @@ GLuint GBuffer::getNormalTexture()
 GLuint GBuffer::getAlbedoTexture()
 {
     return m_textures[2];
+}
+
+GLuint GBuffer::getFinalTexture()
+{
+    return m_finalTexture;
 }
