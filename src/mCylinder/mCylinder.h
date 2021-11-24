@@ -27,6 +27,17 @@ public:
     Cylinder(float baseRadius=1.0f, float topRadius=1.0f, float height=1.0f,
              int sectorCount=36, int stackCount=1, bool smooth=true);
     
+    Cylinder(GLuint diff, GLuint spec, GLuint normal, float baseRadius = 1.0f, float topRadius = 1.0f, float height = 1.0f,
+        int sectorCount = 36, int stackCount = 1, bool smooth = true) : PrimShape(diff, spec, normal) {
+        set(baseRadius, topRadius, height, sectorCount, stackCount, smooth);
+        Init();
+        glm::vec3 norm = { normals.at(0),normals.at(1),normals.at(2) };
+        glm::vec3 tan = { tangent.at(0),tangent.at(1),tangent.at(2) };
+        glm::vec3 bitan = { bitangent.at(0),bitangent.at(1),bitangent.at(2) };
+        glm::mat3 tbn = { bitan,norm,tan };
+        glm::vec3 normtest = tbn * glm::normalize(glm::vec3(0.2, 1.0, 0.2));
+    };
+
 
     // getters/setters
     float getBaseRadius() const             { return baseRadius; }

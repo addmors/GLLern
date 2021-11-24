@@ -51,13 +51,40 @@ void PrimShape::AddInstanse()
     Instanse.push_back(glm::mat4(1));
 }
 
-void PrimShape::draw()
+void PrimShape::Draw()
 {
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(getVAO());
+    glDrawElements(GL_TRIANGLES,getIndexCount(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
+void PrimShape::Draw(Shader& shader)
+{
+    bindTexture(shader);
+    Draw();
+}
+
+void PrimShape::bindTexture(Shader& shader)
+{
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap);
+        
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, normalMap);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
+
+
+        shader.SetInt("material.texture_diffuse1", 0);
+        shader.SetInt("material.texture_normal1", 1);
+        shader.SetInt("material.texture_specular1", 2);
+
+        
+ 
+        shader.SetFloat("material.shininess", 20.0f);
+}
 void PrimShape::drawInstance()
 {
     if (Instanse.size() > 0) {

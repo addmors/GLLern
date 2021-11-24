@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "../Wrapper.h"
 #include "../Mesh/Mesh.h"
 #include<SOIL.h>
 #include <assimp/Importer.hpp>
@@ -20,7 +21,7 @@
 
 using namespace std;
 
-class Model
+class Model : public Wrapper
 {
 public:
 	/*  Ìועמהû   */
@@ -52,8 +53,8 @@ public:
 	void loadAnims(string path, string name);
 	
 	void loadIdleAnimaitons(string path);
-	void DrawAnim(Shader &shader);
-	void Draw(Shader shader);
+	void Draw(Shader& shader);
+	void Draw();
 	void AnimNodeProcess();
 	aiScene* scene;
 	void loadModel(string path);

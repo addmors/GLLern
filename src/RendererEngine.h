@@ -4,6 +4,7 @@
 #include "Camera\Camera.h"
 #include "Model\Model.h"
 #include "Water\Water.h"
+#include "Entity\Entity.h"
 #include"Grass\grass.h"
 #include "light\light.h"
 #include "gBuffer.h"
@@ -18,6 +19,11 @@ class RendererEngine
 {
 private:
 
+
+	unsigned int fireTexture{ loadTextureWithAlpha("Cyrcle.png") };
+	unsigned int firenormalTexture{ loadTextureRGB("normalCyrcle.png", false) };
+	unsigned int firespecularTexture{ loadTextureWithAlpha("specularCyrcle.png") };
+
 	Terrian* t;
 	Camera* camera;
 	Cells* cell;
@@ -26,10 +32,11 @@ private:
 	int width_;
 	int height_;
 	Query query;
-	mSphere sphere1{ 1.0f, 36, 18, 1 };
+	mSphere sphere1{fireTexture, firespecularTexture, firenormalTexture, 1.0f, 36, 18, 1 };
 	mSphere sphereLite{ 1.0f, 36, 18, 1 };
-	Cylinder cylinder1{ 1, 1, 1, 36, 3, 1 };
-	Rect rect1{};
+	Entity ourFirstEntitY{ sphere1 };
+	Cylinder cylinder1{ fireTexture, firespecularTexture, firenormalTexture, 1, 1, 1, 36, 3, 1 };
+	Rect rect1{ fireTexture, firespecularTexture, firenormalTexture };
 	GBuffer gBuffer{};
 	Water water{};
 	std::vector<Model*> models; 
@@ -48,6 +55,7 @@ private:
 	Shader OccluderWaterShader{ "src/shader/occluderWater.vs","src/shader/occluderWater.fs" };
 	Shader NormalDrawShader{ "src/shader/ShaderDrawNormal.vs","src/shader/ShaderDrawNormal.fs" ,"src/shader/ShaderDrawNormal.gs" };
 	Shader shaderGeometryPass{ "src/shader/jastshad.vs", "src/shader/8.1.g_buffer.fs" };
+	Shader shaderGeometryPassv2{ "src/shader/justshadv2.vs", "src/shader/8.1.g_buffer.fs" };
 	Shader shaderLightingPass{ "src/shader/shader.vs", "src/shader/8.1.deferred_shading.fs" };
 	Shader shaderNullPass{ "src/shader/shader.vs", "src/shader/null_shader.fs" };
 	Shader lightShader{ "src/shader/shader.vs", "src/shader/lampshad.fs" };
@@ -90,6 +98,9 @@ private:
 	glm::mat4* projection = nullptr;
 
 
+
+
+
 public:
 	
 
@@ -116,7 +127,7 @@ public:
 	void DisableHDR();
 
 	void EnableGBuffer();
-	void renderInGBuffer(unsigned int texture, unsigned int normal, unsigned int specular, Model* model, int matrixSize);
+	void renderInGBuffer(Model* model, int matrixSize);
 	void PointLightPass(PointLight&, glm::mat4&);
 	void DsPointLightWithSelenticPass();
 	void DsFinalPass();
@@ -124,8 +135,7 @@ public:
 	void MoveLight(float, float);
 	void RenderLight();
 	
-	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos, vector<glm::vec3>,
-					unsigned int texture, unsigned int normal, unsigned int specular);
+	void renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos, vector<glm::vec3>);
 	void renderTextureGrass(float time);
 	void renderWater(float deltaTime);
 	void renderSkyBox(float currFrame);

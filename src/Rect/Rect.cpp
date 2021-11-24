@@ -70,7 +70,7 @@ void Rect::Init()
 	prepareInstanse();
 }
 
-void Rect::draw()
+void Rect::Draw()
 {
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);

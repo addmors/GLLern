@@ -18,6 +18,8 @@ class mSphere :public PrimShape
 public:
     // ctor/dtor
     mSphere(float radius=1.0f, int sectorCount=36, int stackCount=18, bool smooth=true);
+    mSphere(GLuint diff, GLuint spec, GLuint norm, float radius = 1.0f, int sectorCount = 36, int stackCount = 18, bool smooth = true);
+
     
     // getters/setters
     float getRadius() const                 { return radius; }

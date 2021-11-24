@@ -40,6 +40,10 @@ RendererEngine::RendererEngine(Terrian* _terrain, Camera* _camera, Cells* _cell,
 			1.0f, 0.7, 0.32 });
 
 	}
+	glm::vec3 pos = { 2,2,2 };
+	glm::vec3 scale = { 7,7,7};
+	ourFirstEntitY.transform.setLocalPosition(pos);
+	ourFirstEntitY.transform.setLocalScale(scale);
 
 	//pointsLight.AddPoint(
 	//	{glm::vec3(-4.0f, 0.0f, 4.0f), 
@@ -350,7 +354,7 @@ void RendererEngine::EnableGBuffer()
 	//gBuffer.StartFrame();
 }
 
-void RendererEngine::renderInGBuffer(unsigned int texture, unsigned int normal, unsigned int specular, Model* model, int matrixSize)
+void RendererEngine::renderInGBuffer(Model* model, int matrixSize)
 {
 	//Enable GeomPass
 	gBuffer.StartFrame();
@@ -361,23 +365,25 @@ void RendererEngine::renderInGBuffer(unsigned int texture, unsigned int normal, 
 	glEnable(GL_DEPTH_TEST);
 	shaderGeometryPass.Use();
 
-	shaderGeometryPass.SetInt("material.texture_diffuse1", 0);
-	shaderGeometryPass.SetInt("material.texture_normal1", 1);
-	shaderGeometryPass.SetInt("material.texture_specular1", 2);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normal);
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, specular);
-
+	sphere1.bindTexture(shaderGeometryPass);
 	sphere1.drawInstance();
-	cylinder1.drawInstance();
-	rect1.drawInstance();
-	if (matrixSize == 0) return;
 
+	cylinder1.bindTexture(shaderGeometryPass);
+	cylinder1.drawInstance();
+	
+	rect1.bindTexture(shaderGeometryPass);
+	rect1.drawInstance();
+
+
+
+	shaderGeometryPassv2.Use();
+
+	const Frustum frust = createFrustumFromCamera(*camera, (float)width_/(float)height_, camera->fov, 0.1f, 400.0f);
+	unsigned int total = 0;
+	unsigned int disp = 0;
+	ourFirstEntitY.transform.computeModelMatrix();
+	ourFirstEntitY.drawSelfAndChild(frust, shaderGeometryPassv2, disp, total);
+	if (matrixSize == 0) return;
 	/*glBindBuffer(GL_ARRAY_BUFFER, bufferTree);
 	for (int i = 0; i < model->meshes.size(); i++) {
 		model->meshes[i].bindTexture(shaderGeometryPass);
@@ -419,7 +425,7 @@ void RendererEngine::DsPointLightWithSelenticPass()
 			model = glm::translate(model, point.getPosition());
 			model = glm::scale(model, { point.getRadius(),point.getRadius(), point.getRadius() });
 			shaderNullPass.SetMat4("model", model);
-			sphereLite.draw();
+			sphereLite.Draw();
 		}
 		
 		
@@ -444,7 +450,7 @@ void RendererEngine::DsPointLightWithSelenticPass()
 
 			point.AddPointInShader(&shaderLightingPass);
 			shaderLightingPass.SetMat4("model", model);
-			sphereLite.draw();
+			sphereLite.Draw();
 		}
 		glCullFace(GL_BACK);
 		glDisable(GL_BLEND);
@@ -488,7 +494,7 @@ void RendererEngine::PointLightPass(PointLight& Point, glm::mat4& model)
 
 	Point.AddPointInShader(&shaderLightingPass);
 	shaderLightingPass.SetMat4("model", model);
-	sphereLite.draw();
+	sphereLite.Draw();
 	glCullFace(GL_BACK);
 	glDisable(GL_BLEND);
 }
@@ -508,7 +514,7 @@ void RendererEngine::SelenticPass(PointLight& Point, glm::mat4& model)
 	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
 
 	shaderNullPass.SetMat4("model", model);
-	sphereLite.draw();
+	sphereLite.Draw();
 }
 
 void RendererEngine::MoveLight(float currTime, float positions)
@@ -579,8 +585,7 @@ glEnable(GL_CULL_FACE);
 
 
 void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, glm::mat4& projection, glm::vec3 lightPos,
-	vector<glm::vec3>  lightPoses,
-	unsigned int texture, unsigned int normal, unsigned int specular) {
+	vector<glm::vec3>  lightPoses) {
 	shader.Use();
 	// set light uniforms
 	shader.SetVec3("viewPos", cameraPos);
@@ -588,7 +593,7 @@ void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, gl
 	shader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
 	glm::mat4 model = glm::mat4(1.0f);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, fireTexture);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, depthMap);
 	// cubes
@@ -596,30 +601,30 @@ void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, gl
 	model = glm::translate(model, glm::vec3(0.2f, 1.5f, 0.5));
 	model = glm::scale(model, glm::vec3(0.5f));
 	shader.SetMat4("model", model);
-	rect1.draw();
+	rect1.Draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.5f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	shader.SetMat4("model", model);
-	rect1.draw();
+	rect1.Draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0f, 0.5f, 2.0));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	shader.SetMat4("model", model);
-	rect1.draw();
+	rect1.Draw();
 	glm::mat4 value = glm::mat4(1);
 	shader.SetMat4("model", value);
-	sphere1.draw();
+	sphere1.Draw();
 
 	value = glm::translate(value, glm::vec3(5,0,0));
 	shader.SetMat4("model", value);
-	cylinder1.draw();
+	cylinder1.Draw();
 
 	
 	value = glm::translate(value, glm::vec3(5, 0, 0));
 	shader.SetMat4("model", value);
-	rect1.draw();
+	rect1.Draw();
 
 	ShaderNoBone.Use();
 	ShaderNoBone.Design(camera->view, lightPoses, cameraPos, camera->cameraFront);
@@ -629,15 +634,13 @@ void RendererEngine::renderScene(int width, int height, glm::vec3& cameraPos, gl
 	ShaderNoBone.SetInt("material.texture_specular1", 2);
 	
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normal);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, specular);
-	
+	sphere1.bindTexture(ShaderNoBone);
 	sphere1.drawInstance();
+
+	cylinder1.bindTexture(ShaderNoBone);
 	cylinder1.drawInstance();
+
+	rect1.bindTexture(ShaderNoBone);
 	rect1.drawInstance();
 
 };
@@ -849,18 +852,18 @@ void RendererEngine::renderInShadow(glm::vec3& PosLight, glm::vec3& dirLight) {
 	model = glm::translate(model, glm::vec3(0.2f, 1.5f, 0.5));
 	model = glm::scale(model, glm::vec3(0.5f));
 	simpleDepthShader.SetMat4("model", model);
-	rect1.draw();
+	rect1.Draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(2.0f, 0.5f, 1.0));
 	model = glm::scale(model, glm::vec3(0.5f));
 	simpleDepthShader.SetMat4("model", model);
-	rect1.draw();
+	rect1.Draw();
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(-1.0f, 0.5f, 2.0));
 	model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
 	model = glm::scale(model, glm::vec3(0.25));
 	simpleDepthShader.SetMat4("model", model);
-	rect1.draw();
+	rect1.Draw();
 	glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -964,5 +967,10 @@ void RendererEngine::destroy() {
 		a.Delete();
 	};
 	glDeleteBuffers(1, &bufferTree);
+
+	glDeleteTextures(1, &fireTexture);
+	glDeleteTextures(1, &firenormalTexture);
+	glDeleteTextures(1, &firespecularTexture);
+
 
 }

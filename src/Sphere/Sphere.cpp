@@ -31,6 +31,13 @@ mSphere::mSphere(float radius, int sectors, int stacks, bool smooth)
     Init();
 }
 
+mSphere::mSphere(GLuint diff, GLuint spec, GLuint norm, float radius, int sectorCount, int stackCount, bool smooth) :
+    PrimShape(diff, spec, norm)
+{
+    set(radius, sectorCount, stackCount, smooth);
+    Init();
+};
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

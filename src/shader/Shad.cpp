@@ -243,7 +243,6 @@ void FileLoader::ADDFILE(const std::string path)
 	std::string temp = '/' + path;
 	
 	glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(temp.c_str()), temp.c_str(), strlen(pathShaderCode), pathShaderCode);
-	int t = 0;
 	names.push_back(path);
 	
 };

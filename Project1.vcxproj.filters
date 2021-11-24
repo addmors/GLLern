@@ -105,6 +105,9 @@
     <ClCompile Include="src\Entity\Entity.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="src\Wrapper.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\shader\Shad.h">
@@ -203,6 +206,9 @@
     <ClInclude Include="src\Entity\Entity.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="src\Wrapper.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shader\shader.fs" />
@@ -242,5 +248,6 @@
     <None Include="src\shader\8.1.g_buffer.fs" />
     <None Include="src\shader\8.1.deferred_shading.fs" />
     <None Include="src\shader\null_shader.fs" />
+    <None Include="src\shader\justshadv2.vs" />
   </ItemGroup>
 </Project>

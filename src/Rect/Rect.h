@@ -4,8 +4,9 @@ class Rect : public PrimShape
 {
     public:
     Rect() { Init(); };
+    Rect(GLuint diff, GLuint spec, GLuint normal):PrimShape(diff,spec,normal) { Init(); };
     void Init() override;
-    void draw() override;
+    void Draw() override;
     void drawInstance() override;
 protected:
     void buildVerticesSmooth() override;

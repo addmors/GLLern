@@ -47,10 +47,9 @@ void Mesh::DrawSelf()
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-	glActiveTexture(GL_TEXTURE0);
 }
 
-void Mesh::bindTexture(Shader shader)
+void Mesh::bindTexture(Shader& shader)
 {
 	shader.Use();
 	unsigned int diffuseNr = 1;
@@ -85,7 +84,7 @@ void Mesh::bindTexture(Shader shader)
 void Mesh::UpdateBoneMat() {
 	sceneLoaderSkeleton.UpdateBoneMatsVector();
 };
-void Mesh::SetRigged(Shader shader)
+void Mesh::SetRigged(Shader& shader)
 {
 	glUniformMatrix4fv(glGetUniformLocation(shader.ID, "gBones"), sceneLoaderSkeleton.boneMats.size(), GL_FALSE, glm::value_ptr(sceneLoaderSkeleton.boneMats[0]));
 }

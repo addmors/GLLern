@@ -22,7 +22,7 @@ glm::mat4 Transform::getLocalModelMatrixQ()
 
 void Transform::computeModelMatrix()
 {
-	m_modelMatrix = getLocalModelMatrixQ();
+	m_modelMatrix = getLocalModelMatrix();
 }
 
 void Transform::computeModelMatrix(const glm::mat4& parentGlobalModelMatrix)
@@ -32,6 +32,8 @@ void Transform::computeModelMatrix(const glm::mat4& parentGlobalModelMatrix)
 
 void Transform::computeModelMatrixQ()
 {
+
+	m_modelMatrix = getLocalModelMatrixQ();
 }
 
 void Transform::computeModelMatrixQ(const glm::mat4& parentGlobalModelMatrix)
@@ -258,36 +260,35 @@ AABB generateAABB(const PrimShape& shape)
 
 	glm::vec3 minAABB = glm::vec3(std::numeric_limits<float>::max());
 	glm::vec3 maxAABB = glm::vec3(std::numeric_limits<float>::min());
-	unsigned int size = shape.getVertexSize()*3;
-	const float* data = shape.getVertices();
-	for (int i = 0; i<size;i+=3)
+	auto& t = shape.getVertex();
+	for (int i = 0; i<t.size();i+=3)
 	{
-			minAABB.x = std::min(minAABB.x, data[i]);
-			minAABB.y = std::min(minAABB.y, data[i+1]);
-			minAABB.z = std::min(minAABB.z, data[i+2]);
+			minAABB.x = std::min(minAABB.x, t[i]);
+			minAABB.y = std::min(minAABB.y, t[i+1]);
+			minAABB.z = std::min(minAABB.z, t[i+2]);
 
-			maxAABB.x = std::max(maxAABB.x, data[i]);
-			maxAABB.y = std::max(maxAABB.y, data[i+1]);
-			maxAABB.z = std::max(maxAABB.z, data[i+2]);
+			maxAABB.x = std::max(maxAABB.x, t[i]);
+			maxAABB.y = std::max(maxAABB.y, t[i+1]);
+			maxAABB.z = std::max(maxAABB.z, t[i+2]);
 	}
 	return AABB(minAABB, maxAABB);
 }
 
 Sphere generateSphereBV(const PrimShape& shape)
 {
+
 	glm::vec3 minAABB = glm::vec3(std::numeric_limits<float>::max());
 	glm::vec3 maxAABB = glm::vec3(std::numeric_limits<float>::min());
-	unsigned int size = shape.getVertexSize() * 3;
-	const float* data = shape.getVertices();
-	for (int i = 0; i < size; i += 3)
+	auto& t = shape.getVertex();
+	for (int i = 0; i < t.size(); i += 3)
 	{
-		minAABB.x = std::min(minAABB.x, data[i]);
-		minAABB.y = std::min(minAABB.y, data[i + 1]);
-		minAABB.z = std::min(minAABB.z, data[i + 2]);
+		minAABB.x = std::min(minAABB.x, t[i]);
+		minAABB.y = std::min(minAABB.y, t[i + 1]);
+		minAABB.z = std::min(minAABB.z, t[i + 2]);
 
-		maxAABB.x = std::max(maxAABB.x, data[i]);
-		maxAABB.y = std::max(maxAABB.y, data[i + 1]);
-		maxAABB.z = std::max(maxAABB.z, data[i + 2]);
+		maxAABB.x = std::max(maxAABB.x, t[i]);
+		maxAABB.y = std::max(maxAABB.y, t[i + 1]);
+		maxAABB.z = std::max(maxAABB.z, t[i + 2]);
 	}
 	return Sphere((maxAABB + minAABB) * 0.5f, glm::length(minAABB - maxAABB));
 }

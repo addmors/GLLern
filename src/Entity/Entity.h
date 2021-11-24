@@ -7,6 +7,8 @@
 #include <memory> //std::unique_ptr
 #include "../Camera/Camera.h"
 #include "../Model/Model.h"
+#include "../PrimShape.h"
+#include "../pEngine/pEngine.h"
 
 
 class Transform
@@ -16,7 +18,7 @@ protected:
 	glm::vec3 m_pos = { 0.0f, 0.0f, 0.0f };
 	glm::vec3 m_eulerRot = { 0.0f, 0.0f, 0.0f }; //In degrees
 	glm::vec3 m_scale = { 1.0f, 1.0f, 1.0f };
-	glm::quat m_rotation = { 1,1,1,1 };
+	glm::quat m_rotation = { 1,0,0,0 };
 
 	//Global space informaiton concatenate in matrix
 	glm::mat4 m_modelMatrix = glm::mat4(1.0f);
@@ -139,7 +141,7 @@ struct SquareAABB : public BoundingVolume
 struct  AABB : public BoundingVolume {
 	glm::vec3 center{ 0,0,0 };
 	glm::vec3 extents{ 0,0,0 };
-	AABB(const glm::vec3& min, glm::vec3& max) : BoundingVolume(), center{ (min + max) * 0.5f }, extents{ max - center }
+	AABB(const glm::vec3& min, const glm::vec3& max) : BoundingVolume(), center{ (min + max) * 0.5f }, extents{ max - center }
 	{};
 	AABB(const glm::vec3& inCenter, float iI, float iJ, float iK)
 		: BoundingVolume{}, center{ inCenter }, extents{ iI, iJ, iK }
@@ -156,7 +158,7 @@ AABB generateAABB(const PrimShape& shape);
 Sphere generateSphereBV(const PrimShape& shape);
 
 
-template <typename T>
+
 class Entity
 {
 public:
@@ -167,18 +169,24 @@ public:
 	bool flag_instanse = false;
 	//Space information
 	Transform transform;
-	T* pEntity;
+	Wrapper* pEntity;
+	btRigidBody* pBody = nullptr;
 	std::unique_ptr<AABB> boundingVolume;
 
+	
 	// constructor, expects a filepath to a 3D model.
-	Entity(T& model) : pEntity{ &model }
+	Entity(Model& model) : pEntity{ &model }
 	{
-		boundingVolume = std::make_unique<AABB>(generateAABB(&pEntity));
+		boundingVolume = std::make_unique<AABB>(generateAABB(model));
 		//boundingVolume = std::make_unique<Sphere>(generateSphereBV(model));
 	};
+	Entity(PrimShape& shape) : pEntity{ &shape } {
 
+		boundingVolume = std::make_unique<AABB>(generateAABB(shape));
+	}
+	
 	//TODO
-	//Entity(T& model, btRigitBody body): 
+	//Entity(T& model, btRigitBody& body): 
 	AABB getGlobalAABB()
 	{
 		//Get global scale thanks to our transform
@@ -240,8 +248,9 @@ public:
 	{
 		if (boundingVolume->isOnFrustum(frustum, transform))
 		{
-			ourShader.SetMat4("model", transform.getModelMatrix());
-			pEntity->Draw();
+			glm::mat4 model = transform.getModelMatrix();
+			ourShader.SetMat4("model", model);
+			pEntity->Draw(ourShader);
 			display++;
 		}
 		total++;
@@ -251,5 +260,11 @@ public:
 			child->drawSelfAndChild(frustum, ourShader, display, total);
 		}
 	}
+	void drawChild(const Frustum& frustum, Shader& ourShader, unsigned int& display, unsigned int& total) {
+		for (auto&& child : children)
+		{
+			child->drawSelfAndChild(frustum, ourShader, display, total);
+		}
+		total++;
+	} 
 };
-

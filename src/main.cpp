@@ -1,14 +1,15 @@
 #define GLEW_STATIC
+
+#include <GL\glew.h>
 #include <string>
 #include <set>
 #include <iostream>
 #include <memory>
 #include<iterator>
-#include <GL\glew.h>
+#include "Entity/Entity.h"
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 #include "Precompile.h"
-#include "Entity\Entity.h"
 #include "RendererEngine.h"
 #include "light/light.h"
 #include "logger.h"
@@ -43,6 +44,7 @@ glm::mat4 projection;
 std::unique_ptr<pEngine> pengine = std::make_unique<pEngine>();
 Model ourModel;
 GLFWwindow* window;
+
 std::vector<std::string> FileLoader::names = {};
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback_for_movement(int key, int action);
@@ -75,6 +77,9 @@ unsigned int planeVAO;
 
 int main() {
 	
+
+
+
 	TwBar* bar;
 
 	if (!glfwInit()) {
@@ -166,9 +171,6 @@ int main() {
 	//Shader lightShader("src/shader/shader.vs", "src/shader/lampshad.fs");
 	//Shader objclrShader("src/shader/shader3.vs", "src/shader/objvithcolor.fs");
 	
-	unsigned int fireTexture = loadTextureWithAlpha("Cyrcle.png");
-	unsigned int firenormalTexture = loadTextureRGB("normalCyrcle.png", false);
-	unsigned int firespecularTexture = loadTextureWithAlpha("specularCyrcle.png");
 
 	unsigned int grassTexture = loadTexture("grass.png");
 
@@ -387,7 +389,7 @@ int main() {
 		renderer.EnableGBuffer();
 		{
 			LOG_DURATION("GBuffer Pass");
-			renderer.renderInGBuffer(fireTexture, firenormalTexture, firespecularTexture, &Modeltree, modelMatrices.size());
+			renderer.renderInGBuffer(&Modeltree, modelMatrices.size());
 		}
 		//renderer.DisableGBuffer();
 		{
@@ -419,10 +421,6 @@ int main() {
 	for (auto& a : Modeltree.meshes) {
 		a.Delete();
 	}
-	glDeleteTextures(1, &fireTexture);
-	glDeleteTextures(1, &firenormalTexture);
-	glDeleteTextures(1, &firespecularTexture);
-
 	TwTerminate();
 	glfwTerminate();
 	return 0;

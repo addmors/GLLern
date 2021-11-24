@@ -52,8 +52,8 @@ public:
 		};
 
 	void DrawSelf();
-	void bindTexture(Shader shader);
-	void SetRigged(Shader shader);
+	void bindTexture(Shader& shader);
+	void SetRigged(Shader& shader);
 	void UpdateBoneMat();
 
 	unsigned int VAO, VBO, EBO, VBO_Pos, VBO_UVs, VBO_Nor, VBO_IDs, VBO_Weights;

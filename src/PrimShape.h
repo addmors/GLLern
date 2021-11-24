@@ -1,17 +1,28 @@
 #pragma once
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include "shader/Shad.h"
+#include "Wrapper.h"
 
 
 
-class PrimShape
+class PrimShape : public Wrapper
 {
 
 public:
     PrimShape(bool smooth = false) : interleavedStride(32) {};
+    PrimShape(GLuint diff, GLuint spec, GLuint norm, bool smooth = false) :
+        interleavedStride(32),
+        specularMap(spec),
+        diffuseMap(diff),
+        normalMap(norm) 
+    {}
+    void setNormalMap(GLuint normal) { normalMap = normal; };
+    void setDiffuseMap(GLuint diffuse) { diffuseMap = diffuse; };
+    void setSpecularMap(GLuint specular) { specularMap = specular; };
+    void setTextures(GLuint normal, GLuint diffuse, GLuint specular) {
+        normalMap = normal;
+        diffuseMap = diffuse;
+        specularMap = specular;
+    };
+    
     virtual void Init();
     void AddInstanse();
     unsigned int getVertexCount() const { return (unsigned int)vertices.size() / 3; }
@@ -26,6 +37,7 @@ public:
     unsigned int getIndexSize() const { return (unsigned int)indices.size() * sizeof(unsigned int); }
     unsigned int getLineIndexSize() const { return (unsigned int)lineIndices.size() * sizeof(unsigned int); }
     const float* getVertices() const { return vertices.data(); }
+    const std::vector<float> getVertex() const { return vertices; };
     const float* getNormals() const { return normals.data(); }
     const float* getTexCoords() const { return texCoords.data(); }
     const unsigned int* getIndices() const { return indices.data(); }
@@ -38,7 +50,9 @@ public:
     int getInterleavedStride() const { return interleavedStride; }   // should be 32 bytes
     const float* getInterleavedVertices() const { return interleavedVertices.data(); }
 
-    virtual void draw();
+    virtual void Draw();
+    virtual void Draw(Shader& shader);
+    void bindTexture(Shader& shader);
     virtual void drawInstance();
     void prepareInstanse();
     std::vector<glm::mat4>& getInstanse() {return Instanse; };
@@ -86,9 +100,13 @@ protected:
     // interleaved
     std::vector<float> interleavedVertices;
     int interleavedStride;                  // # of bytes to hop to the next vertex (should be 32 bytes)
+    GLuint specularMap;
+    GLuint diffuseMap;
+    GLuint normalMap;
     GLuint VBO = 0;
     GLuint EBO = 0;
     GLuint VAO = 0;
+
     GLuint bufferInstance = 0;
     std::vector<glm::mat4> Instanse{};
 };

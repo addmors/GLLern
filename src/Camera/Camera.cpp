@@ -58,12 +58,10 @@ void Camera::do_movement()
 		cameraPos -= cameraSpeed * cameraFront;
 	if (keys->at(65))
 	{
-		cameraRight_ = glm::normalize(glm::cross(cameraFront, cameraUp));
 		cameraPos -= cameraRight_ * cameraSpeed;
 	}
 	if (keys->at(68))
 	{
-		cameraRight_ = glm::normalize(glm::cross(cameraFront, cameraUp));
 		cameraPos += cameraRight_ * cameraSpeed;
 	}
 	if (keys->at(81))
@@ -75,6 +73,8 @@ void Camera::do_movement()
 	//cameraFront = glm::normalize(front);
 	//cameraPos = objPos - cameraFront * glm::length(lengthtoobj);
 	//cameraPos.y += 1.8;
+
+	cameraRight_ = glm::normalize(glm::cross(cameraFront, cameraUp));
 }
 void Camera::LoocAt() {
 	

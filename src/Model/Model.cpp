@@ -217,6 +217,22 @@ void Model::processNode(aiNode *node, const aiScene *scene, aiMatrix4x4 transfor
 		processNode(node->mChildren[i], scene, transformation);
 	}
 }
+
+void Model::Draw(Shader& shader)
+{
+	for (auto&& mesh : meshes) {
+		mesh.bindTexture(shader);
+		mesh.DrawSelf();
+	}
+}
+
+void Model::Draw()
+{
+	for (auto&& mesh : meshes) {
+		mesh.DrawSelf();
+	}
+}
+
 void Model::AnimNodeProcess() {
 	if (scene->mNumAnimations == 0) {
 		return;
